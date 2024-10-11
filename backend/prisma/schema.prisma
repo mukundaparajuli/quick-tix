@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  fullName  String
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      Role     @default(ATTENDEE) // organizer or attendee
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  events   Event[] // Events the user is organizing
+  bookings Booking[] // Bookings made by the user
+
+  @@map("users")
+}
+
+enum Role {
+  ORGANIZER
+  ATTENDEE
+}
+
+model Event {
+  id               Int      @id @default(autoincrement())
+  title            String
+  description      String
+  date             DateTime
+  location         String
+  price            Float
+  totalTickets     Int
+  availableTickets Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  organizerId Int
+  organizer   User @relation(fields: [organizerId], references: [id])
+
+  bookings Booking[]
+
+  @@map("events")
+}
+
+model Booking {
+  id         Int      @id @default(autoincrement())
+  eventId    Int
+  userId     Int
+  tickets    Int
+  totalPrice Float
+  createdAt  DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@map("bookings")
+}
