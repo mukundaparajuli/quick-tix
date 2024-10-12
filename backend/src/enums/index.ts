@@ -1,4 +1,4 @@
 export enum Role {
-    ORGANIZER,
-    ATTENDEE
+    ORGANIZER = "ORGANIZER",
+    ATTENDEE = "ATTENDEE"
 }

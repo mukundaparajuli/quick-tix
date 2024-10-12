@@ -17,4 +17,5 @@ export type Event = {
     totalTickets: number;
     availableTickets: number;
     organizer: User;
+    bookings: []
 }

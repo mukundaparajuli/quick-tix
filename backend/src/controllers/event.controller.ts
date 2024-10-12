@@ -136,8 +136,21 @@ export const DeleteAnEvent = asyncHandler(async (req: Request, res: Response) =>
         return new ApiResponse(res, 404, "event does not exist", null, null);
     }
 
-    // the event exists now we will check if the user is an organizer or not
 
+    // check if user exists
+    if (!user) {
+        return new ApiResponse(res, 404, "user not found", null, null);
+    }
+
+    // the event exists now we will check if the user is an organizer or not
+    if (user.role !== 'ORGANIZER') {
+        return new ApiResponse(res, 403, "you are not authorized to delete this event", null, null);
+    }
+
+    // check if the user is the organizer of this particular event or not
+    if (user.id !== event.organizerId) {
+        return new ApiResponse(res, 403, "you are not authorized to delete this event", null, null);
+    }
 
     // the event exists and the user is an organizer as well
     const deletedEvent = await db.event.delete({

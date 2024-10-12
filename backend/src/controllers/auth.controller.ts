@@ -5,6 +5,7 @@ import asyncHandler from "../utils/async-handler";
 import bcrypt from 'bcrypt'
 import { User } from "../types/types";
 import jwt from 'jsonwebtoken'
+import logger from "../logger";
 
 
 
@@ -64,7 +65,6 @@ export const RegisterUser = asyncHandler(async (req: Request, res: Response) => 
 
 export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
     const { email, username, password } = await req.body;
-
 
     // if (email or username) or password is not present send error 
     if (!(email || username) || !password) {

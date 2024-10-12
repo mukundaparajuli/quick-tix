@@ -4,7 +4,7 @@ import ApiResponse from "../types/api-response";
 import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 
 export const JwtValidation = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.cookies.Token;
+    const token = req.cookies.jwtToken;
 
     // Check if token exists
     if (!token) {
@@ -19,7 +19,7 @@ export const JwtValidation = asyncHandler(async (req: Request, res: Response, ne
     }
 
     // Verify the token
-    jwt.verify(token, secret, (err: VerifyErrors | null, decoded: JwtPayload | undefined) => {
+    jwt.verify(token, secret, (err: any, decoded: any) => {
         if (err) {
             return new ApiResponse(res, 403, "JWT verification failed. Unauthorized", null, null);
         }
@@ -28,7 +28,6 @@ export const JwtValidation = asyncHandler(async (req: Request, res: Response, ne
         if (decoded) {
             req.user = decoded.user;
         }
-
 
         next();
     });

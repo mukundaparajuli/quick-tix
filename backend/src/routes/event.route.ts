@@ -4,7 +4,7 @@ import { JwtValidation } from "../middlewares/jwt-validation";
 
 const router = Router();
 
-router.post('/', RegisterEvent)
+router.post('/', JwtValidation, RegisterEvent)
 router.get('/', GetAllEvents)
 router.get('/:eventId', GetAnEvent)
 router.delete('/:eventId', JwtValidation, DeleteAnEvent)

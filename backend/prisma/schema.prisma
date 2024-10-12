@@ -56,12 +56,12 @@ model Event {
 }
 
 model Booking {
-  id         Int      @id @default(autoincrement())
-  eventId    Int
-  userId     Int
-  tickets    Int
-  totalPrice Float
-  createdAt  DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  eventId      Int
+  userId       Int
+  ticketCounts Int
+  totalPrice   Float
+  createdAt    DateTime @default(now())
 
   event Event @relation(fields: [eventId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
