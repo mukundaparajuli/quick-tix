@@ -105,12 +105,13 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const userPayload = {
+        id: validUser.id,
         fullName: validUser.fullName,
-        username,
+        username: validUser.username,
         email,
         role: validUser.role,
     }
-
+    console.log("user payload: ", userPayload)
     const secret = process.env.JWT_SECRET_KEY;
 
     if (!secret) {

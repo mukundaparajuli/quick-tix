@@ -3,11 +3,12 @@ import asyncHandler from "../utils/async-handler";
 import ApiResponse from "../types/api-response";
 import db from "../config/db";
 import { Event } from "../types/types";
+import { EventCategory } from "../enums";
 
 
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
-    const { title, description, date, location, price, totalTickets, availableTickets, organizerId } = await req.body;
+    const { title, description, date, location, price, totalTickets, availableTickets, organizerId, category } = await req.body;
 
     // check if required data are available or not
     if (!title || !description || !date || !location || !price || !totalTickets || !availableTickets) {
@@ -50,6 +51,7 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
         data: {
             title,
             description,
+            category,
             date,
             location,
             price,
@@ -113,6 +115,39 @@ export const GetAnEvent = asyncHandler(async (req: Request, res: Response) => {
 
     return new ApiResponse(res, 200, "event is here", event, null);
 })
+
+
+
+// get event by category
+export const GetEventsByCategory = asyncHandler(async (req: Request, res: Response) => {
+    const { category } = req.params;
+
+    // check if category is there or not
+    if (!category) {
+        return new ApiResponse(res, 404, "not category was passed", null, null);
+    }
+
+    const normalizedCategory = category.toUpperCase();
+
+    // check if category is among the one from the category enums
+    const isCategory = (category: string): boolean => {
+        return Object.values(EventCategory).includes(category as EventCategory);
+    }
+    console.log("is it from the category enum?", isCategory(normalizedCategory))
+    if (!isCategory(normalizedCategory as string)) {
+        return new ApiResponse(res, 400, "Invalid category", null, null);
+    }
+
+
+    // now we will return all the events from the given category
+    const events = await db.event.findMany({
+        where: { category: normalizedCategory as EventCategory }
+    })
+
+    return new ApiResponse(res, 200, "all the events for this category are here", events, null);
+})
+
+
 
 
 // delete an event

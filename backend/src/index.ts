@@ -13,7 +13,8 @@ const port = process.env.PORT;
 const morganFormat = ":method :url :status :response-time ms";
 
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
+app.use(express.static("public"))
 app.use(
     morgan(morganFormat, {
         stream: {

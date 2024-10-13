@@ -2,27 +2,33 @@ import { Request, Response } from "express";
 import asyncHandler from "../utils/async-handler";
 import ApiResponse from "../types/api-response";
 import db from "../config/db";
-import { Role } from "../enums";
-import { info, log } from "winston";
+import { Role, BookingStatus } from "../enums";
+import logger from "../logger";
+
+// Function to update booking status
+async function updateBookingStatus(bookingId: number, status: BookingStatus) {
+    await db.booking.update({
+        where: { id: bookingId },
+        data: { status },
+    });
+}
 
 // Create a booking
 export const RegisterBooking = asyncHandler(async (req: Request, res: Response) => {
     const { eventId, ticketCounts } = req.body;
     const user = req.user;
 
-    console.log(user);
+
     if (!user) {
         return new ApiResponse(res, 404, "User not found!", null, null);
     }
 
-    const userId = user.id;
+    const userId: number = user.id;
 
-    // Check if user is an attendee
     if (user.role !== Role.ATTENDEE) {
         return new ApiResponse(res, 403, "Only attendees can book an event", null, null);
     }
 
-    // Check if event exists
     const event = await db.event.findUnique({
         where: {
             id: Number(eventId)
@@ -33,30 +39,99 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
         return new ApiResponse(res, 404, "Event does not exist", null, null);
     }
 
-    // Check if ticketCount is valid
     if (ticketCounts < 1 || ticketCounts > event.availableTickets) {
         return new ApiResponse(res, 400, "Invalid Ticket Count", null, null);
     }
 
-    // Calculate total price
     const totalPrice = ticketCounts * event.price;
 
+    logger.info("booking is about to be made")
 
-    // Create the booking
     const booking = await db.booking.create({
-
         data: {
-            userId: Number(user.id),
-            ticketCounts: Number(ticketCounts),
-            totalPrice: Number(totalPrice),
-            event: {
-                connect: { id: Number(event.id) },
-            }
+            eventId: event.id,
+            userId: userId,
+            ticketCounts: ticketCounts,
+            totalPrice: totalPrice,
+            status: "PENDING"
         },
+        include: {
+            event: {
+                select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    category: true,
+                }
+            },
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    email: true,
+                    fullName: true,
+                }
+            }
+        }
     });
 
-    return new ApiResponse(res, 200, "Booking made successfully", booking, null);
+    if (!booking) {
+        return new ApiResponse(res, 404, "booking not found", null, null)
+    }
+
+    logger.info("booking made.. now its payments turn")
+
+    const LIVE_SECRET_KEY = process.env.LIVE_SECRET_KEY;
+
+    logger.info(LIVE_SECRET_KEY);
+
+    const initiateKhaltiPayment = async (bookingId: number, amount: number, user: any) => {
+        const payload = {
+            "return_url": "https://example.com/payment/",
+            "website_url": "https://example.com/",
+            "amount": amount * 100,
+            "purchase_order_id": bookingId.toString(),
+            "purchase_order_name": `Booking for event id : ${bookingId}`,
+            "customer_info": {
+                "name": user.fullName,
+                "email": user.email,
+            },
+        }
+
+
+        try {
+            const response = await fetch('https://a.khalti.com/api/v2/epayment/initiate/', {
+                headers: {
+                    'Authorization': `Key ${LIVE_SECRET_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                console.log(response);
+                throw new Error('Failed to initiate payment');
+            }
+
+            const paymentResponse = await response.json();
+
+            if (paymentResponse && paymentResponse.payment_url) {
+                updateBookingStatus(bookingId, BookingStatus.SUCCESSFUL)
+                return new ApiResponse(res, 200, "Booking made successfully. Proceed to payment.", { booking, paymentUrl: paymentResponse.payment_url }, null);
+            } else {
+                throw new Error('Payment URL not returned');
+            }
+        } catch (error) {
+            await db.booking.delete({ where: { id: bookingId } });
+            logger.error(error);
+            return new ApiResponse(res, 500, "Booking created but payment initiation failed", null, error);
+        }
+    };
+
+    await initiateKhaltiPayment(booking.id, totalPrice, user);
 });
+
 
 // Cancel a booking
 export const CancelBooking = asyncHandler(async (req: Request, res: Response) => {
@@ -91,7 +166,7 @@ export const CancelBooking = asyncHandler(async (req: Request, res: Response) =>
 
 // Get all the bookings for an event
 export const GetAllBookings = asyncHandler(async (req: Request, res: Response) => {
-    const { eventId } = req.body;
+    const { eventId } = req.params;
     const user = req.user;
 
     if (!user) {
@@ -184,3 +259,22 @@ export const GetABookingById = asyncHandler(async (req: Request, res: Response) 
 
     return new ApiResponse(res, 200, "Your booking is here", booking, null);
 });
+
+
+
+
+
+
+
+
+
+
+// SUCCESS 
+export const success = asyncHandler(async (req, res) => {
+    res.send("Payment Successful")
+})
+
+// FAILURE
+export const failure = asyncHandler(async (req, res) => {
+    res.send("Payment Failed")
+})

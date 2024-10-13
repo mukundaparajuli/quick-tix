@@ -27,6 +27,8 @@ export const JwtValidation = asyncHandler(async (req: Request, res: Response, ne
 
         if (decoded) {
             req.user = decoded.user;
+
+            console.log("debug bhaesi ko user", req.user)
         }
 
         next();

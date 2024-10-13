@@ -36,16 +36,17 @@ enum Role {
 }
 
 model Event {
-  id               Int      @id @default(autoincrement())
+  id               Int           @id @default(autoincrement())
   title            String
   description      String
+  category         EventCategory @default(OTHERS)
   date             DateTime
   location         String
   price            Float
   totalTickets     Int
   availableTickets Int
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   organizerId Int
   organizer   User @relation(fields: [organizerId], references: [id])
@@ -55,16 +56,42 @@ model Event {
   @@map("events")
 }
 
+enum EventCategory {
+  MUSIC_CONCERTS
+  STANDUP_COMEDY
+  IMPROV_COMEDY
+  THEATER_PERFORMANCES
+  MUSICALS
+  OPERA
+  DANCE_PERFORMANCES
+  MAGIC_SHOWS
+  FESTIVALS
+  SPORTS_EVENTS
+  TALENT_SHOWS
+  WORKSHOPS_CLASSES
+  CONFERENCES_TALKS
+  FAMILY_KIDS_EVENTS
+  VIRTUAL_EVENTS
+  OTHERS
+}
+
 model Booking {
-  id           Int      @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   eventId      Int
   userId       Int
   ticketCounts Int
   totalPrice   Float
-  createdAt    DateTime @default(now())
+  status       BookingStatus @default(PENDING)
+  createdAt    DateTime      @default(now())
 
   event Event @relation(fields: [eventId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
 
   @@map("bookings")
+}
+
+enum BookingStatus {
+  FAILED
+  PENDING
+  SUCCESSFUL
 }

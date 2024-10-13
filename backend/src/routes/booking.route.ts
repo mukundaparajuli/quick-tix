@@ -6,7 +6,7 @@ const router = Router();
 
 router.post('/', JwtValidation, RegisterBooking)
 router.get('/', JwtValidation, GetBookingsForAUser)
-router.get('/:eventId', JwtValidation, GetAllBookings)
+router.get('/e/:eventId', JwtValidation, GetAllBookings)
 router.delete('/:bookingId', JwtValidation, CancelBooking)
 router.get('/:bookingId', JwtValidation, GetABookingById)
 
