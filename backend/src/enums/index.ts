@@ -27,3 +27,9 @@ export enum BookingStatus {
     PENDING = 'PENDING',
     SUCCESSFUL = 'SUCCESSFUL'
 }
+
+export enum SeatStatus {
+    AVAILABLE = 'AVAILABLE',
+    BOOKED = 'BOOKED',
+    LOCKED = 'LOCKED',
+}

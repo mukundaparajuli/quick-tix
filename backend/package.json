@@ -23,6 +23,7 @@
     "morgan": "^1.10.0",
     "nodemon": "^3.1.7",
     "prisma-client": "^0.0.0",
+    "prisma-erd-generator": "^1.11.2",
     "winston": "^3.15.0",
     "winston-daily-rotate-file": "^5.0.0"
   },

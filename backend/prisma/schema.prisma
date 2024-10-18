@@ -4,6 +4,11 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "./erd.svg" // or specify your own path
+}
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,6 +17,8 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+//users 
 
 model User {
   id        Int      @id @default(autoincrement())
@@ -35,13 +42,16 @@ enum Role {
   ATTENDEE
 }
 
+// events
+
 model Event {
   id               Int           @id @default(autoincrement())
   title            String
   description      String
   category         EventCategory @default(OTHERS)
   date             DateTime
-  location         String
+  venue            Venue         @relation(fields: [venueId], references: [id])
+  venueId          Int
   price            Float
   totalTickets     Int
   availableTickets Int
@@ -51,7 +61,9 @@ model Event {
   organizerId Int
   organizer   User @relation(fields: [organizerId], references: [id])
 
-  bookings Booking[]
+  bookings     Booking[]
+  EventSection EventSection[]
+  Seat         Seat[]
 
   @@map("events")
 }
@@ -75,6 +87,52 @@ enum EventCategory {
   OTHERS
 }
 
+model Venue {
+  id        Int       @id @default(autoincrement())
+  name      String
+  address   String
+  events    Event[]
+  sections  Section[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// sections like VIP 
+model Section {
+  id        Int            @id @default(autoincrement())
+  name      String
+  venue     Venue          @relation(fields: [venueId], references: [id])
+  venueId   Int
+  rows      Row[]
+  events    EventSection[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+// Rows in each section (e.g., Row A, Row B)
+model Row {
+  id        Int      @id @default(autoincrement())
+  name      String
+  section   Section  @relation(fields: [sectionId], references: [id])
+  sectionId Int
+  seats     Seat[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// event section 
+model EventSection {
+  id        Int      @id @default(autoincrement())
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   Int
+  section   Section  @relation(fields: [sectionId], references: [id])
+  sectionId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// bookings
+
 model Booking {
   id           Int           @id @default(autoincrement())
   eventId      Int
@@ -87,6 +145,9 @@ model Booking {
   event Event @relation(fields: [eventId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
 
+  // Relations
+  seats Seat[] // Booking can now have multiple seats
+
   @@map("bookings")
 }
 
@@ -94,4 +155,28 @@ enum BookingStatus {
   FAILED
   PENDING
   SUCCESSFUL
+}
+
+// seats
+
+model Seat {
+  id         Int        @id @default(autoincrement())
+  seatNumber Int
+  row        Row        @relation(fields: [rowId], references: [id])
+  rowId      Int
+  status     SeatStatus @default(AVAILABLE)
+  bookings   Booking?   @relation(fields: [bookingId], references: [id]) // Relation to booking
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Event     Event?   @relation(fields: [eventId], references: [id])
+  eventId   Int?
+
+  bookingId Int? // Foreign key for booking
+}
+
+enum SeatStatus {
+  AVAILABLE
+  BOOKED
+  LOCKED
 }

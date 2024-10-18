@@ -15,7 +15,7 @@ async function updateBookingStatus(bookingId: number, status: BookingStatus) {
 
 // Create a booking
 export const RegisterBooking = asyncHandler(async (req: Request, res: Response) => {
-    const { eventId, ticketCounts } = req.body;
+    const { eventId, ticketCounts, seatId } = req.body;
     const user = req.user;
 
 
@@ -43,6 +43,12 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
         return new ApiResponse(res, 400, "Invalid Ticket Count", null, null);
     }
 
+    if (!seatId) {
+        return new ApiResponse(res, 404, "Seat no is unavailable, please set the seat no")
+    }
+
+
+
     const totalPrice = ticketCounts * event.price;
 
     logger.info("booking is about to be made")
@@ -53,7 +59,10 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
             userId: userId,
             ticketCounts: ticketCounts,
             totalPrice: totalPrice,
-            status: "PENDING"
+            status: "PENDING",
+            seats: {
+                connect: { id: Number(seatId) }
+            }
         },
         include: {
             event: {
@@ -70,6 +79,12 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
                     username: true,
                     email: true,
                     fullName: true,
+                }
+            },
+            seats: {
+                select: {
+                    id: true,
+                    seatNumber: true,
                 }
             }
         }
@@ -115,6 +130,7 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
             }
 
             const paymentResponse = await response.json();
+            console.log({ paymentResponse });
 
             if (paymentResponse && paymentResponse.payment_url) {
                 updateBookingStatus(bookingId, BookingStatus.SUCCESSFUL)
@@ -259,13 +275,6 @@ export const GetABookingById = asyncHandler(async (req: Request, res: Response) 
 
     return new ApiResponse(res, 200, "Your booking is here", booking, null);
 });
-
-
-
-
-
-
-
 
 
 

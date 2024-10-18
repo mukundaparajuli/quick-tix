@@ -11,4 +11,5 @@ router.use('/auth', AuthRoutes);
 router.use('/event', EventRoutes);
 router.use('/booking', BookingRoutes);
 
+
 export default router;
