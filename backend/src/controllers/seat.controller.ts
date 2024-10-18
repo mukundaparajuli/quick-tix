@@ -93,15 +93,6 @@ export const lockASeat = asyncHandler(async (req: Request, res: Response) => {
 
 
 // release a seat
-// we will take the booking id and seat no
-// check if booking id is present
-// check if seat is provided
-// check if the particular seat is availale inside the booking id
-// check the status of the seat
-// find the seat by id and look for the status
-// if the status !== BOOKED we can release only the booked seat
-// release the booked seat
-// update the booking
 
 export const releaseSeat = asyncHandler(async (req: Request, res: Response) => {
     const { bookingId, seatId } = req.body;
@@ -137,11 +128,11 @@ export const releaseSeat = asyncHandler(async (req: Request, res: Response) => {
     }
 
     // check if the particular seat is availble inside that booking
-    const isSeatPresent = booking?.seats.include(Number(seatId));
+    // const isSeatPresent = booking?.seats.include(Number(seatId));
 
-    if (!isSeatPresent) {
-        return new ApiResponse(res, 404, "Seat is not available in this booking!", null, null);
-    }
+    // if (!isSeatPresent) {
+    //     return new ApiResponse(res, 404, "Seat is not available in this booking!", null, null);
+    // }
 
     // now the seat is present and the seat is booked by the same user  and the status is booked
     // now we can release the seat

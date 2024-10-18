@@ -2,16 +2,16 @@ import { Request, Response } from "express";
 import asyncHandler from "../utils/async-handler";
 import ApiResponse from "../types/api-response";
 import db from "../config/db";
-import { Event } from "../types/types";
 import { EventCategory } from "../enums";
+import logger from "../logger";
 
 
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
-    const { title, description, date, location, price, totalTickets, availableTickets, organizerId, category } = await req.body;
+    const { title, description, date, venueId, price, totalTickets, availableTickets, organizerId, category } = await req.body;
 
     // check if required data are available or not
-    if (!title || !description || !date || !location || !price || !totalTickets || !availableTickets) {
+    if (!title || !description || !date || !price || !totalTickets || !availableTickets) {
         return new ApiResponse(res, 403, "All fields are mandatory to be filled", null, null);
     }
 
@@ -43,6 +43,17 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
         return new ApiResponse(res, 401, "You are not authorized to organize this event", null, null)
     }
 
+    // find venue by venueId
+    const venue = await db.venue.findUnique({
+        where: {
+            id: Number(venueId)
+        }
+    })
+
+    // check if such venue exists
+    if (!venue) {
+        return new ApiResponse(res, 404, "Venue not available", null, null);
+    }
 
 
     // now we can register the event
@@ -53,10 +64,15 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
             description,
             category,
             date,
-            location,
             price,
             totalTickets,
             availableTickets,
+            venue: {
+                connect: {
+                    id: venueId,
+                },
+            },
+
             organizer: {
                 connect: { id: organizerId },
             },
@@ -73,7 +89,7 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
         }
     });
 
-    console.log("event created successfully");
+    logger.info("event created successfully");
 
     return new ApiResponse(res, 200, "Event Registered Successfully", newEvent, null);
 })
