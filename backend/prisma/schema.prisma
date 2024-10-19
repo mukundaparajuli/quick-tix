@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator erd {
   provider = "prisma-erd-generator"
   output   = "./erd.svg" // or specify your own path
@@ -18,7 +12,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//users 
+// users 
 
 model User {
   id        Int      @id @default(autoincrement())
@@ -50,20 +44,21 @@ model Event {
   description      String
   category         EventCategory @default(OTHERS)
   date             DateTime
-  venue            Venue         @relation(fields: [venueId], references: [id])
-  venueId          Int
+  venueName        String // Venue name as a string
   price            Float
   totalTickets     Int
   availableTickets Int
+  locationId       Int? // Optional relation to Location
+  location         Location?     @relation(fields: [locationId], references: [id])
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
   organizerId Int
   organizer   User @relation(fields: [organizerId], references: [id])
 
-  bookings     Booking[]
-  EventSection EventSection[]
-  Seat         Seat[]
+  bookings     Booking[] // Relation to bookings
+  EventSection EventSection[] // Relation to event sections
+  Seat         Seat[] // Relation to seats
 
   @@map("events")
 }
@@ -87,24 +82,24 @@ enum EventCategory {
   OTHERS
 }
 
-model Venue {
-  id        Int       @id @default(autoincrement())
-  name      String
+// Location model for venue details
+model Location {
+  id        Int      @id @default(autoincrement())
   address   String
-  events    Event[]
-  sections  Section[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  city      String
+  state     String
+  country   String
+  events    Event[] // Events associated with this location
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// sections like VIP 
+// sections like VIP
 model Section {
   id        Int            @id @default(autoincrement())
   name      String
-  venue     Venue          @relation(fields: [venueId], references: [id])
-  venueId   Int
-  rows      Row[]
-  events    EventSection[]
+  events    EventSection[] // Relation to events
+  rows      Row[] // Relation to rows in this section
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 }
@@ -115,7 +110,7 @@ model Row {
   name      String
   section   Section  @relation(fields: [sectionId], references: [id])
   sectionId Int
-  seats     Seat[]
+  seats     Seat[] // Relation to seats in this row
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

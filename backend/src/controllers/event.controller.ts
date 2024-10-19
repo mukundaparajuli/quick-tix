@@ -2,18 +2,20 @@ import { Request, Response } from "express";
 import asyncHandler from "../utils/async-handler";
 import ApiResponse from "../types/api-response";
 import db from "../config/db";
-import { EventCategory } from "../enums";
+import { EventCategory, Role } from "../enums";
 import logger from "../logger";
 
 
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
-    const { title, description, date, venueId, price, totalTickets, availableTickets, organizerId, category } = await req.body;
+    const { title, description, date, venueName, location, price, totalTickets, availableTickets, organizerName, organizerEmail, category } = req.body;
 
-    // check if required data are available or not
-    if (!title || !description || !date || !price || !totalTickets || !availableTickets) {
+    // Check if all fields are present
+    if (!title || !description || !date || !venueName || !location || !price || !totalTickets || !availableTickets || !organizerName || !organizerEmail) {
         return new ApiResponse(res, 403, "All fields are mandatory to be filled", null, null);
     }
+
+    const { address, city, state, country } = location;
 
     // Validate date and number fields
     const eventDate = new Date(date);
@@ -25,74 +27,54 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
         return new ApiResponse(res, 400, "Invalid values for price or tickets.", null, null);
     }
 
-
-    // get organizer info
+    // Check if organizer exists
     const organizer = await db.user.findUnique({
-        where: {
-            id: organizerId,
-        }
-    })
+        where: { email: organizerEmail }
+    });
 
-    // check if organizer exists
     if (!organizer) {
-        return new ApiResponse(res, 404, "Organizer doesn't exist", null, null);
+        return new ApiResponse(res, 404, "Organizer not found", null, null);
     }
 
-    // check if the organizer is actually an organizer or an attendee
-    if (organizer.role !== 'ORGANIZER') {
-        return new ApiResponse(res, 401, "You are not authorized to organize this event", null, null)
+    // Check if the user is an organizer
+    if (organizer.role !== Role.ORGANIZER) {
+        return new ApiResponse(res, 401, "You are not authorized to organize this event", null, null);
     }
 
-    // find venue by venueId
-    const venue = await db.venue.findUnique({
-        where: {
-            id: Number(venueId)
-        }
-    })
+    // Create the location (no need to check if it exists already since the user provides the details)
+    const newLocation = await db.location.create({
+        data: {
+            address,
+            city,
+            state,
+            country,
+        },
+    });
 
-    // check if such venue exists
-    if (!venue) {
-        return new ApiResponse(res, 404, "Venue not available", null, null);
-    }
-
-
-    // now we can register the event
-
+    // Create the event
     const newEvent = await db.event.create({
         data: {
             title,
             description,
             category,
-            date,
+            date: eventDate,
             price,
             totalTickets,
             availableTickets,
-            venue: {
-                connect: {
-                    id: venueId,
-                },
-            },
-
-            organizer: {
-                connect: { id: organizerId },
-            },
-        }, include: {
-            organizer: {
-                select: {
-                    id: true,
-                    fullName: true,
-                    username: true,
-                    email: true,
-                    role: true,
-                }
-            },
-        }
+            venueName,
+            locationId: newLocation.id,  // Use the created location's ID
+            organizerId: organizer.id,
+        },
+        include: {
+            organizer: true,
+            location: true,
+        },
     });
 
-    logger.info("event created successfully");
-
     return new ApiResponse(res, 200, "Event Registered Successfully", newEvent, null);
-})
+});
+
+
 
 
 
@@ -212,3 +194,7 @@ export const DeleteAnEvent = asyncHandler(async (req: Request, res: Response) =>
 
     return new ApiResponse(res, 200, "event deleted successfully", deletedEvent, null);
 })
+
+
+// event registration lai complete garnu xa
+// flow ma afu clear hune tespaxi teskai anusar banauna khojne

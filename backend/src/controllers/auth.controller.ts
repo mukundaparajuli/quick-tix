@@ -108,7 +108,7 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
         id: validUser.id,
         fullName: validUser.fullName,
         username: validUser.username,
-        email,
+        email: validUser.email,
         role: validUser.role,
     }
     console.log("user payload: ", userPayload)
@@ -135,6 +135,17 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
 
 // logout user
 
-export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
 
-})
+export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
+    res.cookie('jwtToken', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        expires: new Date(0),
+    });
+
+    logger.info('User logged out successfully');
+
+    // Send a success response
+    return new ApiResponse(res, 200, "Logout successful", null, null);
+});
