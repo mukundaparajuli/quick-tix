@@ -8,14 +8,12 @@ import logger from "../logger";
 
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
-    const { title, description, date, venueName, location, price, totalTickets, availableTickets, organizerName, organizerEmail, category } = req.body;
+    const { title, description, date, price, totalTickets, availableTickets, organizerName, organizerEmail, category, locationId, venueId } = req.body;
 
     // Check if all fields are present
-    if (!title || !description || !date || !venueName || !location || !price || !totalTickets || !availableTickets || !organizerName || !organizerEmail) {
+    if (!title || !description || !date || !venueId || !locationId || !price || !totalTickets || !availableTickets || !organizerName || !organizerEmail) {
         return new ApiResponse(res, 403, "All fields are mandatory to be filled", null, null);
     }
-
-    const { address, city, state, country } = location;
 
     // Validate date and number fields
     const eventDate = new Date(date);
@@ -41,16 +39,6 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
         return new ApiResponse(res, 401, "You are not authorized to organize this event", null, null);
     }
 
-    // Create the location (no need to check if it exists already since the user provides the details)
-    const newLocation = await db.location.create({
-        data: {
-            address,
-            city,
-            state,
-            country,
-        },
-    });
-
     // Create the event
     const newEvent = await db.event.create({
         data: {
@@ -58,12 +46,12 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
             description,
             category,
             date: eventDate,
+            venue: { connect: { id: venueId } },
             price,
             totalTickets,
             availableTickets,
-            venueName,
-            locationId: newLocation.id,  // Use the created location's ID
-            organizerId: organizer.id,
+            location: { connect: { id: locationId } },
+            organizer: { connect: { id: organizer.id } },
         },
         include: {
             organizer: true,

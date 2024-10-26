@@ -44,12 +44,13 @@ model Event {
   description      String
   category         EventCategory @default(OTHERS)
   date             DateTime
-  venueName        String // Venue name as a string
+  venueId          Int
+  venue            Venue         @relation(fields: [venueId], references: [id])
   price            Float
   totalTickets     Int
   availableTickets Int
-  locationId       Int? // Optional relation to Location
-  location         Location?     @relation(fields: [locationId], references: [id])
+  locationId       Int
+  location         Location      @relation(fields: [locationId], references: [id])
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
@@ -82,6 +83,20 @@ enum EventCategory {
   OTHERS
 }
 
+// venue model
+model Venue {
+  id          Int      @id @default(autoincrement())
+  name        String
+  capacity    Int
+  amenities   String[]
+  description String?
+  location    Location @relation(fields: [locationId], references: [id])
+  locationId  Int
+  events      Event[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 // Location model for venue details
 model Location {
   id        Int      @id @default(autoincrement())
@@ -89,6 +104,7 @@ model Location {
   city      String
   state     String
   country   String
+  venues    Venue[] //Venues associated with this location
   events    Event[] // Events associated with this location
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
