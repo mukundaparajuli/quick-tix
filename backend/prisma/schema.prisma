@@ -57,9 +57,9 @@ model Event {
   organizerId Int
   organizer   User @relation(fields: [organizerId], references: [id])
 
-  bookings     Booking[] // Relation to bookings
-  EventSection EventSection[] // Relation to event sections
-  Seat         Seat[] // Relation to seats
+  bookings Booking[]
+  Section  Section[]
+  Seat     Seat[]
 
   @@map("events")
 }
@@ -112,12 +112,13 @@ model Location {
 
 // sections like VIP
 model Section {
-  id        Int            @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
-  events    EventSection[] // Relation to events
-  rows      Row[] // Relation to rows in this section
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  rows      Row[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Event     Event?   @relation(fields: [eventId], references: [id])
+  eventId   Int?
 }
 
 // Rows in each section (e.g., Row A, Row B)
@@ -126,18 +127,7 @@ model Row {
   name      String
   section   Section  @relation(fields: [sectionId], references: [id])
   sectionId Int
-  seats     Seat[] // Relation to seats in this row
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// event section 
-model EventSection {
-  id        Int      @id @default(autoincrement())
-  event     Event    @relation(fields: [eventId], references: [id])
-  eventId   Int
-  section   Section  @relation(fields: [sectionId], references: [id])
-  sectionId Int
+  seats     Seat[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -157,7 +147,7 @@ model Booking {
   user  User  @relation(fields: [userId], references: [id])
 
   // Relations
-  seats Seat[] // Booking can now have multiple seats
+  seats Seat[]
 
   @@map("bookings")
 }
