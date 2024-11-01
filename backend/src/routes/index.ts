@@ -15,7 +15,7 @@ router.use('/auth', AuthRoutes);
 router.use('/event', EventRoutes);
 router.use('/booking', BookingRoutes);
 router.use('/seat', SeatRoutes);
-router.use('/venue', VenueRoutes);
+// router.use('/venue', VenueRoutes);
 router.use('/payment', PaymentRoutes);
 router.use('/location', LocationRoutes);
 

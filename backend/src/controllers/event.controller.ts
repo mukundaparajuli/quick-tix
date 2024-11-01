@@ -8,7 +8,7 @@ import logger from "../logger";
 
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
-    const { title, description, date, price, totalTickets, availableTickets, organizerName, organizerEmail, category, locationId, venueId } = req.body;
+    const { title, description, date, price, totalTickets, availableTickets, organizerName, organizerEmail, category, locationId, venueId, sections } = req.body;
 
     // Check if all fields are present
     if (!title || !description || !date || !venueId || !locationId || !price || !totalTickets || !availableTickets || !organizerName || !organizerEmail) {
@@ -58,6 +58,34 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
             location: true,
         },
     });
+
+    // Create sections, rows, and seats in a batch
+    await Promise.all(sections.map(async (section: any) => {
+        const createdSection = await db.section.create({
+            data: {
+                eventId: newEvent.id,
+                name: section.sectionName,
+            },
+        });
+        await Promise.all(section.rows.map(async (row: any) => {
+            const createdRow = await db.row.create({
+                data: {
+                    sectionId: createdSection.id,
+                    rowNumber: row.rowNumber,
+                },
+            });
+            await Promise.all(row.seats.map(async (seat: any) => {
+                await db.seat.create({
+                    data: {
+                        rowId: createdRow.id,
+                        seatNumber: seat.seatNumber,
+                    },
+                });
+            }));
+        }));
+    }));
+
+    logger.info(`Event registered successfully: ${title} by ${organizerEmail}`);
 
     return new ApiResponse(res, 200, "Event Registered Successfully", newEvent, null);
 });
@@ -186,3 +214,31 @@ export const DeleteAnEvent = asyncHandler(async (req: Request, res: Response) =>
 
 // event registration lai complete garnu xa
 // flow ma afu clear hune tespaxi teskai anusar banauna khojne
+
+
+// create booking
+export const RegisterBooking = asyncHandler(async (req: Request, res: Response) => {
+    const { eventId, ticketCounts, seatIds } = req.body;
+
+    return await db.$transaction(async (tx) => {
+        // Your existing validation code here
+
+        // Lock seats with timeout
+        const LOCK_TIMEOUT = 15 * 60 * 1000; // 15 minutes
+        const lockExpiry = new Date(Date.now() + LOCK_TIMEOUT);
+
+        await tx.seat.updateMany({
+            where: { id: { in: seatIds } },
+            data: {
+                status: SeatStatus.LOCKED,
+                lockExpiresAt: lockExpiry
+            }
+        });
+
+        const booking = await tx.booking.create({
+            // Your existing booking creation code
+        });
+
+        return new ApiResponse(res, 200, "Booking created", booking, null);
+    });
+});

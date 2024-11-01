@@ -9,70 +9,90 @@ export const makePayment = asyncHandler(async (req: Request, res: Response) => {
     const { bookingId } = req.body;
     const user = req.user;
 
-    console.log("User: ", user);
-
-    const booking = await db.booking.findUnique({
-        where: { id: Number(bookingId) }
-    });
-
-    if (!booking) {
-        return new ApiResponse(res, 404, "Booking detail not available", null, null);
+    if (!user) {
+        return new ApiResponse(res, 404, "User not found!", null, null);
     }
 
-    const LIVE_SECRET_KEY = process.env.LIVE_SECRET_KEY;
-    if (!LIVE_SECRET_KEY) {
-        return new ApiResponse(res, 500, "Khalti live secret key is missing", null, null);
-    }
+    // Start transaction
+    const result = await db.$transaction(async (prisma) => {
+        const booking = await prisma.booking.findUnique({
+            where: { id: Number(bookingId) }
+        });
 
-    const initiateKhaltiPayment = async (bookingId: number, amount: number, user: any) => {
+        if (!booking) {
+            throw new Error("Booking detail not available");
+        }
+
+        const LIVE_SECRET_KEY = process.env.LIVE_SECRET_KEY;
+        if (!LIVE_SECRET_KEY) {
+            throw new Error("Khalti live secret key is missing");
+        }
+
+        // Move initiateKhaltiPayment logic inside transaction
+        const RETURN_URL = process.env.KHALTI_RETURN_URL;
+        const WEBSITE_URL = process.env.KHALTI_WEBSITE_URL;
+
+        if (!RETURN_URL || !WEBSITE_URL) {
+            throw new Error('Khalti return URL or website URL is missing');
+        }
+
         const payload = {
-            "return_url": "https://example.com/payment/",
-            "website_url": "https://example.com/",
-            "amount": 1300,                                                      // we have hardcoded the amount here for developement make sure to change it on production
-            "purchase_order_id": bookingId.toString(),
-            "purchase_order_name": `Booking for event id: ${bookingId}`,
+            "return_url": RETURN_URL,
+            "website_url": WEBSITE_URL,
+            "amount": booking.totalPrice * 100,
+            "purchase_order_id": booking.id.toString(),
+            "purchase_order_name": `Booking for event id: ${booking.id}`,
             "customer_info": {
                 "name": user.fullName,
                 "email": user.email,
             },
         };
 
-        try {
-            const response = await fetch('https://a.khalti.com/api/v2/epayment/initiate/', {
-                headers: {
-                    'Authorization': `Key ${LIVE_SECRET_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
+        const response = await fetch('https://a.khalti.com/api/v2/epayment/initiate/', {
+            headers: {
+                'Authorization': `Key ${LIVE_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
 
-            if (!response.ok) {
-                const errorDetails = await response.json();
-                console.error('Error details:', errorDetails);
-                throw new Error(`Failed to initiate payment: ${errorDetails.message || 'Unknown error'}`);
-            }
-
-            const paymentResponse = await response.json();
-            console.log({ paymentResponse });
-
-            if (paymentResponse && paymentResponse.payment_url) {
-                // Update booking status in DB
-                await db.booking.update({
-                    where: { id: booking.id },
-                    data: { status: BookingStatus.SUCCESSFUL }
-                });
-                return new ApiResponse(res, 200, "Booking made successfully. Proceed to payment.", { booking, paymentUrl: paymentResponse.payment_url }, null);
-            } else {
-                throw new Error('Payment URL not returned');
-            }
-        } catch (error) {
-            logger.error(error);
-            // Optionally delete the booking on failure
-            // await db.booking.delete({ where: { id: bookingId } });
-            return new ApiResponse(res, 500, "Booking created but payment initiation failed", null, error);
+        if (!response.ok) {
+            const errorDetails = await response.json();
+            logger.error('Khalti payment initiation error:', errorDetails);
+            throw new Error(`Failed to initiate payment: ${errorDetails.message || 'Unknown error'}`);
         }
-    };
 
-    await initiateKhaltiPayment(booking.id, booking.totalPrice, user);
+        const paymentResponse = await response.json();
+
+        // Create payment record
+
+        await prisma.payment.create({
+            data: {
+                bookingId: booking.id,
+                amount: booking.totalPrice,
+                paymentProvider: 'KHALTI',
+                paymentStatus: 'PENDING',
+                transactionId: paymentResponse.pidx || '',
+                paymentResponse: paymentResponse
+            }
+        });
+
+
+        return { booking, paymentResponse };
+    }, {
+        maxWait: 5000, // maximum time to wait for transaction
+        timeout: 10000  // maximum time for transaction to complete
+    });
+
+    return new ApiResponse(
+        res,
+        200,
+        "Payment initiated successfully",
+        {
+            booking: result.booking,
+            paymentUrl: result.paymentResponse.payment_url
+        },
+        null
+    );
 });

@@ -117,14 +117,14 @@ model Section {
   rows      Row[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Event     Event?   @relation(fields: [eventId], references: [id])
   eventId   Int?
+  Event     Event?   @relation(fields: [eventId], references: [id])
 }
 
 // Rows in each section (e.g., Row A, Row B)
 model Row {
   id        Int      @id @default(autoincrement())
-  name      String
+  rowNumber Int
   section   Section  @relation(fields: [sectionId], references: [id])
   sectionId Int
   seats     Seat[]
@@ -147,9 +147,32 @@ model Booking {
   user  User  @relation(fields: [userId], references: [id])
 
   // Relations
-  seats Seat[]
+  seats    Seat[]
+  payments Payment[]
 
   @@map("bookings")
+}
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  booking         Booking       @relation(fields: [bookingId], references: [id])
+  bookingId       Int           @unique
+  amount          Float
+  paymentProvider String
+  paymentStatus   PaymentStatus @default(PENDING)
+  transactionId   String?
+  paymentResponse Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+  REFUNDED
 }
 
 enum BookingStatus {

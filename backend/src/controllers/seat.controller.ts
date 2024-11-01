@@ -38,60 +38,6 @@ export const getEventAllSeats = asyncHandler(async (req: Request, res: Response)
 })
 
 
-
-
-// lock a seat 
-export const lockASeat = asyncHandler(async (req: Request, res: Response) => {
-    const { eventId, seatId } = req.body;
-
-    // check if event id and seat id are provided
-    if (!eventId || !seatId) {
-        return new ApiResponse(res, 400, "Event Id and Seat Id are not provided", null, null)
-    }
-
-    // if event id and seat id are provided
-    // find the event and the seat
-
-    // check if event is available
-    const event = await db.event.findUnique({
-        where: {
-            id: Number(eventId)
-        }
-    })
-
-    // if event not available
-    if (!event) {
-        return new ApiResponse(res, 404, "Event not found", null, null);
-    }
-
-    // check if the status of seat is available or not
-    // find that seat from that event
-    const seat = await db.seat.findUnique({
-        where: {
-            id: Number(seatId),
-            eventId: Number(eventId)
-        }
-    })
-
-    // if not seat there is no such seat for that event
-    if (!seat) {
-        return new ApiResponse(res, 404, "No such seat available for the event", null, null);
-    }
-
-    // now if the seat exists then check its availability
-    // only the seats with availble status can be locked
-
-    if (seat.status !== SeatStatus.AVAILABLE) {
-        return new ApiResponse(res, 403, "Only available seats can be locked", null, null);
-    }
-
-    // now if the seat status was available then convert it to locked
-    seat.status = SeatStatus.LOCKED;
-
-    return new ApiResponse(res, 200, 'Seat Locked!', null, null);
-})
-
-
 // release a seat
 
 export const releaseSeat = asyncHandler(async (req: Request, res: Response) => {
