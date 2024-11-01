@@ -6,6 +6,8 @@ import bcrypt from 'bcrypt'
 import { User } from "../types/types";
 import jwt from 'jsonwebtoken'
 import logger from "../logger";
+import { generateVerificationToken } from "../utils/generate-verification-code";
+import { sendVerificationEmail } from "../utils/send-verification-email";
 
 
 
@@ -42,17 +44,20 @@ export const RegisterUser = asyncHandler(async (req: Request, res: Response) => 
 
     const hashedPassword: string = await bcrypt.hash(password, 10);
 
-    const data: User = {
-        fullName,
-        username,
-        email,
-        role,
-        password: hashedPassword
-    }
-    console.log(data);
     const newUser: User = await db.user.create({
-        data: data
+        data: {
+            fullName,
+            username,
+            email,
+            role,
+            password: hashedPassword
+        }
     });
+
+    // send verification email
+    const verificationToken = generateVerificationToken(newUser);
+    const { data, error } = await sendVerificationEmail(newUser.email, verificationToken);
+    console.log(data, error);
 
     const { password: _, ...userWithoutPassword } = newUser;
     return new ApiResponse(res, 200, 'Register Successful', userWithoutPassword, null);
@@ -149,3 +154,31 @@ export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
     // Send a success response
     return new ApiResponse(res, 200, "Logout successful", null, null);
 });
+
+export const VerifyEmail = asyncHandler(async (req: Request, res: Response) => {
+    const { verificationToken } = req.params;
+
+    const decoded = jwt.verify(verificationToken, process.env.JWT_SECRET_KEY as string);
+    console.log(decoded);
+    if (!decoded || typeof decoded === 'string') {
+        return new ApiResponse(res, 400, "Invalid verification token", null, null);
+    }
+    logger.info("decoded: ", decoded.user.id)
+
+    const user = await db.user.findUnique({
+        where: {
+            id: decoded.user.id
+        }
+    })
+
+    if (!user) {
+        return new ApiResponse(res, 404, "User not found", null, null);
+    }
+
+    const updatedUser = await db.user.update({
+        where: { id: user.id },
+        data: { verified: true }
+    })
+
+    return new ApiResponse(res, 200, "Email verified successfully", updatedUser, null);
+})

@@ -33,6 +33,10 @@ app.use(
 app.use("/api/", routes)
 app.use(errorHandler);
 
+app.get("/", (req: Request, res: Response) => {
+    res.send("Server is running")
+})
+
 
 app.listen(port, () => {
     console.log("listening to the port " + port);
