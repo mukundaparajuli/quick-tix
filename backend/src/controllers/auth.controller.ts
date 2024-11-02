@@ -12,7 +12,6 @@ import { sendVerificationEmail } from "../utils/send-verification-email";
 
 
 // register a user
-
 export const RegisterUser = asyncHandler(async (req: Request, res: Response) => {
     const { fullName, username, email, password, role } = await req.body;
 
@@ -158,16 +157,21 @@ export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
 export const VerifyEmail = asyncHandler(async (req: Request, res: Response) => {
     const { verificationToken } = req.params;
 
+    logger.info("verification token: ", verificationToken)
     const decoded = jwt.verify(verificationToken, process.env.JWT_SECRET_KEY as string);
-    console.log(decoded);
+    logger.info("decoded: ", decoded)
+
     if (!decoded || typeof decoded === 'string') {
         return new ApiResponse(res, 400, "Invalid verification token", null, null);
     }
-    logger.info("decoded: ", decoded.user.id)
+
+    // decoded.id
+    const userId = decoded.id;
+    logger.info("user id: ", userId)
 
     const user = await db.user.findUnique({
         where: {
-            id: decoded.user.id
+            id: userId
         }
     })
 

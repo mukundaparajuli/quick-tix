@@ -1,6 +1,7 @@
 import { Role, SeatStatus } from "@prisma/client";
 
 export interface User {
+    id: number;
     fullName: string;
     username: string;
     email: string;

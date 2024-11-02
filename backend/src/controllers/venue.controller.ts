@@ -48,3 +48,36 @@ export const addVenue = asyncHandler(async (req: Request, res: Response) => {
 
 
 })
+
+export const getAllVenues = asyncHandler(async (req: Request, res: Response) => {
+    const venues = await db.venue.findMany();
+    return new ApiResponse(res, 200, "Venues fetched successfully", venues);
+})
+
+export const getVenueById = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const venue = await db.venue.findUnique({ where: { id: parseInt(id) } });
+    return new ApiResponse(res, 200, "Venue fetched successfully", venue);
+})
+
+export const updateVenue = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { name, capacity, amenities, description } = req.body;
+    const venue = await db.venue.update({ where: { id: parseInt(id) }, data: { name, capacity, amenities, description } });
+    return new ApiResponse(res, 200, "Venue updated successfully", venue);
+})
+
+export const deleteVenue = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    if (!id) {
+        return new ApiResponse(res, 400, "Venue id is required");
+    }
+
+
+    const venue = await db.venue.delete({ where: { id: parseInt(id) } });
+
+
+    return new ApiResponse(res, 200, "Venue deleted successfully", venue);
+})
+
