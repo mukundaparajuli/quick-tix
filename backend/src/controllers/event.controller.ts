@@ -217,28 +217,28 @@ export const DeleteAnEvent = asyncHandler(async (req: Request, res: Response) =>
 
 
 // create booking
-export const RegisterBooking = asyncHandler(async (req: Request, res: Response) => {
-    const { eventId, ticketCounts, seatIds } = req.body;
+// export const RegisterBooking = asyncHandler(async (req: Request, res: Response) => {
+//     const { eventId, ticketCounts, seatIds } = req.body;
 
-    return await db.$transaction(async (tx) => {
-        // Your existing validation code here
+//     return await db.$transaction(async (tx) => {
+//         // Your existing validation code here
 
-        // Lock seats with timeout
-        const LOCK_TIMEOUT = 15 * 60 * 1000; // 15 minutes
-        const lockExpiry = new Date(Date.now() + LOCK_TIMEOUT);
+//         // Lock seats with timeout
+//         const LOCK_TIMEOUT = 15 * 60 * 1000; // 15 minutes
+//         const lockExpiry = new Date(Date.now() + LOCK_TIMEOUT);
 
-        await tx.seat.updateMany({
-            where: { id: { in: seatIds } },
-            data: {
-                status: SeatStatus.LOCKED,
-                lockExpiresAt: lockExpiry
-            }
-        });
+//         await tx.seat.updateMany({
+//             where: { id: { in: seatIds } },
+//             data: {
+//                 status: SeatStatus.LOCKED,
+//                 lockExpiresAt: lockExpiry
+//             }
+//         });
 
-        const booking = await tx.booking.create({
-            // Your existing booking creation code
-        });
+//         const booking = await tx.booking.create({
+//             // Your existing booking creation code
+//         });
 
-        return new ApiResponse(res, 200, "Booking created", booking, null);
-    });
-});
+//         return new ApiResponse(res, 200, "Booking created", booking, null);
+//     });
+// });

@@ -5,11 +5,9 @@ import errorHandler from "./middlewares/error-handler";
 import cookieParser from 'cookie-parser';
 import logger from "./logger";
 import morgan from "morgan";
-import { methods as redisMethods } from "./config/redis";
 
 
 dotenv.config();
-redisMethods.connectRedis();
 
 const app = express();
 const port = process.env.PORT;
