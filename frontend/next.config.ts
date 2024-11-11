@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "mir-s3-cdn-cf.behance.net",
       },
+      {
+        protocol: "https",
+        hostname: "example.com"
+      }
     ],
   },
 };
