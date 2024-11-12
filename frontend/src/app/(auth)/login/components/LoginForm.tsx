@@ -11,6 +11,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Icons } from "@/components/icons";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import credentials from "next-auth/providers/credentials";
 
 interface LoginFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
@@ -26,21 +28,17 @@ const LoginForm = ({ className, ...props }: LoginFormProps) => {
 
     const mutation = useMutation({
         mutationFn: async (data: z.infer<typeof LoginSchema>) => {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
-                method: 'POST',
-                body: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+            const result = await signIn("credentials", {
+                redirect: true,
+                redirectTo: "/dashboard",
+                email: data.email,
+                password: data.password,
             });
-            if (response.ok) {
-                const result = await response.json();
-                console.log("result is:", result);
-                router.replace('/dashboard')
-                return result;
-            } console.log(await response.json())
+
+            console.log(result);
         }
     });
+
 
     const onSubmit = (formData: z.infer<typeof LoginSchema>) => {
         mutation.mutate(formData);

@@ -6,7 +6,7 @@ import { FaUser } from "react-icons/fa";
 
 
 export default function Header() {
-    return (<div className="fixed z-100 top-0 left-0 w-full h-20 bg-black flex items-center justify-between px-10 border-b-2 border-gray-700 shadow-lg">
+    return (<div className="fixed z-10 top-0 left-0 w-full h-20 bg-black flex items-center justify-between px-10 border-b-2 border-gray-700 shadow-lg">
         {/* logo */}
         <h1 className="text-4xl font-semibold text-white w-1/5">Quick Tix</h1>
 

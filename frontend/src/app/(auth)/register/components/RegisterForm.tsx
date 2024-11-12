@@ -25,7 +25,7 @@ const RegisterForm = ({ className, ...props }: RegisterFormProps) => {
             password: "",
             confirmPassword: ""
         }
-    }); 
+    });
 
     const mutation = useMutation({
         mutationFn: async (formData: z.infer<typeof RegisterSchema>) => {

@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/theme-provider"
 
 function Provider({ children }: any) {
     const [client] = useState(new QueryClient())
-
     return (
         <>
             <QueryClientProvider client={client}>

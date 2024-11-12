@@ -3,6 +3,7 @@ import { dummyEventData } from "@/constants/dummy-event-data";
 import { popularEventMenu } from "@/constants/events-menu";
 import { useState } from "react";
 import EventCard from "./EventCard";
+import { EventType } from "../../../../../types/eventType";
 
 export default function PopularEvents() {
     const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
@@ -28,10 +29,12 @@ export default function PopularEvents() {
                 }
             </div>
 
-            {/* display popular events in the form of card */}
-            <div className="flex gap-4 p-4 overflow-x-auto ">
-                {dummyEventData.map((event) => (
-                    <EventCard event={event} key={event.id} />
+            {/* display popular events in the form of card with variable height */}
+            <div className="flex flex-col overflow-x-clip flex-wrap gap-4 p-4 max-h-[450vh] overflow-y-auto">
+                {dummyEventData.map((event: EventType, index) => (
+                    <div className="flex-3 basis-[calc(25%_-_1rem)]" key={event.id}>
+                        <EventCard event={event} />
+                    </div>
                 ))}
             </div>
         </div>

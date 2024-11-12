@@ -5,6 +5,6 @@ export interface EventType {
     description: string;
     image: string;
     date: string;
-    location: string;
+    location?: string;
 }
 
