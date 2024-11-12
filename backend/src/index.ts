@@ -5,6 +5,7 @@ import errorHandler from "./middlewares/error-handler";
 import cookieParser from 'cookie-parser';
 import logger from "./logger";
 import morgan from "morgan";
+import cors from "cors";
 
 
 dotenv.config();
@@ -16,6 +17,7 @@ const morganFormat = ":method :url :status :response-time ms";
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static("public"))
+app.use(cors())
 app.use(
     morgan(morganFormat, {
         stream: {

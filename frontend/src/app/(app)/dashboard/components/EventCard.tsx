@@ -8,7 +8,7 @@ import Image from "next/image";
 
 export default function EventCard({ event, customHeight }: { event: EventType; customHeight?: string }) {
     return (
-        <Card className={`dark:bg-black text-black rounded-lg shadow-lg hover:shadow-xl transition-shadow p-4 ${customHeight || 'h-64'} w-full`}>
+        <Card className={`dark:bg-black text-black dark:text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow p-4 ${customHeight || 'h-64'} w-full`}>
             <CardHeader className="p-0">
                 <Image
                     alt={event.name}

@@ -5,7 +5,7 @@ import { bannerImageSrc, bannerSearchMenu } from "@/constants/banner-search-menu
 import { FaSearch } from "react-icons/fa";
 
 export default function Banner() {
-    return <div className="w-full flex items-center justify-center mt-40 z-10">
+    return <div className="w-full flex items-center justify-center mt-40 z-10 dark:bg-black">
         <div>
             <div className="relative">
                 <Image src={bannerImageSrc} alt="banner" width={1400} height={800} className="rounded-3xl " />

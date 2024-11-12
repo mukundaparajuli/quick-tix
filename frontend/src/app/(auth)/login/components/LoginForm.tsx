@@ -9,19 +9,42 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Icons } from "@/components/icons";
-
-
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 interface LoginFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 const LoginForm = ({ className, ...props }: LoginFormProps) => {
+    const router = useRouter();
     const form = useForm<z.infer<typeof LoginSchema>>({
         resolver: zodResolver(LoginSchema),
+        defaultValues: {
+            email: "",
+            password: ""
+        }
     });
 
+    const mutation = useMutation({
+        mutationFn: async (data: z.infer<typeof LoginSchema>) => {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            if (response.ok) {
+                const result = await response.json();
+                console.log("result is:", result);
+                router.replace('/dashboard')
+                return result;
+            } console.log(await response.json())
+        }
+    });
 
     const onSubmit = (formData: z.infer<typeof LoginSchema>) => {
-        console.log(formData)
+        mutation.mutate(formData);
+        console.log(formData);
     };
 
     return (
@@ -80,8 +103,8 @@ const LoginForm = ({ className, ...props }: LoginFormProps) => {
                             />
                         </div>
                         <div className="grid gap-1">
-                            <Button type="submit">
-                                Login
+                            <Button type="submit" disabled={mutation.isPending}>
+                                {mutation.isPending ? 'Logging in...' : 'Login'}
                             </Button>
                         </div>
                     </div>

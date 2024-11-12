@@ -20,7 +20,7 @@ export default function PopularEvents() {
                         <div
                             key={i.name}
                             onClick={() => setSelectedEvent(i.name)}
-                            className={`px-4 border-2 border-slate-300 rounded-full p-2 text-center hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black cursor-pointer transition-all duration-300 whitespace-nowrap ${selectedEvent === i.name ? 'dark:bg-white dark:text-black bg-black text-white' : ''}`}
+                            className={`px-4 border-2 border-slate-300 rounded-full p-2 text-center dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black cursor-pointer transition-all duration-300 whitespace-nowrap ${selectedEvent === i.name ? 'dark:bg-white dark:text-black bg-black text-white' : ''}`}
                         >
                             {i.name}
                         </div>

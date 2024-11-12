@@ -8,6 +8,7 @@ const validatePasswordFormat = (password: string): boolean => {
 
 const RegisterSchema = z
     .object({
+        username: z.string(),
         email: z.string().trim().email("Email address is invalid"),
         fullName: z
             .string()
