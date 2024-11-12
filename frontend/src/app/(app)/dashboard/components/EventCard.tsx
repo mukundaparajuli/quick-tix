@@ -9,7 +9,7 @@ import { FaCalendar, FaLocationArrow, FaMap, FaMapMarkedAlt, FaMapMarker, FaMapM
 
 export default function EventCard({ event }: { event: EventType }) {
     return (
-        <Card className="dark:bg-black text-black dark:text-white rounded-full shadow-lg hover:shadow-xl transition-shadow p-0 w-[22vw] border-none m-0 cursor-pointer">
+        <Card className="dark:bg-black text-black dark:text-white rounded-full shadow-lg hover:shadow-2xl scale-95 transition-all duration-300 p-0 w-[22vw] border-none m-0 cursor-pointer hover:scale-105">
             <CardHeader className="p-0">
                 <Image
                     alt={event.name}

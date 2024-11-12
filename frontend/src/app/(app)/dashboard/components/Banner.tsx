@@ -19,7 +19,7 @@ export default function Banner() {
                 </div>
             </div>
 
-            <div className="absolute top-[40rem] left-0 w-full flex items-center justify-center ">
+            <div className="absolute top-[40rem] left-0 w-full flex items-center justify-center hover:scale-105 transition-all duration-300">
                 <div className="dark:bg-black/90 bg-white  rounded-full px-4 py-2 flex gap-4 border-2 border-slate-500 justify-between items-center">
                     {bannerSearchMenu.map((item, index) => (
                         <div className="flex justify-center items-center gap-8" key={index}>

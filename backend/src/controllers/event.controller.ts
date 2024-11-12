@@ -242,3 +242,19 @@ export const DeleteAnEvent = asyncHandler(async (req: Request, res: Response) =>
 //         return new ApiResponse(res, 200, "Booking created", booking, null);
 //     });
 // });
+
+
+
+// get popular events
+export const getPopularEvents = asyncHandler(async (req: Request, res: Response) => {
+    const events = await db.event.findMany({
+        orderBy: {
+            bookings: { _count: 'desc' }
+        },
+        include: {
+            location: true,
+            venue: true,
+        },
+        take: 23
+    })
+})
