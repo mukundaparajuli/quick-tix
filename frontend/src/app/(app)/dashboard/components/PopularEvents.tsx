@@ -9,16 +9,27 @@ import { useQuery } from "@tanstack/react-query";
 export default function PopularEvents() {
     const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
     const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+
     // Use React Query to fetch popular events
-    const { data: popularEvents = dummyEventData, isLoading, isError } = useQuery({
+    let { data: popularEvents = dummyEventData, isLoading, isError } = useQuery({
         queryKey: ["popular-events"],
         queryFn: async () => {
             console.log(process.env.NEXT_PUBLIC_BACKEND_URL)
-            const response = await fetch(`${baseUrl}/event/popular-events`);
-            if (!response.ok) throw new Error("Failed to fetch popular events");
-            return await response.json();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/event/popular-events`, {
+                method: 'GET',
+            })
+            const events = await res.json()
+            console.log(events);
+            if (res.ok && events) {
+                return events
+            }
+            return new Error("Login Unsuccessful")
+
         },
     });
+
+    popularEvents = popularEvents.length > 0 ? popularEvents : dummyEventData;
 
     return (
         <div className="p-5 bg-white dark:bg-black flex flex-col gap-4">
@@ -47,7 +58,7 @@ export default function PopularEvents() {
 
             {/* Display popular events in the form of cards */}
             <div className="flex flex-col overflow-x-clip flex-wrap gap-4 p-4 max-h-[450vh] overflow-y-auto">
-                {popularEvents.map((event: EventType) => (
+                {Array.isArray(popularEvents) && popularEvents.map((event: EventType) => (
                     <div className="flex-3 basis-[calc(50%_-_1rem)] md:basis-[calc(25%_-_1rem)]" key={event.id}>
                         <EventCard event={event} />
                     </div>

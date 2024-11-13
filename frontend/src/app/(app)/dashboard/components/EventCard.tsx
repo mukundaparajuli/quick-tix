@@ -6,10 +6,13 @@ import {
 import { EventType } from "../../../../../types/eventType";
 import Image from "next/image";
 import { FaCalendar, FaLocationArrow, FaMap, FaMapMarkedAlt, FaMapMarker, FaMapMarkerAlt, FaSearchLocation } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 export default function EventCard({ event }: { event: EventType }) {
+    const router = useRouter();
     return (
-        <Card className="dark:bg-black text-black dark:text-white rounded-full shadow-lg hover:shadow-2xl scale-95 transition-all duration-300 p-0 w-[22vw] border-none m-0 cursor-pointer hover:scale-105">
+        <Card className="dark:bg-black text-black dark:text-white rounded-full shadow-lg hover:shadow-2xl scale-95 transition-all duration-300 p-0 w-[22vw] border-none m-0 cursor-pointer hover:scale-105"
+            onClick={() => { router.replace('dashboard/event/' + event.id) }}>
             <CardHeader className="p-0">
                 <Image
                     alt={event.name}

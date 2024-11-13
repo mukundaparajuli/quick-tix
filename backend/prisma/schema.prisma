@@ -37,8 +37,6 @@ enum Role {
   ATTENDEE
 }
 
-// events
-
 model Event {
   id               Int           @id @default(autoincrement())
   title            String
@@ -46,17 +44,17 @@ model Event {
   category         EventCategory @default(OTHERS)
   date             DateTime
   venueId          Int
-  venue            Venue         @relation(fields: [venueId], references: [id])
   price            Float
   totalTickets     Int
   availableTickets Int
+  organizerId      Int
   locationId       Int
-  location         Location      @relation(fields: [locationId], references: [id])
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
-  organizerId Int
-  organizer   User @relation(fields: [organizerId], references: [id])
+  venue     Venue    @relation(fields: [venueId], references: [id])
+  location  Location @relation(fields: [locationId], references: [id])
+  organizer User     @relation(fields: [organizerId], references: [id])
 
   bookings Booking[]
   Section  Section[]

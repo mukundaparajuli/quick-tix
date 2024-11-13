@@ -18,20 +18,42 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     body: JSON.stringify(credentials),
                 })
                 const user = await res.json()
-                console.log(user);
+                console.log("user is here:", user);
                 if (res.ok && user) {
-                    return user
+
+                    return user.data
                 }
                 return new Error("Login Unsuccessful")
             },
         }),
     ],
+
     pages: {
         signIn: "/login"
     },
     session: {
         strategy: "jwt",
     },
-
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+                token.fullName = user?.fullName;
+                token.username = user?.username;
+                token.role = user?.role;
+                token.email = user.email;
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            session.user.id = token.id as string;
+            session.user.role = token.role as string;
+            session.user.email = token.email as string;
+            session.user.fullName = token.fullName as string;
+            session.user.username = token.username as string;
+            return session;
+        },
+    },
+    debug: true,
     secret: process.env.AUTH_SECRET,
 })

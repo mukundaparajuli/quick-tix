@@ -1,13 +1,20 @@
-import { Role, SeatStatus } from "@prisma/client";
+import { SeatStatus } from "@prisma/client";
+import { Role } from "../enums";
+
 
 export interface User {
-    id: number;
+    id: string;
     fullName: string;
     username: string;
     email: string;
-    role: Role,
-    password: string;
 };
+
+export interface Organizer extends User {
+    role: Role.ORGANIZER
+}
+export interface Attendee extends User {
+    role: Role.ATTENDEE
+}
 
 export interface Event {
     title: string;
@@ -19,6 +26,16 @@ export interface Event {
     availableTickets: number;
     organizer: User;
     bookings: []
+}
+
+export interface Venue {
+    id: string;
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    capacity: number;
 }
 
 export interface Seat {

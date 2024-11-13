@@ -4,19 +4,37 @@ import ApiResponse from "../types/api-response";
 import db from "../config/db";
 import { EventCategory, Role } from "../enums";
 import logger from "../logger";
+import { addLocation, addVenue } from "../services";
+
 
 
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
-    const { title, description, date, price, totalTickets, availableTickets, organizerName, organizerEmail, category, locationId, venueId, sections } = req.body;
+    const { title, description, date, price, totalTickets, availableTickets, organizerName, organizerEmail, category, sections, location, venue } = req.body;
 
     // Check if all fields are present
-    if (!title || !description || !date || !venueId || !locationId || !price || !totalTickets || !availableTickets || !organizerName || !organizerEmail) {
+    if (!title || !description || !date || !venue || !location || !price || !totalTickets || !availableTickets || !organizerName || !organizerEmail) {
         return new ApiResponse(res, 403, "All fields are mandatory to be filled", null, null);
     }
 
+    // register the location first
+    const { address, city, country, state } = location;
+    const loc = await addLocation({ address, city, country, state })
+    const locId = loc.id;
+
+    // register the venue here
+    let venueId;
+    {
+        const { name, description, capacity, amenities } = venue;
+        const ven = await addVenue({ name, description, amenities, capacity, locId });
+        venueId = ven.id;
+    }
+
+
     // Validate date and number fields
     const eventDate = new Date(date);
+
+
     if (isNaN(eventDate.getTime()) || eventDate < new Date()) {
         return new ApiResponse(res, 400, "Invalid or past event date.", null, null);
     }
@@ -50,7 +68,7 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
             price,
             totalTickets,
             availableTickets,
-            location: { connect: { id: locationId } },
+            location: { connect: { id: locId } },
             organizer: { connect: { id: organizer.id } },
         },
         include: {
@@ -89,8 +107,6 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
     return new ApiResponse(res, 200, "Event Registered Successfully", newEvent, null);
 });
-
-
 
 
 
@@ -161,11 +177,7 @@ export const GetEventsByCategory = asyncHandler(async (req: Request, res: Respon
     return new ApiResponse(res, 200, "all the events for this category are here", events, null);
 })
 
-
-
-
 // delete an event
-
 export const DeleteAnEvent = asyncHandler(async (req: Request, res: Response) => {
     const { eventId } = req.params;
     const user = req.user;
@@ -247,6 +259,7 @@ export const DeleteAnEvent = asyncHandler(async (req: Request, res: Response) =>
 
 // get popular events
 export const getPopularEvents = asyncHandler(async (req: Request, res: Response) => {
+    console.log("hello")
     const events = await db.event.findMany({
         orderBy: {
             bookings: { _count: 'desc' }
@@ -257,4 +270,5 @@ export const getPopularEvents = asyncHandler(async (req: Request, res: Response)
         },
         take: 23
     })
+    return new ApiResponse(res, 200, "Popular Events are here!", events, null)
 })
