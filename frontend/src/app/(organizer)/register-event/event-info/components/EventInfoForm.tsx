@@ -8,12 +8,36 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { RegisterEventSchema } from "../../../../../../schemas";
-import { Textarea } from "@/components/ui/textarea";
-import { EventCategory } from "../../../../../../enums/event-category.enum";
+import EventInformationForm from "./event-info-form";
+import LocationInfoForm from "./location-info-form";
+import { useState } from "react";
+import VenueInfoForm from "./venue-info-form";
 
 interface RegisterEventFormProps extends React.HTMLAttributes<HTMLFormElement> { }
 
+// Define the steps and fields to validate for each step
+const steps = [
+    {
+        id: 'Step 1',
+        name: "Event Information",
+        fields: ['title', 'description', 'date', 'totalTickets', 'availableTickets', 'price', 'organizerName', 'organizerEmail', 'category']
+    },
+    {
+        id: 'Step 2',
+        name: 'Location Information',
+        fields: ['location.address', 'location.city', 'location.state', 'location.country']
+    },
+    {
+        id: 'Step 3',
+        name: 'Venue Information',
+        fields: ['venue.name', 'venue.description', 'venue.capacity', 'venue.amenities']
+    }
+];
+
 export default function EventInfoForm({ className, ...props }: RegisterEventFormProps) {
+    const [previousStep, setPreviousStep] = useState(0);
+    const [currentStep, setCurrentStep] = useState(0);
+
     const form = useForm<z.infer<typeof RegisterEventSchema>>({
         resolver: zodResolver(RegisterEventSchema),
         defaultValues: {
@@ -21,6 +45,8 @@ export default function EventInfoForm({ className, ...props }: RegisterEventForm
             description: "",
             date: new Date(),
             totalTickets: 0,
+            availableTickets: 0,
+            price: 0,
             organizerName: "",
             organizerEmail: "",
             category: "",
@@ -34,13 +60,20 @@ export default function EventInfoForm({ className, ...props }: RegisterEventForm
                 name: "",
                 description: "",
                 capacity: 0,
-                amenities: []
+                amenities: "",
             },
             sections: ""
         }
     });
 
     const onSubmit = async (formData: any) => {
+        console.log(formData);
+
+        // Convert amenities from a string to an array if necessary
+        if (typeof formData.venue.amenities === 'string') {
+            formData.venue.amenities = formData.venue.amenities.split(',').map((item: string) => item.trim());
+        }
+
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/event`, {
                 method: 'POST',
@@ -61,255 +94,110 @@ export default function EventInfoForm({ className, ...props }: RegisterEventForm
         }
     };
 
+    // Move to the next step after validating current step fields
+    const next = async () => {
+        const fieldsToValidate = steps[currentStep].fields;
+
+        // Trigger validation only for the fields in the current step
+        const isValid = await form.trigger(fieldsToValidate);
+
+        if (isValid) {
+            if (currentStep < steps.length - 1) {
+                // If we're on the last step, submit the form
+                if (currentStep === steps.length - 2) {
+                    await form.handleSubmit(onSubmit)();
+                }
+                setPreviousStep(currentStep);
+                setCurrentStep((step) => step + 1);
+            }
+        } else {
+            console.log('Validation failed on current step');
+        }
+    };
+
+    // Go to the previous step
+    const prev = () => {
+        if (currentStep > 0) {
+            setPreviousStep(currentStep);
+            setCurrentStep((step) => step - 1);
+        }
+    };
+
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className={cn("grid gap-6", className)} {...props}>
+        <div>
+            <nav aria-label='Progress'>
+                <ol role='list' className='space-y-4 md:flex md:space-x-8 md:space-y-0'>
+                    {steps.map((step, index) => (
+                        <li key={step.name} className='md:flex-1'>
+                            {currentStep > index ? (
+                                <div className='group flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4'>
+                                    <span className='text-sm font-medium text-sky-600 transition-colors '>
+                                        {step.id}
+                                    </span>
+                                    <span className='text-sm font-medium'>{step.name}</span>
+                                </div>
+                            ) : currentStep === index ? (
+                                <div
+                                    className='flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4'
+                                    aria-current='step'
+                                >
+                                    <span className='text-sm font-medium text-sky-600'>
+                                        {step.id}
+                                    </span>
+                                    <span className='text-sm font-medium'>{step.name}</span>
+                                </div>
+                            ) : (
+                                <div className='group flex w-full flex-col border-l-4 border-gray-200 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4'>
+                                    <span className='text-sm font-medium text-gray-500 transition-colors'>
+                                        {step.id}
+                                    </span>
+                                    <span className='text-sm font-medium'>{step.name}</span>
+                                </div>
+                            )}
+                        </li>
+                    ))}
+                </ol>
+            </nav>
 
-                {/* Title */}
-                <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Title</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Event Title" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className={cn("grid gap-6", className)} {...props}>
+                    {/* Event Information */}
+                    {currentStep === 0 && <EventInformationForm form={form} />}
 
-                {/* Description */}
-                <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Description</FormLabel>
-                            <FormControl>
-                                <Textarea placeholder="Event Description" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    {/* Location Fields */}
+                    {currentStep === 1 && <LocationInfoForm form={form} />}
 
-                {/* Date */}
-                <FormField
-                    control={form.control}
-                    name="date"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Date</FormLabel>
-                            <FormControl>
-                                <Input
-                                    type="date"
-                                    placeholder="Pick a date"
-                                    {...field}
-                                    value={
-                                        field.value
-                                            ? field.value.toISOString().split("T")[0]
-                                            : ""
-                                    }
-                                    onChange={(e) => field.onChange(new Date(e.target.value))}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    {/* Venue Fields */}
+                    {currentStep === 2 && <VenueInfoForm form={form} />}
 
-                {/* Total Tickets */}
-                <FormField
-                    control={form.control}
-                    name="totalTickets"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Total Tickets</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="Total Tickets" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    {/* Sections */}
+                    <FormField
+                        control={form.control}
+                        name="sections"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Sections</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Event Sections" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                {/* Organizer Name */}
-                <FormField
-                    control={form.control}
-                    name="organizerName"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Organizer Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Organizer Name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    {/* Submit Button */}
+                    <Button type="submit">Register Event</Button>
 
-                {/* Organizer Email */}
-                <FormField
-                    control={form.control}
-                    name="organizerEmail"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Organizer Email</FormLabel>
-                            <FormControl>
-                                <Input type="email" placeholder="Organizer Email" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Category */}
-                <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Category</FormLabel>
-                            <FormControl>
-                                <select {...field} className="border rounded p-2">
-                                    {Object.values(EventCategory).map((category) => (
-                                        <option key={category} value={category}>{category}</option>
-                                    ))}
-                                </select>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Location Fields */}
-                <FormField
-                    control={form.control}
-                    name="location.address"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Address</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Location Address" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="location.city"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>City</FormLabel>
-                            <FormControl>
-                                <Input placeholder="City" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="location.state"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>State</FormLabel>
-                            <FormControl>
-                                <Input placeholder="State" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="location.country"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Country</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Country" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Venue Fields */}
-                <FormField
-                    control={form.control}
-                    name="venue.name"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Venue Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Venue Name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="venue.description"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Venue Description</FormLabel>
-                            <FormControl>
-                                <Textarea placeholder="Venue Description" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="venue.capacity"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Capacity</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="Venue Capacity" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="venue.amenities"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Amenities</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Comma-separated amenities" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Sections */}
-                <FormField
-                    control={form.control}
-                    name="sections"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Sections</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Event Sections" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Submit Button */}
-                <Button type="submit">Register Event</Button>
-            </form>
-        </Form>
+                    <div className='mt-6 flex items-center justify-between'>
+                        <button type='button' onClick={prev} className='text-gray-500'>
+                            Back
+                        </button>
+                        <button type='button' onClick={next} className='text-sky-600'>
+                            {currentStep === steps.length - 1 ? 'Submit' : 'Next'}
+                        </button>
+                    </div>
+                </form>
+            </Form>
+        </div>
     );
 }

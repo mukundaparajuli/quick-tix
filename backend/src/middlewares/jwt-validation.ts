@@ -5,6 +5,7 @@ import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import logger from "../logger";
 
 export const JwtValidation = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.cookies);
     const token = req.cookies.jwtToken;
 
     if (!token) {
@@ -22,10 +23,11 @@ export const JwtValidation = asyncHandler(async (req: Request, res: Response, ne
             return new ApiResponse(res, 403, "JWT verification failed. Unauthorized", null, null);
         }
 
-        logger.info("Decoded Token: ", decoded); // Log full decoded token
+        logger.info("Decoded Token: ");
+        logger.info({ decoded });
 
         if (decoded) {
-            req.user = decoded.user; // Assign the full user payload to req.user
+            req.user = decoded.user;
         }
 
         next();

@@ -1,7 +1,6 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
         Credentials({
@@ -10,20 +9,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 password: { label: "Password", type: "password" },
             },
             authorize: async (credentials) => {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(credentials),
-                })
-                const user = await res.json()
-                console.log("user is here:", user);
-                if (res.ok && user) {
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        credentials: "include",
+                        body: JSON.stringify(credentials),
+                    })
 
+                    if (!res.ok) {
+                        throw new Error("Login failed")
+                    }
+
+                    const user = await res.json()
+                    console.log("user is here:", user);
                     return user.data
+                } catch (error) {
+                    console.error("Auth error:", error)
+                    return null
                 }
-                return new Error("Login Unsuccessful")
             },
         }),
     ],
@@ -31,9 +37,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     pages: {
         signIn: "/login"
     },
+
     session: {
         strategy: "jwt",
+        maxAge: 24 * 60 * 60, // 24 hours
     },
+
+    cookies: {
+        sessionToken: {
+            name: 'next-auth.session-token',
+            options: {
+                httpOnly: true,
+                sameSite: 'lax',
+                path: '/',
+                secure: process.env.NODE_ENV === 'production'
+            }
+        }
+    },
+
+
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
@@ -54,6 +76,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return session;
         },
     },
-    debug: true,
+
     secret: process.env.AUTH_SECRET,
 })

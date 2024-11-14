@@ -11,6 +11,7 @@ import { addLocation, addVenue } from "../services";
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
     const { title, description, date, price, totalTickets, availableTickets, organizerName, organizerEmail, category, sections, location, venue } = req.body;
+    console.log(req.body)
 
     // Check if all fields are present
     if (!title || !description || !date || !venue || !location || !price || !totalTickets || !availableTickets || !organizerName || !organizerEmail) {
@@ -204,9 +205,9 @@ export const DeleteAnEvent = asyncHandler(async (req: Request, res: Response) =>
     }
 
     // the event exists now we will check if the user is an organizer or not
-    if (user.role !== 'ORGANIZER') {
-        return new ApiResponse(res, 403, "you are not authorized to delete this event", null, null);
-    }
+    // if (user.role !== 'ORGANIZER') {
+    //     return new ApiResponse(res, 403, "you are not authorized to delete this event", null, null);
+    // }
 
     // check if the user is the organizer of this particular event or not
     if (user.id !== event.organizerId) {

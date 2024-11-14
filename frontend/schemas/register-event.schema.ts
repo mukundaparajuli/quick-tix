@@ -14,7 +14,7 @@ const VenueSchema = z.object({
     name: z.string(),
     description: z.string(),
     capacity: z.number(),
-    amenities: z.array(z.string())
+    amenities: z.string()
 });
 
 // Define RegisterEventSchema
@@ -23,12 +23,15 @@ const RegisterEventSchema = z.object({
     description: z.string(),
     date: z.date(),
     totalTickets: z.number(),
+    availableTickets: z.number(),
+    price: z.number(),
     organizerName: z.string(),
     organizerEmail: z.string().email("Please provide a valid email"),
-    category: z.enum([...Object.values(EventCategory)] as [string, ...string[]]),
+    category: z.enum([...Object.values(EventCategory)] as [string, ...string[]]).optional(),
     location: LocationSchema,
     venue: VenueSchema,
     sections: z.string()
 });
 
 export default RegisterEventSchema;
+

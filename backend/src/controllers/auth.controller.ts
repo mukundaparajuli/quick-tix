@@ -125,14 +125,24 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
     // Generate tokens
     const jwtToken = jwt.sign({ user: userPayload }, secret, { expiresIn: '1d' });
 
+    console.log("jwt token=", jwtToken);
+
     // store the tokens in cookies 
     res.cookie('jwtToken', jwtToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000,
     });
 
+    // Set additional headers
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // Log cookies for debugging
+    console.log("Setting cookie:", jwtToken);
+    console.log("Cookies in request:", req.cookies);
+
+    console.log("cookies are here: ", req.cookies);
     return new ApiResponse(res, 200, "Login Successful", userPayload, null);
 })
 

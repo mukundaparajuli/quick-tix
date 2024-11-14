@@ -3,10 +3,10 @@ import { Role } from "../enums";
 
 
 export interface User {
-    id: string;
     fullName: string;
     username: string;
     email: string;
+    password: string;
 };
 
 export interface Organizer extends User {

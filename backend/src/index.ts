@@ -17,7 +17,10 @@ const morganFormat = ":method :url :status :response-time ms";
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static("public"))
-app.use(cors())
+app.use(cors({
+    origin: "*",
+    credentials: true,
+}))
 app.use(
     morgan(morganFormat, {
         stream: {
