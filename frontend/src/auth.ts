@@ -1,5 +1,6 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
+import { User } from "next-auth";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
@@ -17,65 +18,58 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         },
                         credentials: "include",
                         body: JSON.stringify(credentials),
-                    })
+                    });
 
                     if (!res.ok) {
-                        throw new Error("Login failed")
+                        const errorData = await res.json();
+                        console.log("Login failed:", errorData);
+                        throw new Error(errorData.message || "Login failed");
                     }
+                    const data = await res.json();
+                    console.log(data.data);
+                    console.log(data.data.userPayload);
 
-                    const user = await res.json()
-                    console.log("user is here:", user);
-                    return user.data
+
+                    return {
+                        fullName: data.data.userPayload.fullName,
+                        email: data.data.userPayload.email,
+                        username: data.data.userPayload.username,
+                        role: data.data.userPayload.role,
+                        accessToken: data.data.jwtToken,
+                    } as User
+
                 } catch (error) {
-                    console.error("Auth error:", error)
-                    return null
+                    console.log("Auth error:", error);
+                    return null;
                 }
             },
         }),
     ],
-
-    pages: {
-        signIn: "/login"
-    },
-
-    session: {
-        strategy: "jwt",
-        maxAge: 24 * 60 * 60, // 24 hours
-    },
-
-    cookies: {
-        sessionToken: {
-            name: 'next-auth.session-token',
-            options: {
-                httpOnly: true,
-                sameSite: 'lax',
-                path: '/',
-                secure: process.env.NODE_ENV === 'production'
-            }
-        }
-    },
-
-
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                token.id = user.id;
-                token.fullName = user?.fullName;
-                token.username = user?.username;
-                token.role = user?.role;
+                token.accessToken = user.accessToken;
+                token.fullName = user.fullName;
                 token.email = user.email;
+                token.username = user.username;
+                token.role = user.role;
             }
             return token;
         },
         async session({ session, token }) {
-            session.user.id = token.id as string;
-            session.user.role = token.role as string;
-            session.user.email = token.email as string;
+            session.user.accessToken = token.accessToken as string;
             session.user.fullName = token.fullName as string;
+            session.user.email = token.email as string;
             session.user.username = token.username as string;
-            return session;
+            session.user.role = token.role as string; return session;
         },
     },
-
+    session: {
+        strategy: "jwt",
+    },
+    pages: {
+        signIn: "/login",
+    },
+    debug: process.env.NODE_ENV === 'development',
     secret: process.env.AUTH_SECRET,
-})
+});

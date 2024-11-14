@@ -55,6 +55,7 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
     // Check if the user is an organizer
     if (organizer.role !== Role.ORGANIZER) {
+        console.log("error here")
         return new ApiResponse(res, 401, "You are not authorized to organize this event", null, null);
     }
 
@@ -271,5 +272,6 @@ export const getPopularEvents = asyncHandler(async (req: Request, res: Response)
         },
         take: 23
     })
+    console.log(events);
     return new ApiResponse(res, 200, "Popular Events are here!", events, null)
 })

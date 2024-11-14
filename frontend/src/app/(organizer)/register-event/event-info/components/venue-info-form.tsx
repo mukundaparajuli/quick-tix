@@ -2,7 +2,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-export default function VenueInfoForm({ form }) {
+export default function VenueInfoForm({ form }: any) {
     return (
         <div><FormField
             control={form.control}

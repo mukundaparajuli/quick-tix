@@ -70,40 +70,30 @@ export const RegisterUser = asyncHandler(async (req: Request, res: Response) => 
 export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
     const { email, username, password } = await req.body;
 
-    // if (email or username) or password is not present send error 
     if (!(email || username) || !password) {
         return new ApiResponse(res, 400, 'All fields are required', null, null);
     }
 
     let validUser;
 
-    // if email is provided find user by email
     if (email) {
         validUser = await db.user.findUnique({
-            where: {
-                email
-            }
-        })
+            where: { email }
+        });
     }
 
-    // if username is provided find user by username
     if (username) {
         validUser = await db.user.findUnique({
-            where: {
-                username
-            }
-        })
+            where: { username }
+        });
     }
 
-    // if not valid user send error
     if (!validUser) {
         return new ApiResponse(res, 404, "User not found", null, null);
     }
 
-    // here we will have the valid user
     const checkPassword = await bcrypt.compare(password, validUser.password);
 
-    // check if password is valid
     if (!checkPassword) {
         return new ApiResponse(res, 403, "Wrong Password", null, null);
     }
@@ -114,38 +104,19 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
         username: validUser.username,
         email: validUser.email,
         role: validUser.role,
-    }
-    console.log("user payload: ", userPayload)
+    };
+
     const secret = process.env.JWT_SECRET_KEY;
 
     if (!secret) {
         return new ApiResponse(res, 500, 'Secret keys are not defined', null, null);
     }
 
-    // Generate tokens
     const jwtToken = jwt.sign({ user: userPayload }, secret, { expiresIn: '1d' });
 
-    console.log("jwt token=", jwtToken);
 
-    // store the tokens in cookies 
-    res.cookie('jwtToken', jwtToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000,
-    });
-
-    // Set additional headers
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-    // Log cookies for debugging
-    console.log("Setting cookie:", jwtToken);
-    console.log("Cookies in request:", req.cookies);
-
-    console.log("cookies are here: ", req.cookies);
-    return new ApiResponse(res, 200, "Login Successful", userPayload, null);
-})
-
+    return new ApiResponse(res, 200, "Login Successful", { userPayload, jwtToken }, null);
+});
 
 // logout user
 

@@ -12,6 +12,9 @@ import EventInformationForm from "./event-info-form";
 import LocationInfoForm from "./location-info-form";
 import { useState } from "react";
 import VenueInfoForm from "./venue-info-form";
+import getWithAuth from "../../../../../../utils/getWithAuth";
+import postWithAuth from "../../../../../../utils/postWithAuth";
+import { useSession } from "next-auth/react";
 
 interface RegisterEventFormProps extends React.HTMLAttributes<HTMLFormElement> { }
 
@@ -37,7 +40,7 @@ const steps = [
 export default function EventInfoForm({ className, ...props }: RegisterEventFormProps) {
     const [previousStep, setPreviousStep] = useState(0);
     const [currentStep, setCurrentStep] = useState(0);
-
+    const { data: session } = useSession();
     const form = useForm<z.infer<typeof RegisterEventSchema>>({
         resolver: zodResolver(RegisterEventSchema),
         defaultValues: {
@@ -66,31 +69,20 @@ export default function EventInfoForm({ className, ...props }: RegisterEventForm
         }
     });
 
+    // const { data: session } = useSession();
     const onSubmit = async (formData: any) => {
-        console.log(formData);
-
+        session && console.log(formData, session);
+        console.log(session);
         // Convert amenities from a string to an array if necessary
         if (typeof formData.venue.amenities === 'string') {
             formData.venue.amenities = formData.venue.amenities.split(',').map((item: string) => item.trim());
         }
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/event`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to register event');
-            }
-
-            const result = await response.json();
+            const result = await postWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/event`, formData, session)
             console.log('Event registered successfully:', result);
         } catch (error) {
-            console.error('Error registering event:', error);
+            console.log('Error registering event:', error);
         }
     };
 
@@ -99,7 +91,7 @@ export default function EventInfoForm({ className, ...props }: RegisterEventForm
         const fieldsToValidate = steps[currentStep].fields;
 
         // Trigger validation only for the fields in the current step
-        const isValid = await form.trigger(fieldsToValidate);
+        const isValid = await form.trigger(fieldsToValidate as (keyof z.infer<typeof RegisterEventSchema>)[]);
 
         if (isValid) {
             if (currentStep < steps.length - 1) {
