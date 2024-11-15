@@ -16,7 +16,7 @@ interface GridSize {
 }
 
 interface Section {
-    name: string;
+    sectionName: string;
     rows: Row[];
 }
 
@@ -60,7 +60,7 @@ import { Save } from 'lucide-react';
 const SeatLayoutForm: React.FC<{ setSectionData: React.Dispatch<React.SetStateAction<typeof SectionSchema[]>> }> = ({ setSectionData }) => {
     const [sections, setSections] = useState<Section[]>([]);
     const [currentSection, setCurrentSection] = useState<Section>({
-        name: '',
+        sectionName: '',
         rows: []
     });
     const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
@@ -86,7 +86,7 @@ const SeatLayoutForm: React.FC<{ setSectionData: React.Dispatch<React.SetStateAc
         // Cycle through cell types
         if (cell.type === CELL_TYPES.EMPTY) {
             cell.type = CELL_TYPES.SEAT;
-            cell.id = `${currentSection.name}-${rowIndex + 1}-${colIndex + 1}`;
+            cell.id = `${currentSection.sectionName}-${rowIndex + 1}-${colIndex + 1}`;
         } else if (cell.type === CELL_TYPES.SEAT) {
             cell.type = CELL_TYPES.GAP;
             cell.id = '';
@@ -117,7 +117,7 @@ const SeatLayoutForm: React.FC<{ setSectionData: React.Dispatch<React.SetStateAc
 
         // Process current section
         const sectionData: Section = {
-            name: currentSection.name,
+            sectionName: currentSection.sectionName,
             rows: []
         };
 
@@ -196,9 +196,9 @@ const SeatLayoutForm: React.FC<{ setSectionData: React.Dispatch<React.SetStateAc
                     <div className="flex gap-4 items-center">
                         <Input
                             placeholder="Section Name"
-                            value={currentSection.name}
+                            value={currentSection.sectionName}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                setCurrentSection({ ...currentSection, name: e.target.value })}
+                                setCurrentSection({ ...currentSection, sectionName: e.target.value })}
                             className="w-48"
                         />
                         <div className="flex items-center gap-2">

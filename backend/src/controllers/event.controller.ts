@@ -60,6 +60,10 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
         return new ApiResponse(res, 401, "You are not authorized to organize this event", null, null);
     }
 
+    if (!Object.values(EventCategory).includes(category)) {
+        console.log(EventCategory, category);
+        return new ApiResponse(res, 403, "Invalid Category")
+    }
     // Create the event
     const newEvent = await db.event.create({
         data: {
@@ -133,11 +137,15 @@ export const GetAnEvent = asyncHandler(async (req: Request, res: Response) => {
         return new ApiResponse(res, 404, "event id was not found", null, null);
     }
 
+    console.log(eventId);
+
     const event = await db.event.findUnique({
         where: {
             id: Number(eventId)
         }
     })
+
+    console.log(event);
 
     // check if event exists
     if (!event) {
@@ -271,7 +279,7 @@ export const getPopularEvents = asyncHandler(async (req: Request, res: Response)
             location: true,
             venue: true,
         },
-        take: 23
+        take: 20
     })
     console.log(events);
     return new ApiResponse(res, 200, "Popular Events are here!", events, null)

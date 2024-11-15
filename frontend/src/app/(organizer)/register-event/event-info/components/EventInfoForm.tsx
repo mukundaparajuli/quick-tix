@@ -92,7 +92,7 @@ const DEFAULT_FORM_VALUES = {
         name: "",
         description: "",
         capacity: 0,
-        amenities: [""],
+        amenities: "",
     },
 };
 
@@ -131,7 +131,8 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
         try {
             if (!session) throw new Error("No active session");
             if (!eventInfo) throw new Error("No event information");
-            const data = { ...eventInfo, sectionData }
+            const sections = sectionData;
+            const data = { ...eventInfo, sections }
             const result = await postWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/event`, data, session);
             console.log(result);
         } catch (error) {

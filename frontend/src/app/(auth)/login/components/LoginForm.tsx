@@ -12,7 +12,6 @@ import { Icons } from "@/components/icons";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import credentials from "next-auth/providers/credentials";
 
 interface LoginFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 

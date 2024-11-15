@@ -17,7 +17,7 @@ const LoginPage = () => {
                     </div>
                     <LoginForm />
                     <p className="px-8 text-center text-sm text-muted-foreground">
-                        Don&apos;t have an account?
+                        Don&apos;t have an account?{" "}
                         <Link
                             href="/register"
                             className="underline underline-offset-4 hover:text-primary"
@@ -25,14 +25,14 @@ const LoginPage = () => {
                             Register now.
                         </Link>
                     </p>
-                    {/* <p className="px-8 text-center text-sm text-muted-foreground">
+                    <p className="px-8 text-center text-sm text-muted-foreground">
                         <Link
                             href="/submit-email"
                             className="underline underline-offset-4 hover:text-primary"
                         >
                             Forgot Password?
                         </Link>
-                    </p> */}
+                    </p>
                 </div>
             </div>
         </div>

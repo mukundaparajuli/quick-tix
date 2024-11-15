@@ -59,7 +59,7 @@ export const RegisterUser = asyncHandler(async (req: Request, res: Response) => 
     console.log(data, error);
 
     const { password: _, ...userWithoutPassword } = newUser;
-    return new ApiResponse(res, 200, 'Register Successful', userWithoutPassword, null);
+    return new ApiResponse(res, 200, 'Please check your email for verification', userWithoutPassword, null);
 })
 
 
@@ -96,6 +96,10 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
 
     if (!checkPassword) {
         return new ApiResponse(res, 403, "Wrong Password", null, null);
+    }
+
+    if (!validUser.verified) {
+        return new ApiResponse(res, 401, "Please verify your email first", null, null)
     }
 
     const userPayload = {

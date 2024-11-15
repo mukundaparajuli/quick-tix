@@ -14,7 +14,7 @@ const VenueSchema = z.object({
     name: z.string(),
     description: z.string(),
     capacity: z.number(),
-    amenities: z.array(z.string())
+    amenities: z.string()
 });
 
 

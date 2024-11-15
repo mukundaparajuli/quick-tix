@@ -9,9 +9,10 @@ export default async function getWithAuth(url: string, session: Session | null) 
             'Authorization': `Bearer ${session?.user.accessToken}`,
         },
     });
-
+    const result = await response.json();
     if (!response.ok) {
         throw new Error('Failed to fetch data');
     }
-    return await response.json();
+    return result.data;
+    // return await response.json();
 }

@@ -5,9 +5,9 @@
 // import { Button } from '@/components/ui/button';
 
 // const IrregularSeatingLayout = () => {
-    
 
-//     const [layout, setLayout] = useState(initialLayout);
+
+//     // const [layout, setLayout] = useState(initialLayout);
 //     const [selectedSeats, setSelectedSeats] = useState([]);
 
 //     const handleSeatClick = (seatId: string, section: string, row: string) => {
@@ -130,5 +130,3 @@
 // export default IrregularSeatingLayout;
 
 
-// get all seats for an event 
-const 

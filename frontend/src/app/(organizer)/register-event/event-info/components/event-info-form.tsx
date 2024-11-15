@@ -1,22 +1,35 @@
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import React from "react";
+import {
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Ensure consistent imports
 import { EventCategory } from "../../../../../../enums/event-category.enum";
 
-export default function EventInformationForm({ form }: any) {
-    return (
-        <div className="w-full mx-auto bg-white p-8 rounded-lg shadow-xl ">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Event Information</h2>
+// Convert EventCategory enum to an array of its values
+const eventCategories = Object.values(EventCategory);
 
+interface EventInformationFormProps {
+    form: any;
+}
+
+export default function EventInformationForm({ form }: EventInformationFormProps) {
+    return (
+        <div className="space-y-6"> {/* Adds consistent spacing between form fields */}
             {/* Title */}
             <FormField
                 control={form.control}
                 name="title"
                 render={({ field }) => (
-                    <FormItem className="mb-4">
-                        <FormLabel className="text-gray-700">Title</FormLabel>
+                    <FormItem>
+                        <FormLabel htmlFor="title">Title</FormLabel>
                         <FormControl>
-                            <Input placeholder="Event Title" className="border rounded p-2 w-full" {...field} />
+                            <Input id="title" placeholder="Enter event title" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -28,10 +41,14 @@ export default function EventInformationForm({ form }: any) {
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                    <FormItem className="mb-4">
-                        <FormLabel className="text-gray-700">Description</FormLabel>
+                    <FormItem>
+                        <FormLabel htmlFor="description">Description</FormLabel>
                         <FormControl>
-                            <Textarea placeholder="Event Description" className="border rounded p-2 w-full" {...field} />
+                            <Textarea
+                                id="description"
+                                placeholder="Enter event description"
+                                {...field}
+                            />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -43,15 +60,14 @@ export default function EventInformationForm({ form }: any) {
                 control={form.control}
                 name="date"
                 render={({ field }) => (
-                    <FormItem className="mb-4">
-                        <FormLabel className="text-gray-700">Date</FormLabel>
+                    <FormItem>
+                        <FormLabel htmlFor="date">Date</FormLabel>
                         <FormControl>
                             <Input
+                                id="date"
                                 type="date"
-                                className="border rounded p-2 w-full"
-                                placeholder="Pick a date"
-                                {...field}
-                                value={field.value ? field.value.toISOString().split("T")[0] : ""}
+                                placeholder="Select a date"
+                                value={field.value ? new Date(field.value).toISOString().split("T")[0] : ""}
                                 onChange={(e) => field.onChange(new Date(e.target.value))}
                             />
                         </FormControl>
@@ -65,13 +81,13 @@ export default function EventInformationForm({ form }: any) {
                 control={form.control}
                 name="totalTickets"
                 render={({ field }) => (
-                    <FormItem className="mb-4">
-                        <FormLabel className="text-gray-700">Total Tickets</FormLabel>
+                    <FormItem>
+                        <FormLabel htmlFor="totalTickets">Total Tickets</FormLabel>
                         <FormControl>
                             <Input
+                                id="totalTickets"
                                 type="number"
-                                className="border rounded p-2 w-full"
-                                placeholder="Total Tickets"
+                                placeholder="Enter total tickets"
                                 {...field}
                                 onChange={(e) => field.onChange(Number(e.target.value))}
                             />
@@ -86,10 +102,14 @@ export default function EventInformationForm({ form }: any) {
                 control={form.control}
                 name="organizerName"
                 render={({ field }) => (
-                    <FormItem className="mb-4">
-                        <FormLabel className="text-gray-700">Organizer Name</FormLabel>
+                    <FormItem>
+                        <FormLabel htmlFor="organizerName">Organizer Name</FormLabel>
                         <FormControl>
-                            <Input placeholder="Organizer Name" className="border rounded p-2 w-full" {...field} />
+                            <Input
+                                id="organizerName"
+                                placeholder="Enter organizer name"
+                                {...field}
+                            />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -101,10 +121,15 @@ export default function EventInformationForm({ form }: any) {
                 control={form.control}
                 name="organizerEmail"
                 render={({ field }) => (
-                    <FormItem className="mb-4">
-                        <FormLabel className="text-gray-700">Organizer Email</FormLabel>
+                    <FormItem>
+                        <FormLabel htmlFor="organizerEmail">Organizer Email</FormLabel>
                         <FormControl>
-                            <Input type="email" placeholder="Organizer Email" className="border rounded p-2 w-full" {...field} />
+                            <Input
+                                id="organizerEmail"
+                                type="email"
+                                placeholder="Enter organizer email"
+                                {...field}
+                            />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -116,14 +141,25 @@ export default function EventInformationForm({ form }: any) {
                 control={form.control}
                 name="category"
                 render={({ field }) => (
-                    <FormItem className="mb-4">
-                        <FormLabel className="text-gray-700">Category</FormLabel>
+                    <FormItem>
+                        <FormLabel htmlFor="category">Category</FormLabel>
                         <FormControl>
-                            <select {...field} className="border rounded p-2 w-full">
-                                {Object.values(EventCategory).map((category) => (
-                                    <option key={category} value={category}>{category}</option>
-                                ))}
-                            </select>
+                            <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                            >
+                                <SelectTrigger id="category" className="w-full">
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                <SelectContent>
+
+                                    {eventCategories.map((category) => (
+                                        <SelectItem key={category} value={category}>
+                                            {category}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </FormControl>
                         <FormMessage />
                     </FormItem>
