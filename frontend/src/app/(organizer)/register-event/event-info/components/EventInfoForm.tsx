@@ -1,195 +1,232 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
 import { RegisterEventSchema } from "../../../../../../schemas";
 import EventInformationForm from "./event-info-form";
 import LocationInfoForm from "./location-info-form";
-import { useState } from "react";
 import VenueInfoForm from "./venue-info-form";
-import getWithAuth from "../../../../../../utils/getWithAuth";
+import SeatLayoutForm from "./seat-layout-form";
 import postWithAuth from "../../../../../../utils/postWithAuth";
-import { useSession } from "next-auth/react";
 
+// Types
 interface RegisterEventFormProps extends React.HTMLAttributes<HTMLFormElement> { }
 
-// Define the steps and fields to validate for each step
-const steps = [
+type FormComponent = React.FC<{ form: ReturnType<typeof useForm> }>;
+
+interface FormStep {
+    id: string;
+    name: string;
+    component: FormComponent | null;
+    fields: string[];
+}
+
+// Define the type for section data based on your schema
+interface SectionData {
+    name: string;
+    rows: Array<{
+        row: string;
+        seats: Array<{
+            id: string;
+            status: 'available' | 'reserved' | 'sold';
+        }>;
+    }>;
+}
+
+const FORM_COMPONENTS = {
+    EventInformationForm,
+    LocationInfoForm,
+    VenueInfoForm,
+} as const;
+
+const STEPS: FormStep[] = [
     {
         id: 'Step 1',
         name: "Event Information",
+        component: EventInformationForm,
         fields: ['title', 'description', 'date', 'totalTickets', 'availableTickets', 'price', 'organizerName', 'organizerEmail', 'category']
     },
     {
         id: 'Step 2',
         name: 'Location Information',
+        component: LocationInfoForm,
         fields: ['location.address', 'location.city', 'location.state', 'location.country']
     },
     {
         id: 'Step 3',
         name: 'Venue Information',
+        component: VenueInfoForm,
         fields: ['venue.name', 'venue.description', 'venue.capacity', 'venue.amenities']
+    },
+    {
+        id: 'Step 4',
+        name: 'Seat Layout Information',
+        component: null,
+        fields: []
     }
-];
+] as const;
 
-export default function EventInfoForm({ className, ...props }: RegisterEventFormProps) {
-    const [previousStep, setPreviousStep] = useState(0);
+const DEFAULT_FORM_VALUES = {
+    title: "",
+    description: "",
+    date: new Date(),
+    totalTickets: 120,
+    availableTickets: 120,
+    price: 120,
+    organizerName: "",
+    organizerEmail: "",
+    category: "",
+    location: {
+        address: "",
+        city: "",
+        country: "",
+        state: ""
+    },
+    venue: {
+        name: "",
+        description: "",
+        capacity: 0,
+        amenities: [""],
+    },
+};
+
+export default function EventRegistrationForm({ className, ...props }: RegisterEventFormProps) {
     const [currentStep, setCurrentStep] = useState(0);
+    const [sectionData, setSectionData] = useState<SectionData[]>([]);
+    const [eventInfo, setEventInfo] = useState<z.infer<typeof RegisterEventSchema> | undefined>();
     const { data: session } = useSession();
+
     const form = useForm<z.infer<typeof RegisterEventSchema>>({
         resolver: zodResolver(RegisterEventSchema),
-        defaultValues: {
-            title: "",
-            description: "",
-            date: new Date(),
-            totalTickets: 0,
-            availableTickets: 0,
-            price: 0,
-            organizerName: "",
-            organizerEmail: "",
-            category: "",
-            location: {
-                address: "",
-                city: "",
-                country: "",
-                state: ""
-            },
-            venue: {
-                name: "",
-                description: "",
-                capacity: 0,
-                amenities: "",
-            },
-            sections: ""
-        }
+        defaultValues: DEFAULT_FORM_VALUES
     });
 
-    // const { data: session } = useSession();
-    const onSubmit = async (formData: any) => {
-        session && console.log(formData, session);
-        console.log(session);
-        // Convert amenities from a string to an array if necessary
-        if (typeof formData.venue.amenities === 'string') {
-            formData.venue.amenities = formData.venue.amenities.split(',').map((item: string) => item.trim());
-        }
-
+    const handleSubmitEvent = async (formData: z.infer<typeof RegisterEventSchema>) => {
         try {
-            const result = await postWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/event`, formData, session)
-            console.log('Event registered successfully:', result);
-        } catch (error) {
-            console.log('Error registering event:', error);
-        }
-    };
-
-    // Move to the next step after validating current step fields
-    const next = async () => {
-        const fieldsToValidate = steps[currentStep].fields;
-
-        // Trigger validation only for the fields in the current step
-        const isValid = await form.trigger(fieldsToValidate as (keyof z.infer<typeof RegisterEventSchema>)[]);
-
-        if (isValid) {
-            if (currentStep < steps.length - 1) {
-                // If we're on the last step, submit the form
-                if (currentStep === steps.length - 2) {
-                    await form.handleSubmit(onSubmit)();
+            const processedFormData = {
+                ...formData,
+                venue: {
+                    ...formData.venue,
+                    amenities: typeof formData.venue.amenities === 'string'
+                        ? formData.venue.amenities.split(',').map((item: string) => item.trim())
+                        : formData.venue.amenities
                 }
-                setPreviousStep(currentStep);
-                setCurrentStep((step) => step + 1);
-            }
-        } else {
-            console.log('Validation failed on current step');
+            };
+
+            setEventInfo(processedFormData);
+            console.log('Event information saved');
+        } catch (error) {
+            console.error('Form submission error:', error);
         }
     };
 
-    // Go to the previous step
-    const prev = () => {
-        if (currentStep > 0) {
-            setPreviousStep(currentStep);
-            setCurrentStep((step) => step - 1);
+    const handleFinalSubmission = async () => {
+        console.log(eventInfo, sectionData)
+        try {
+            if (!session) throw new Error("No active session");
+            if (!eventInfo) throw new Error("No event information");
+            const data = { ...eventInfo, sectionData }
+            const result = await postWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/event`, data, session);
+            console.log(result);
+        } catch (error) {
+            console.log('Final submission error:', error);
         }
     };
+
+    const handleStepValidation = async () => {
+        const fieldsToValidate = STEPS[currentStep].fields;
+        return await form.trigger(fieldsToValidate as any[]);
+    };
+
+    const handleNext = async () => {
+        const isValid = await handleStepValidation();
+
+        if (!isValid) {
+            console.log('Please check all required fields');
+            return;
+        }
+
+        if (currentStep === STEPS.length - 2) {
+            await form.handleSubmit(handleSubmitEvent)();
+        }
+
+        setCurrentStep(prev => Math.min(prev + 1, STEPS.length - 1));
+    };
+
+    const handlePrevious = () => {
+        setCurrentStep(prev => Math.max(prev - 1, 0));
+    };
+
+    const CurrentStepComponent = STEPS[currentStep].component;
 
     return (
-        <div>
-            <nav aria-label='Progress'>
-                <ol role='list' className='space-y-4 md:flex md:space-x-8 md:space-y-0'>
-                    {steps.map((step, index) => (
-                        <li key={step.name} className='md:flex-1'>
-                            {currentStep > index ? (
-                                <div className='group flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4'>
-                                    <span className='text-sm font-medium text-sky-600 transition-colors '>
-                                        {step.id}
-                                    </span>
-                                    <span className='text-sm font-medium'>{step.name}</span>
-                                </div>
-                            ) : currentStep === index ? (
-                                <div
-                                    className='flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4'
-                                    aria-current='step'
-                                >
-                                    <span className='text-sm font-medium text-sky-600'>
-                                        {step.id}
-                                    </span>
-                                    <span className='text-sm font-medium'>{step.name}</span>
-                                </div>
-                            ) : (
-                                <div className='group flex w-full flex-col border-l-4 border-gray-200 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4'>
-                                    <span className='text-sm font-medium text-gray-500 transition-colors'>
-                                        {step.id}
-                                    </span>
-                                    <span className='text-sm font-medium'>{step.name}</span>
-                                </div>
-                            )}
+        <div className="space-y-8">
+            <nav aria-label="Progress" className="mb-8">
+                <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0">
+                    {STEPS.map((step, index) => (
+                        <li key={step.name} className="md:flex-1">
+                            <div
+                                className={cn(
+                                    "flex w-full flex-col border-l-4 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4",
+                                    {
+                                        "border-sky-600": index <= currentStep,
+                                        "border-gray-200": index > currentStep,
+                                    }
+                                )}
+                            >
+                                <span className={cn("text-sm font-medium", {
+                                    "text-sky-600": index <= currentStep,
+                                    "text-gray-500": index > currentStep,
+                                })}>
+                                    {step.id}
+                                </span>
+                                <span className="text-sm font-medium">{step.name}</span>
+                            </div>
                         </li>
                     ))}
                 </ol>
             </nav>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className={cn("grid gap-6", className)} {...props}>
-                    {/* Event Information */}
-                    {currentStep === 0 && <EventInformationForm form={form} />}
-
-                    {/* Location Fields */}
-                    {currentStep === 1 && <LocationInfoForm form={form} />}
-
-                    {/* Venue Fields */}
-                    {currentStep === 2 && <VenueInfoForm form={form} />}
-
-                    {/* Sections */}
-                    <FormField
-                        control={form.control}
-                        name="sections"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Sections</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Event Sections" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    {/* Submit Button */}
-                    <Button type="submit">Register Event</Button>
-
-                    <div className='mt-6 flex items-center justify-between'>
-                        <button type='button' onClick={prev} className='text-gray-500'>
-                            Back
-                        </button>
-                        <button type='button' onClick={next} className='text-sky-600'>
-                            {currentStep === steps.length - 1 ? 'Submit' : 'Next'}
-                        </button>
-                    </div>
+                <form onSubmit={form.handleSubmit(handleSubmitEvent)} className={cn("space-y-6", className)} {...props}>
+                    {CurrentStepComponent && <CurrentStepComponent form={form as any} />}
                 </form>
             </Form>
+
+            {currentStep === STEPS.length - 1 && (
+                <>
+                    <SeatLayoutForm setSectionData={setSectionData} />
+                    <Button
+                        onClick={handleFinalSubmission}
+                        className="w-full mt-4"
+                    >
+                        Submit Event Registration
+                    </Button>
+                </>
+            )}
+
+            <div className="flex justify-between mt-6">
+                <Button
+                    variant="outline"
+                    onClick={handlePrevious}
+                    disabled={currentStep === 0}
+                >
+                    Previous
+                </Button>
+                {currentStep < STEPS.length - 1 && (
+                    <Button
+                        onClick={handleNext}
+                    >
+                        Next
+                    </Button>
+                )}
+            </div>
         </div>
     );
 }

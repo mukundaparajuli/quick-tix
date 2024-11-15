@@ -3,20 +3,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EventCategory } from "../../../../../../enums/event-category.enum";
 
-
-export default function EventInformationForm({ form }) {
+export default function EventInformationForm({ form }: any) {
     return (
-        <div>
+        <div className="w-full mx-auto bg-white p-8 rounded-lg shadow-xl ">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Event Information</h2>
 
             {/* Title */}
             <FormField
                 control={form.control}
                 name="title"
                 render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Title</FormLabel>
+                    <FormItem className="mb-4">
+                        <FormLabel className="text-gray-700">Title</FormLabel>
                         <FormControl>
-                            <Input placeholder="Event Title" {...field} />
+                            <Input placeholder="Event Title" className="border rounded p-2 w-full" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -28,10 +28,10 @@ export default function EventInformationForm({ form }) {
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Description</FormLabel>
+                    <FormItem className="mb-4">
+                        <FormLabel className="text-gray-700">Description</FormLabel>
                         <FormControl>
-                            <Textarea placeholder="Event Description" {...field} />
+                            <Textarea placeholder="Event Description" className="border rounded p-2 w-full" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -43,11 +43,12 @@ export default function EventInformationForm({ form }) {
                 control={form.control}
                 name="date"
                 render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Date</FormLabel>
+                    <FormItem className="mb-4">
+                        <FormLabel className="text-gray-700">Date</FormLabel>
                         <FormControl>
                             <Input
                                 type="date"
+                                className="border rounded p-2 w-full"
                                 placeholder="Pick a date"
                                 {...field}
                                 value={field.value ? field.value.toISOString().split("T")[0] : ""}
@@ -64,11 +65,16 @@ export default function EventInformationForm({ form }) {
                 control={form.control}
                 name="totalTickets"
                 render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Total Tickets</FormLabel>
+                    <FormItem className="mb-4">
+                        <FormLabel className="text-gray-700">Total Tickets</FormLabel>
                         <FormControl>
-                            <Input type="number" placeholder="Total Tickets" {...field}
-                                onChange={(e) => field.onChange(Number(e.target.value))} />
+                            <Input
+                                type="number"
+                                className="border rounded p-2 w-full"
+                                placeholder="Total Tickets"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -80,10 +86,10 @@ export default function EventInformationForm({ form }) {
                 control={form.control}
                 name="organizerName"
                 render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Organizer Name</FormLabel>
+                    <FormItem className="mb-4">
+                        <FormLabel className="text-gray-700">Organizer Name</FormLabel>
                         <FormControl>
-                            <Input placeholder="Organizer Name" {...field} />
+                            <Input placeholder="Organizer Name" className="border rounded p-2 w-full" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -95,10 +101,10 @@ export default function EventInformationForm({ form }) {
                 control={form.control}
                 name="organizerEmail"
                 render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Organizer Email</FormLabel>
+                    <FormItem className="mb-4">
+                        <FormLabel className="text-gray-700">Organizer Email</FormLabel>
                         <FormControl>
-                            <Input type="email" placeholder="Organizer Email" {...field} />
+                            <Input type="email" placeholder="Organizer Email" className="border rounded p-2 w-full" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -110,10 +116,10 @@ export default function EventInformationForm({ form }) {
                 control={form.control}
                 name="category"
                 render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Category</FormLabel>
+                    <FormItem className="mb-4">
+                        <FormLabel className="text-gray-700">Category</FormLabel>
                         <FormControl>
-                            <select {...field} className="border rounded p-2">
+                            <select {...field} className="border rounded p-2 w-full">
                                 {Object.values(EventCategory).map((category) => (
                                     <option key={category} value={category}>{category}</option>
                                 ))}
@@ -124,5 +130,5 @@ export default function EventInformationForm({ form }) {
                 )}
             />
         </div>
-    )
+    );
 }

@@ -1,7 +1,7 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-export default function LocationInfoForm({ form }) {
+export default function LocationInfoForm({ form }: any) {
     return (
         <div>
             <FormField

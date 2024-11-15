@@ -15,6 +15,7 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
     // Check if all fields are present
     if (!title || !description || !date || !venue || !location || !price || !totalTickets || !availableTickets || !organizerName || !organizerEmail) {
+        console.log("sabai field chaiyo")
         return new ApiResponse(res, 403, "All fields are mandatory to be filled", null, null);
     }
 

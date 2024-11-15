@@ -1,6 +1,3 @@
-import React from "react";
-import RegisterEventForm from "./EventInfoForm";
-import Link from "next/link";
 import EventInfoForm from "./EventInfoForm";
 
 const EventInfoPage = () => {
