@@ -14,7 +14,7 @@ export default async function RootLayout({
   const session = await auth();
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="light dark:bg-black" >
+      <body className="light dark:bg-black bg-slate-100" >
         <SessionProvider session={session}>
           <Provider>
             {children}
