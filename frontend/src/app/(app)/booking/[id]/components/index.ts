@@ -1,0 +1,1 @@
+export { default as BookSeat } from "./book-seat"

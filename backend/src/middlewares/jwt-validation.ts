@@ -16,7 +16,7 @@ export const JwtValidation = asyncHandler(async (req: Request, res: Response, ne
     try {
         jwt.verify(token, process.env.JWT_SECRET_KEY as string, (err: any, decoded: any) => {
             if (err) {
-                return new ApiResponse(res, 403, "JWT verification failed. Unauthorized", null, null);
+                return new ApiResponse(res, 403, "JWT verification failed. Please Login again", null, null);
             }
 
             logger.info("Decoded Token: ");

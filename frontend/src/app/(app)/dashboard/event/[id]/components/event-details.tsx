@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { bannerImageSrc } from '@/constants/banner-search-menu';
 import { Button } from '@/components/ui/button';
+import { useParams, useRouter } from 'next/navigation';
 
 const event = {
     "id": "evt_001",
@@ -46,7 +47,7 @@ const event = {
 
 
 const EventDetailsPage = () => {
-    const formatDate = (dateString: Date) => {
+    const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             weekday: 'long',
             year: 'numeric',
@@ -54,12 +55,14 @@ const EventDetailsPage = () => {
             day: 'numeric'
         });
     };
+    const router = useRouter();
+    const { id } = useParams();
 
     return (
         <div className="max-w-5xl mx-auto p-6 space-y-6">
             <div>
                 <Image src={bannerImageSrc} alt='Banner Image' width={1000} height={1000} />
-                <div className='bg-white p-4 flex-col space-y-4'>
+                <div className='bg-white dark:bg-black p-4 flex-col space-y-4'>
                     <div className='flex justify-between items-center'>
                         <div>
                             <div className="text-3xl font-bold">{event.name}</div>
@@ -73,7 +76,7 @@ const EventDetailsPage = () => {
                             </div>
                         </div>
                         <div>
-                            <Button >Book Now</Button>
+                            <Button onClick={() => router.replace('/booking/' + id)}>Book Now</Button>
                         </div>
                     </div>
                     <Separator />
@@ -98,7 +101,7 @@ const EventDetailsPage = () => {
                 </div>
 
             </div>
-            <div className='bg-white p-4 space-y-4'>
+            <div className='bg-white dark:bg-black p-4 space-y-4'>
                 <h1 className='font-semibold text-3xl'>Overview</h1>
                 <div>
                     <p>{event.description}</p>
@@ -118,7 +121,7 @@ const EventDetailsPage = () => {
             </div>
 
             {/* organizer information */}
-            <div className='space-y-4 bg-white p-4'>
+            <div className='space-y-4 bg-white dark:bg-black p-4'>
                 <h1 className='font-bold text-3xl'>Organizer Details</h1>
                 <Separator />
                 <div className="space-y-1">
@@ -161,7 +164,7 @@ const EventDetailsPage = () => {
                                     {ticket.currency} {ticket.price}
                                 </div>
                                 <Badge
-                                    variant={ticket.availability === "Available" ? "success" : "destructive"}
+                                    variant={ticket.availability === "Available" ? "secondary" : "destructive"}
                                     className="mt-2"
                                 >
                                     {ticket.availability}

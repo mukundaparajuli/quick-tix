@@ -1,7 +1,13 @@
 import { Session } from "next-auth";
-import { useSession } from "next-auth/react";
 
 export default async function getWithAuth(url: string, session: Session | null) {
+    if (!url) {
+        throw new Error("Url not found!");
+    }
+
+    if (!session || !session.user.accessToken) {
+        throw new Error("session not found")
+    }
     const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -11,8 +17,7 @@ export default async function getWithAuth(url: string, session: Session | null) 
     });
     const result = await response.json();
     if (!response.ok) {
-        throw new Error('Failed to fetch data');
+        throw new Error('Failed to fetch data. Error: ' + result.message);
     }
     return result.data;
-    // return await response.json();
 }

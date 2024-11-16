@@ -28,7 +28,8 @@ export default function EventDetail() {
     return (
         <div>
             {data ? (
-                <EventDetailsPage event={data} />
+                // <EventDetailsPage event={data} />
+                <EventDetailsPage />
             ) : (
                 <div>No event details available.</div>
             )}

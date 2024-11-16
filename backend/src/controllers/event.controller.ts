@@ -142,6 +142,19 @@ export const GetAnEvent = asyncHandler(async (req: Request, res: Response) => {
     const event = await db.event.findUnique({
         where: {
             id: Number(eventId)
+        }, include: {
+            location: true,
+            Section: {
+                include: {
+                    rows: {
+                        include: {
+                            seats: true,
+                        }
+                    }
+                }
+            },
+            venue: true,
+            Seat: true,
         }
     })
 
@@ -215,9 +228,9 @@ export const DeleteAnEvent = asyncHandler(async (req: Request, res: Response) =>
     }
 
     // the event exists now we will check if the user is an organizer or not
-    // if (user.role !== 'ORGANIZER') {
-    //     return new ApiResponse(res, 403, "you are not authorized to delete this event", null, null);
-    // }
+    if (user.role !== 'ORGANIZER') {
+        return new ApiResponse(res, 403, "you are not authorized to delete this event", null, null);
+    }
 
     // check if the user is the organizer of this particular event or not
     if (user.id !== event.organizerId) {
@@ -281,6 +294,6 @@ export const getPopularEvents = asyncHandler(async (req: Request, res: Response)
         },
         take: 20
     })
-    console.log(events);
+    // console.log(events);
     return new ApiResponse(res, 200, "Popular Events are here!", events, null)
 })
