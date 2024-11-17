@@ -29,7 +29,7 @@ export default function PopularEvents() {
             : dummyEventData;
 
     return (
-        <div className="p-5 bg-white dark:bg-black flex flex-col gap-4">
+        <div className="p-5 bg-white dark:bg-gray-800 flex flex-col gap-4">
             <div>
                 <h1 className="font-bold text-2xl text-black dark:text-white">Popular Events</h1>
                 <p className="text-md text-gray-400">Find Popular Events</p>

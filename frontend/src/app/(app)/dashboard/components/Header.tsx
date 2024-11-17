@@ -9,10 +9,10 @@ import { FaUser } from "react-icons/fa";
 
 export default function Header() {
     const router = useRouter();
-    
+
     const { data: session } = useSession();
 
-    return (<div className="fixed z-10 top-0 left-0 w-full h-20 bg-white dark:bg-black text-black dark:text-white flex items-center justify-between px-10 border-b-2  shadow-lg ">
+    return (<div className="fixed z-10 top-0 left-0 w-full h-20 bg-white dark:bg-gray-800 text-black dark:text-white flex items-center justify-between px-10 border-b-2  shadow-lg ">
 
         <h1 className="text-4xl font-semibold w-1/5">Quick Tix</h1>
 

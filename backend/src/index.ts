@@ -6,17 +6,23 @@ import cookieParser from 'cookie-parser';
 import logger from "./logger";
 import morgan from "morgan";
 import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { initializeSocket } from "../sockets";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT;
 const morganFormat = ":method :url :status :response-time ms";
+const server = createServer(app);
+const io = new Server(server);
 
 // Basic middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static("public"))
+app.use(initializeSocket(io))
 
 // CORS configuration
 app.use(cors({
