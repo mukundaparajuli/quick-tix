@@ -4,6 +4,7 @@ import ApiResponse from "../types/api-response";
 import db from "../config/db";
 import { Role, BookingStatus, SeatStatus } from "../enums";
 import logger from "../logger";
+import { initiateKhaltiPayment } from "../services";
 
 
 // Create a booking
@@ -23,7 +24,6 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
             return new ApiResponse(res, 403, "Only attendees can book an event", null, null);
         }
 
-        // Find the event
         const event = await tx.event.findUnique({
             where: { id: Number(eventId) },
         });
@@ -32,17 +32,14 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
             return new ApiResponse(res, 404, "Event does not exist", null, null);
         }
 
-        // Check ticket counts against available tickets
         if (ticketCounts < 1 || ticketCounts > event.availableTickets) {
             return new ApiResponse(res, 400, "Invalid Ticket Count", null, null);
         }
 
-        // Validate seat count matches ticket count
-        if (!seatIds || !Array.isArray(seatIds) || seatIds.length !== Number(ticketCounts)) {
+        if (!seatIds || seatIds.length !== ticketCounts) {
             return new ApiResponse(res, 400, "Seat numbers do not match ticket count.", null, null);
         }
 
-        // Validate section and row
         const section = await tx.section.findUnique({
             where: { id: Number(sectionId) },
             include: { rows: true },
@@ -52,18 +49,16 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
             return new ApiResponse(res, 400, "Invalid section or row", null, null);
         }
 
-        // Check each seat's availability and ensure it belongs to the correct row
+        // Check availability for all seats in one query
+        const seats = await tx.seat.findMany({
+            where: { id: { in: seatIds }, rowId: rowId, status: SeatStatus.AVAILABLE },
+        });
+
+        if (seats.length !== seatIds.length) {
+            return new ApiResponse(res, 400, "Some seats are not available or do not belong to the specified row.");
+        }
+
         for (let seatId of seatIds) {
-            const seat = await tx.seat.findUnique({
-                where: { id: seatId },
-                include: { row: true },
-            });
-
-            if (!seat || seat.rowId !== rowId || seat.status !== SeatStatus.AVAILABLE) {
-                return new ApiResponse(res, 400, `Seat ${seatId} is not available or does not belong to the specified row.`);
-            }
-
-            // Lock the seat for the pending booking
             await tx.seat.update({
                 where: { id: seatId },
                 data: { status: SeatStatus.LOCKED },
@@ -73,7 +68,6 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
         const totalPrice = ticketCounts * event.price;
         logger.info("Booking is about to be made");
 
-        // Create booking with connected seats
         const booking = await tx.booking.create({
             data: {
                 eventId: event.id,
@@ -86,15 +80,9 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
                 },
             },
             include: {
-                event: {
-                    select: { id: true, title: true, description: true, category: true },
-                },
-                user: {
-                    select: { id: true, username: true, email: true, fullName: true },
-                },
-                seats: {
-                    select: { id: true, seatNumber: true },
-                },
+                event: { select: { id: true, title: true, description: true, category: true } },
+                user: { select: { id: true, username: true, email: true, fullName: true } },
+                seats: { select: { id: true, seatNumber: true } },
             },
         });
 
@@ -102,9 +90,21 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
             return new ApiResponse(res, 500, "Error while creating a booking", null, null);
         }
 
-        return new ApiResponse(res, 200, "Booking made; you can proceed to make payment", booking, null);
+        const result = await initiateKhaltiPayment(booking.id, user);
+
+        return new ApiResponse(
+            res,
+            200,
+            "Payment initiated successfully",
+            {
+                booking: result.booking,
+                paymentUrl: result.paymentUrl,
+            },
+            null
+        );
     });
 });
+
 
 
 
