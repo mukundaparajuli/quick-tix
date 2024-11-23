@@ -58,20 +58,37 @@ interface BookSeatProps {
 import React, { useState, useEffect, useContext } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { io, Socket } from "socket.io-client";
-import { SocketContext, useSocket } from "@/contexts/socketContext";
+import { Socket } from "socket.io-client";
+import { useSocket } from "@/contexts/socketContext";
+import { useSession } from "next-auth/react";
 
 const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
     const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
     const [layout, setLayout] = useState<Section[]>(seatLayout);
-    const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+    const [socket, setSocket] = useState<Socket | null>(null);
     const [lockedSeats, setLockedSeats] = useState<Set<number>>(new Set());
     const newSocket = useSocket();
+    const { data: session } = useSession();
+    const userId = session?.user.id;
 
-    setSocket(newSocket)
+    // set socket only if it does not exist previously 
     useEffect(() => {
-        if (!socket) return;
+        if (!socket && newSocket) {
+            setSocket(newSocket);
+        }
+    }, [socket, newSocket]);
+    useEffect(() => {
+        if (!socket) {
+            console.log("no socket conenction!")
+            return;
+        };
         socket.emit("join-event", eventId);
+
+        socket.on('seat-updated', (eventId, seatId, status) => {
+            console.log("seat updated: ", eventId, seatId, status)
+            setLockedSeats(prev => new Set([...prev, seatId]));
+            updateSeatStatus(seatId, "locked");
+        })
 
         socket.on("seat-locked", ({ seatId, userId }) => {
             console.log("locking the seat " + seatId + " for " + userId)
@@ -96,7 +113,7 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
             socket.disconnect();
             setSocket(null);
         };
-    }, [eventId]);
+    }, []);
 
     const updateSeatStatus = (seatId: number, status: Seat["status"]) => {
         setLayout(prevLayout => {
@@ -114,7 +131,7 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
 
     const handleSeatClick = (seatId: number, sectionId: number, rowId: number) => {
         if (!socket) return;
-        console.log("socket connection xa")
+        console.log("seat id", seatId)
         const section = layout.find(s => s.id === sectionId);
         const row = section?.rows.find(r => r.id === rowId);
         const seat = row?.seats.find(s => s.id === seatId);
@@ -126,19 +143,27 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
             updateSeatStatus(seatId, "available");
             setSelectedSeats(prev => prev.filter(s => s.seatId !== seatId));
         } else {
-            socket.emit("lock-seat", { seatId, eventId });
+            console.log("selected xaina already book pani bhako xaina aba chai lock garnu paryo seat lai")
+            console.log(seatId, eventId);
+            socket.emit("lock-seat", Number(seatId), Number(eventId), Number(userId));
 
-            socket.once("lock-confirmed", ({ success, seatId }) => {
-                if (success) {
-                    updateSeatStatus(seatId, "selected");
-                    setSelectedSeats(prev => [...prev, {
-                        seatId,
-                        sectionId,
-                        rowId,
-                        label: `Row ${row?.rowNumber} - Seat ${seat.seatNumber}`
-                    }]);
-                }
-            });
+            // socket.once("lock-confirmed", ({ success, seatId }) => {
+            //     console.log("seat lock-confirmed")
+            //     if (success) {
+            //         updateSeatStatus(seatId, "selected");
+            //         setSelectedSeats(prev => [...prev, {
+            //             seatId,
+            //             sectionId,
+            //             rowId,
+            //             label: `Row ${row?.rowNumber} - Seat ${seat.seatNumber}`
+            //         }]);
+            //     }
+            // });
+            socket.on('seat-updated', ({ eventId: eventid, seatId: seatid, status }) => {
+                console.log("seat updated: ", eventId, seatId, status)
+                setLockedSeats(prev => new Set([...prev, seatId]));
+                updateSeatStatus(seatId, "locked");
+            })
         }
     };
 

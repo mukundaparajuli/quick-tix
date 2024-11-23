@@ -7,6 +7,13 @@ export interface socketType {
 }
 export const SocketContext = createContext<Socket | null>(null);
 
+
+/** 
+ * @returns socket context
+ * @description this useSocket hook returns a SocketContext
+ * @argument none
+ * @example const newSocket = useSocket(); 
+ */
 export const useSocket = () => {
     const context = useContext(SocketContext);
     if (!context) {
@@ -25,7 +32,9 @@ const SocketProvider = ({ children }: { children: ReactNode }) => {
             return;
         }
 
-        const newSocket = io(BACKEND_URL);
+        const newSocket = io(BACKEND_URL, {
+            transports: ['websocket']
+        });
         setSocket(newSocket);
 
         newSocket.on("connect", () => {
@@ -39,7 +48,7 @@ const SocketProvider = ({ children }: { children: ReactNode }) => {
         return () => {
             newSocket.disconnect();
         };
-    }, []);
+    }, [BACKEND_URL]);
 
     return (
         <SocketContext.Provider value={socket}>

@@ -9,6 +9,7 @@ export const lockseat = async (io: any, socket: Socket) => {
     const LOCK_TIMEOUT: number = Number(process.env.LOCK_TIMEOUT);
 
     socket.on("join-event", async (eventid) => {
+        console.log("Event with " + eventid + " joined the event!");
         socket.join(`event_${eventid}`)
 
         const seats = await db.seat.findMany({
@@ -20,9 +21,15 @@ export const lockseat = async (io: any, socket: Socket) => {
         socket.emit("seat-data", seats);
     })
     socket.on("lock-seat", async (seatid, eventid, userid) => {
+        console.log("seat id=", seatid);
+        console.log("user id=", userid);
+        console.log("event id=", eventid);
         const seat = await lockSeat(seatid, eventid, userid);
 
-        io.to(`event_${eventid}`).emit('seatUpdated', {
+        // confirm the lock
+        // socket.emit("lock-confirmed", true, seat?.id)
+
+        socket.emit('seat-updated', {
             eventid,
             seatid,
             status: SeatStatus.LOCKED

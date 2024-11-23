@@ -11,11 +11,9 @@ import { addLocation, addVenue } from "../services";
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
     const { title, description, date, price, totalTickets, availableTickets, organizerName, organizerEmail, category, sections, location, venue } = req.body;
-    console.log(req.body)
 
     // Check if all fields are present
     if (!title || !description || !date || !venue || !location || !price || !totalTickets || !availableTickets || !organizerName || !organizerEmail) {
-        console.log("sabai field chaiyo")
         return new ApiResponse(res, 403, "All fields are mandatory to be filled", null, null);
     }
 
@@ -61,7 +59,6 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
     }
 
     if (!Object.values(EventCategory).includes(category)) {
-        console.log(EventCategory, category);
         return new ApiResponse(res, 403, "Invalid Category")
     }
     // Create the event
@@ -85,7 +82,6 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
         },
     });
-    console.log(newEvent);
     // Create sections, rows, and seats in a batch
     await Promise.all(sections.map(async (section: any) => {
         const createdSection = await db.section.create({
@@ -161,8 +157,6 @@ export const GetAnEvent = asyncHandler(async (req: Request, res: Response) => {
             Seat: true,
         }
     })
-
-    console.log(event);
 
     // check if event exists
     if (!event) {
@@ -287,7 +281,6 @@ export const DeleteAnEvent = asyncHandler(async (req: Request, res: Response) =>
 
 // get popular events
 export const getPopularEvents = asyncHandler(async (req: Request, res: Response) => {
-    console.log("hello")
     const events = await db.event.findMany({
         orderBy: {
             bookings: { _count: 'desc' }
@@ -298,6 +291,5 @@ export const getPopularEvents = asyncHandler(async (req: Request, res: Response)
         },
         take: 20
     })
-    // console.log(events);
     return new ApiResponse(res, 200, "Popular Events are here!", events, null)
 })

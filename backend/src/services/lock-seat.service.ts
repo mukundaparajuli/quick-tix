@@ -1,7 +1,7 @@
 import db from "../config/db"
 import ApiError from "../types/api-error"
 
-const LockSeat = async (userid: number, eventid: number, seatid: number) => {
+const LockSeat = async (seatid: number, eventid: number, userid: number) => {
     const seat = await db.seat.findUnique({
         where: {
             id: seatid,

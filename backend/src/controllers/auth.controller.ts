@@ -12,6 +12,7 @@ import { sendVerificationEmail } from "../utils/send-verification-email";
 
 
 // register a user
+
 export const RegisterUser = asyncHandler(async (req: Request, res: Response) => {
     const { fullName, username, email, password, role } = await req.body;
 
@@ -56,10 +57,10 @@ export const RegisterUser = asyncHandler(async (req: Request, res: Response) => 
     // send verification email
     const verificationToken = generateVerificationToken(newUser);
     const { data, error } = await sendVerificationEmail(newUser.email, verificationToken);
-    console.log(data, error);
+    // logger.info(data, error);
 
     const { password: _, ...userWithoutPassword } = newUser;
-    return new ApiResponse(res, 200, 'Please check your email for verification', userWithoutPassword, null);
+    return new ApiResponse(res, 200, 'Register Successful', userWithoutPassword, null);
 })
 
 
@@ -70,36 +71,42 @@ export const RegisterUser = asyncHandler(async (req: Request, res: Response) => 
 export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
     const { email, username, password } = await req.body;
 
+    // if (email or username) or password is not present send error 
     if (!(email || username) || !password) {
         return new ApiResponse(res, 400, 'All fields are required', null, null);
     }
 
     let validUser;
 
+    // if email is provided find user by email
     if (email) {
         validUser = await db.user.findUnique({
-            where: { email }
-        });
+            where: {
+                email
+            }
+        })
     }
 
+    // if username is provided find user by username
     if (username) {
         validUser = await db.user.findUnique({
-            where: { username }
-        });
+            where: {
+                username
+            }
+        })
     }
 
+    // if not valid user send error
     if (!validUser) {
         return new ApiResponse(res, 404, "User not found", null, null);
     }
 
+    // here we will have the valid user
     const checkPassword = await bcrypt.compare(password, validUser.password);
 
+    // check if password is valid
     if (!checkPassword) {
         return new ApiResponse(res, 403, "Wrong Password", null, null);
-    }
-
-    if (!validUser.verified) {
-        return new ApiResponse(res, 401, "Please verify your email first", null, null)
     }
 
     const userPayload = {
@@ -108,19 +115,28 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
         username: validUser.username,
         email: validUser.email,
         role: validUser.role,
-    };
-
+    }
+    // logger.info("user payload: ", userPayload)
     const secret = process.env.JWT_SECRET_KEY;
 
     if (!secret) {
         return new ApiResponse(res, 500, 'Secret keys are not defined', null, null);
     }
 
+    // Generate tokens
     const jwtToken = jwt.sign({ user: userPayload }, secret, { expiresIn: '1d' });
 
+    // store the tokens in cookies 
+    res.cookie('jwtToken', jwtToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000,
+    });
 
-    return new ApiResponse(res, 200, "Login Successful", { userPayload, jwtToken }, null);
-});
+    return new ApiResponse(res, 200, "Login Successful", userPayload, null);
+})
+
 
 // logout user
 
@@ -141,22 +157,17 @@ export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
 
 export const VerifyEmail = asyncHandler(async (req: Request, res: Response) => {
     const { verificationToken } = req.params;
-
-    logger.info("verification token: ", verificationToken)
+    // logger.info(verificationToken)
     const decoded = jwt.verify(verificationToken, process.env.JWT_SECRET_KEY as string);
-    logger.info("decoded: ", decoded)
-
+    // logger.info(decoded);
     if (!decoded || typeof decoded === 'string') {
         return new ApiResponse(res, 400, "Invalid verification token", null, null);
     }
-
-    // decoded.id
-    const userId = decoded.id;
-    logger.info("user id: ", userId)
+    // logger.info("decoded: ", decoded)
 
     const user = await db.user.findUnique({
         where: {
-            id: userId
+            id: decoded.user.id
         }
     })
 

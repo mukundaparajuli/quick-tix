@@ -6,7 +6,7 @@ export default function Page() {
     console.log(session);
     return (
         <div>
-            Hello {session?.user?.fullName}
+            Hello {session?.user?.fullName} with userid: {session?.user.id}
         </div>
     )
 }
