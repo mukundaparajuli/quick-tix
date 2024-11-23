@@ -184,20 +184,20 @@ enum BookingStatus {
 // seats
 
 model Seat {
-  id         Int        @id @default(autoincrement())
-  seatNumber Int
-  row        Row        @relation(fields: [rowId], references: [id])
-  rowId      Int
-  status     SeatStatus @default(AVAILABLE)
-  bookings   Booking?   @relation(fields: [bookingId], references: [id])
-  locked_by  Int?
-  locked_at  DateTime?
-  User       User?      @relation(fields: [locked_by], references: [id]) // Make relation nullable
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  Event      Event?     @relation(fields: [eventId], references: [id])
-  eventId    Int?
-  bookingId  Int?
+  id        Int        @id @default(autoincrement())
+  seatId    String
+  row       Row        @relation(fields: [rowId], references: [id])
+  rowId     Int
+  status    SeatStatus @default(AVAILABLE)
+  bookings  Booking?   @relation(fields: [bookingId], references: [id])
+  locked_by Int?
+  locked_at DateTime?
+  User      User?      @relation(fields: [locked_by], references: [id]) // Make relation nullable
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Event     Event?     @relation(fields: [eventId], references: [id])
+  eventId   Int?
+  bookingId Int?
 }
 
 enum SeatStatus {

@@ -15,7 +15,7 @@ export default function EventDetail() {
         queryFn: async () => {
             if (!id || !session) throw new Error("Invalid request");
             const result = await getWithAuth(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/event/${id}`,
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/event/${id}`,
                 session
             );
             return result;

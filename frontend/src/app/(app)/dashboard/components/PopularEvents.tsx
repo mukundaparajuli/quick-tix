@@ -13,7 +13,7 @@ export default function PopularEvents() {
     const { data: fetchedEvents, isLoading, isError } = useQuery({
         queryKey: ["popular-events"],
         queryFn: async () => {
-            const res = await fetch(`${baseUrl}/event/popular-events`, { method: "GET" });
+            const res = await fetch(`${baseUrl}/api/event/popular-events`, { method: "GET" });
             const data = await res.json();
             if (!res.ok || !data) {
                 throw new Error("Failed to fetch popular events");

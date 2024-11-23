@@ -82,7 +82,7 @@ export const RegisterBooking = asyncHandler(async (req: Request, res: Response) 
             include: {
                 event: { select: { id: true, title: true, description: true, category: true } },
                 user: { select: { id: true, username: true, email: true, fullName: true } },
-                seats: { select: { id: true, seatNumber: true } },
+                seats: { select: { id: true, seatId: true } },
             },
         });
 

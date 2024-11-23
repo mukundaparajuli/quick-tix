@@ -9,18 +9,19 @@ import { BookSeat } from "./components";
 export default function Page() {
     const { id } = useParams();
     const { data: session } = useSession();
-    const { data } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ['event-info', id],
         queryFn: async () => {
-            const result = await getWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/event/${id}`, session);
+            const result = await getWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/event/${id}`, session);
             return result;
         }
     })
-    console.log(data);
+    if (isLoading) return <div>Loading...</div>
+
     return (
         <div>
             <div>Booking for {id}</div>
-            {data && data.Section && <BookSeat seatLayout={data.Section} />}
+            {data && data.Section && <BookSeat seatLayout={data.Section} eventId={data.eventId} />}
         </div>
     )
 }

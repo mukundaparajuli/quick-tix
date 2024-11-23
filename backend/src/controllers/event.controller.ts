@@ -81,9 +81,11 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
         include: {
             organizer: true,
             location: true,
+            Section: true
+
         },
     });
-
+    console.log(newEvent);
     // Create sections, rows, and seats in a batch
     await Promise.all(sections.map(async (section: any) => {
         const createdSection = await db.section.create({
@@ -96,14 +98,16 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
             const createdRow = await db.row.create({
                 data: {
                     sectionId: createdSection.id,
-                    rowNumber: row.rowNumber,
+                    rowNumber: Number(row.row),
                 },
             });
+
+            console.log(row.seats);
             await Promise.all(row.seats.map(async (seat: any) => {
                 await db.seat.create({
                     data: {
                         rowId: createdRow.id,
-                        seatNumber: seat.seatNumber,
+                        seatId: seat.id ?? 12,
                     },
                 });
             }));

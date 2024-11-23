@@ -30,7 +30,7 @@ const RegisterForm = ({ className, ...props }: RegisterFormProps) => {
     const mutation = useMutation({
         mutationFn: async (formData: z.infer<typeof RegisterSchema>) => {
             console.log("here i am")
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

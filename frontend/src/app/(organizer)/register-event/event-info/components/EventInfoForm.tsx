@@ -133,7 +133,7 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
             if (!eventInfo) throw new Error("No event information");
             const sections = sectionData;
             const data = { ...eventInfo, sections }
-            const result = await postWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/event`, data, session);
+            const result = await postWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/event`, data, session);
             console.log(result);
         } catch (error) {
             console.log('Final submission error:', error);
