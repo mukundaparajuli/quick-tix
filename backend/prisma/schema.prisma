@@ -117,8 +117,8 @@ model Section {
   rows      Row[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  eventId   Int?
-  Event     Event?   @relation(fields: [eventId], references: [id])
+  eventId   Int
+  Event     Event    @relation(fields: [eventId], references: [id])
 }
 
 // Rows in each section (e.g., Row A, Row B)

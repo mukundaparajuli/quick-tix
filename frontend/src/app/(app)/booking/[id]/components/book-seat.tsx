@@ -4,7 +4,7 @@
 interface Seat {
     id: number;
     seatNumber: string;
-    status: "available" | "selected" | "locked" | "booked";
+    status: "AVAILABLE" | "SELECTED" | "LOCKED" | "BOOKED";
     rowId: number;
     createdAt: string;
     updatedAt: string;
@@ -78,22 +78,38 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
         }
     }, [socket, newSocket]);
     useEffect(() => {
+
+        // check if socket connection exists
         if (!socket) {
             console.log("no socket conenction!")
             return;
         };
+
+        // print this if socket connection exists
+        console.log("no socket conenction!")
+
+        // join the event
         socket.emit("join-event", eventId);
 
-        socket.on('seat-updated', (eventId, seatId, status) => {
-            console.log("seat updated: ", eventId, seatId, status)
-            setLockedSeats(prev => new Set([...prev, seatId]));
-            updateSeatStatus(seatId, "locked");
+        //after joining the event you will get the seats for this event
+        socket.on('seat-data', (data) => {
+
+            // set the data to layout
+            setLayout(data);
+            console.log(data);
+        })
+
+        // if seats are updated
+        socket.on('seat-updated', ({ eventid, seatid, status }) => {
+            console.log("seat updated: ", eventid, seatid, status)
+            setLockedSeats(prev => new Set([...prev, seatid]));
+            updateSeatStatus(seatid, "LOCKED");
         })
 
         socket.on("seat-locked", ({ seatId, userId }) => {
             console.log("locking the seat " + seatId + " for " + userId)
             setLockedSeats(prev => new Set([...prev, seatId]));
-            updateSeatStatus(seatId, "locked");
+            updateSeatStatus(seatId, "LOCKED");
         });
 
         socket.on("seat-unlocked", ({ seatId }) => {
@@ -102,18 +118,18 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
                 newSet.delete(seatId);
                 return newSet;
             });
-            updateSeatStatus(seatId, "available");
+            updateSeatStatus(seatId, "AVAILABLE");
         });
 
         socket.on("seat-booked", ({ seatId }) => {
-            updateSeatStatus(seatId, "booked");
+            updateSeatStatus(seatId, "BOOKED");
         });
 
         return () => {
             socket.disconnect();
             setSocket(null);
         };
-    }, []);
+    }, [eventId, socket]);
 
     const updateSeatStatus = (seatId: number, status: Seat["status"]) => {
         setLayout(prevLayout => {
@@ -136,46 +152,41 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
         const row = section?.rows.find(r => r.id === rowId);
         const seat = row?.seats.find(s => s.id === seatId);
 
-        if (!seat || seat.status === "booked" || seat.status === "locked") return;
+        if (!seat || seat.status === "BOOKED") return;
 
-        if (seat.status === "selected") {
-            socket.emit("unlock-seat", { seatId, eventId });
-            updateSeatStatus(seatId, "available");
+        if (seat.status === "SELECTED" || seat.status === 'LOCKED') {
+            socket.emit("unlock-seat", Number(seatId), Number(userId), Number(eventId));
+            updateSeatStatus(seatId, "AVAILABLE");
             setSelectedSeats(prev => prev.filter(s => s.seatId !== seatId));
         } else {
             console.log("selected xaina already book pani bhako xaina aba chai lock garnu paryo seat lai")
             console.log(seatId, eventId);
-            socket.emit("lock-seat", Number(seatId), Number(eventId), Number(userId));
+            socket.emit("lock-seat", Number(seatId), Number(userId), Number(eventId));
 
-            // socket.once("lock-confirmed", ({ success, seatId }) => {
-            //     console.log("seat lock-confirmed")
-            //     if (success) {
-            //         updateSeatStatus(seatId, "selected");
-            //         setSelectedSeats(prev => [...prev, {
-            //             seatId,
-            //             sectionId,
-            //             rowId,
-            //             label: `Row ${row?.rowNumber} - Seat ${seat.seatNumber}`
-            //         }]);
-            //     }
-            // });
-            socket.on('seat-updated', ({ eventId: eventid, seatId: seatid, status }) => {
-                console.log("seat updated: ", eventId, seatId, status)
-                setLockedSeats(prev => new Set([...prev, seatId]));
-                updateSeatStatus(seatId, "locked");
-            })
+            socket.once("lock-confirmed", ({ success, seatId }) => {
+                console.log("seat lock-confirmed")
+                if (success) {
+                    updateSeatStatus(seatId, "SELECTED");
+                    setSelectedSeats(prev => [...prev, {
+                        seatId,
+                        sectionId,
+                        rowId,
+                        label: `Row ${row?.rowNumber} - Seat ${seat.seatNumber}`
+                    }]);
+                }
+            });
         }
     };
 
     const getSeatColor = (status: Seat["status"]): string => {
         switch (status) {
-            case "available":
+            case "AVAILABLE":
                 return "bg-gray-200 hover:bg-blue-200";
-            case "selected":
+            case "SELECTED":
                 return "bg-blue-500 text-white";
-            case "locked":
+            case "LOCKED":
                 return "bg-yellow-500 text-white cursor-not-allowed";
-            case "booked":
+            case "BOOKED":
                 return "bg-gray-500 text-white cursor-not-allowed";
             default:
                 return "bg-gray-200";
@@ -193,7 +204,7 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
         socket.once("booking-confirmed", ({ success, message }) => {
             if (success) {
                 selectedSeats.forEach(seat => {
-                    updateSeatStatus(seat.seatId, "booked");
+                    updateSeatStatus(seat.seatId, "BOOKED");
                 });
                 setSelectedSeats([]);
             }
@@ -214,6 +225,7 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
                     {layout.map((section) => (
                         <div key={section.id} className="w-full">
                             <div className="flex flex-col gap-4">
+
                                 {/* Sort rows by rowNumber in descending order */}
                                 {[...section.rows]
                                     .sort((a, b) => b.rowNumber - a.rowNumber)
@@ -223,17 +235,21 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
                                                 {row.rowNumber}
                                             </div>
                                             <div className="flex gap-2">
+
                                                 {row.seats.map((seat) => (
+
                                                     <Button
                                                         key={seat.id}
                                                         variant="outline"
                                                         className={`w-8 h-8 p-0 flex items-center justify-center text-xs
                               ${getSeatColor(seat.status)}`}
                                                         onClick={() => handleSeatClick(seat.id, section.id, row.id)}
-                                                        disabled={seat.status === "booked" || seat.status === "locked"}
+                                                        disabled={seat.status === "BOOKED"}
                                                     >
                                                         {seat.seatNumber}
                                                     </Button>
+
+
                                                 ))}
                                             </div>
                                         </div>
@@ -245,7 +261,7 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
                     <div className="flex gap-4 text-sm">
                         <div className="flex items-center gap-2">
                             <div className="w-4 h-4 bg-gray-200 rounded"></div>
-                            Available
+                            AVAILABLE
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-4 h-4 bg-blue-500 rounded"></div>

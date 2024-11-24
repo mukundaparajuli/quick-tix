@@ -1,6 +1,6 @@
 
 import { Socket, Server } from "socket.io";
-import { lockSeat } from "../src/services";
+import { lockSeat, UnlockSeat } from "../src/services";
 import db from "../src/config/db";
 import { SeatStatus } from "../src/enums";
 
@@ -10,24 +10,32 @@ export const lockseat = async (io: any, socket: Socket) => {
 
     socket.on("join-event", async (eventid) => {
         console.log("Event with " + eventid + " joined the event!");
-        socket.join(`event_${eventid}`)
+        await socket.join(`event_${eventid}`)
 
-        const seats = await db.seat.findMany({
+        const sections = await db.section.findMany({
             where: {
                 eventId: eventid
+            },
+            include: {
+                rows: {
+                    include: {
+                        seats: true
+                    }
+                }
             }
         })
 
-        socket.emit("seat-data", seats);
+        socket.emit("seat-data", sections);
     })
-    socket.on("lock-seat", async (seatid, eventid, userid) => {
-        console.log("seat id=", seatid);
-        console.log("user id=", userid);
-        console.log("event id=", eventid);
-        const seat = await lockSeat(seatid, eventid, userid);
 
-        // confirm the lock
-        // socket.emit("lock-confirmed", true, seat?.id)
+
+    // LOCK THE SEAT
+    socket.on("lock-seat", async (seatid, userid, eventid) => {
+        const seat = await lockSeat(seatid, userid, eventid);
+
+        setTimeout(() => {
+            console.log("timeout")
+        }, 5000)
 
         socket.emit('seat-updated', {
             eventid,
@@ -58,13 +66,27 @@ export const lockseat = async (io: any, socket: Socket) => {
                     }
                 });
 
-                io.to(`event_${eventid}`).emit('seatUpdated', {
+                io.to(`event_${eventid}`).emit('seat-updated', {
                     eventid,
                     seatid,
                     status: SeatStatus.AVAILABLE
                 });
             }
         }, LOCK_TIMEOUT * 1000);
+
+    })
+
+
+
+    // UNLOCK THE SEAT
+    socket.on("unlock-seat", async (seatid, userid, eventid) => {
+        const unlockedseat = await UnlockSeat(seatid, userid, eventid);
+
+        socket.emit('seat-updated', {
+            eventid,
+            seatid,
+            status: unlockedseat.status
+        });
 
     })
 }

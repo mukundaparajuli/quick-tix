@@ -1,7 +1,7 @@
 import db from "../config/db"
 import ApiError from "../types/api-error"
 
-const LockSeat = async (seatid: number, eventid: number, userid: number) => {
+const LockSeat = async (seatid: number, userid: number, eventid: number) => {
     const seat = await db.seat.findUnique({
         where: {
             id: seatid,
@@ -19,10 +19,11 @@ const LockSeat = async (seatid: number, eventid: number, userid: number) => {
         where: { id: seatid },
         data: {
             status: "LOCKED",
+            locked_by: userid
         },
     });
 
-    console.log("seat has been locked");
+    console.log("seat has been locked", lockedSeat);
     return lockedSeat;
 }
 
