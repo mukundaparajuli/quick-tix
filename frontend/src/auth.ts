@@ -26,8 +26,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         throw new Error(errorData.message || "Login failed");
                     }
                     const data = await res.json();
-                    console.log(data.data);
-                    console.log(data.data.userPayload);
+                    console.log(data);
+                    // console.log(data.data.userPayload);
 
 
                     return {

@@ -1,92 +1,75 @@
-
-import { Socket, Server } from "socket.io";
+import { Socket } from "socket.io";
 import { lockSeat, UnlockSeat } from "../src/services";
 import db from "../src/config/db";
 import { SeatStatus } from "../src/enums";
 
 export const lockseat = async (io: any, socket: Socket) => {
-
     const LOCK_TIMEOUT: number = Number(process.env.LOCK_TIMEOUT);
 
-    socket.on("join-event", async (eventid) => {
-        console.log("Event with " + eventid + " joined the event!");
-        await socket.join(`event_${eventid}`)
+    // Lock the seat
+    socket.on("lock-seat", async (seatid: number, userid: number, eventid: number) => {
+        try {
+            const seat = await lockSeat(seatid, userid, eventid);
 
-        const sections = await db.section.findMany({
-            where: {
-                eventId: eventid
-            },
-            include: {
-                rows: {
-                    include: {
-                        seats: true
-                    }
-                }
-            }
-        })
-
-        socket.emit("seat-data", sections);
-    })
+            // Emit lock confirmation to the specific user
+            socket.emit("lock-confirmed", true, seatid);
 
 
-    // LOCK THE SEAT
-    socket.on("lock-seat", async (seatid, userid, eventid) => {
-        const seat = await lockSeat(seatid, userid, eventid);
+            console.log("seat-updated is about to be emitted...")
+            // Notify all users about the seat being locked
+            io.to(`event_${eventid}`).emit("seat-updated", {
+                seatid,
+                userid,
+                status: SeatStatus.LOCKED
+            });
+            console.log("seat-updated has been emitted...")
 
-        setTimeout(() => {
-            console.log("timeout")
-        }, 5000)
-
-        socket.emit('seat-updated', {
-            eventid,
-            seatid,
-            status: SeatStatus.LOCKED
-        });
-
-
-        // release the seat after the lock time
-        setTimeout(async () => {
-
-            const lockedSeat = await db.seat.findFirst({
-                where: {
-                    id: seatid,
-                    status: SeatStatus.LOCKED,
-                    locked_by: userid
-                }
-            })
-
-            // if seat has been locked then
-            if (lockedSeat) {
-                await db.seat.update({
-                    where: { id: seatid },
-                    data: {
-                        status: SeatStatus.AVAILABLE,
-                        locked_by: null,
-                        locked_at: null
+            // Automatically release the seat after the timeout
+            setTimeout(async () => {
+                const lockedSeat = await db.seat.findFirst({
+                    where: {
+                        id: seatid,
+                        status: SeatStatus.LOCKED,
+                        locked_by: userid
                     }
                 });
 
-                io.to(`event_${eventid}`).emit('seat-updated', {
-                    eventid,
-                    seatid,
-                    status: SeatStatus.AVAILABLE
-                });
-            }
-        }, LOCK_TIMEOUT * 1000);
+                if (lockedSeat) {
+                    await db.seat.update({
+                        where: { id: seatid },
+                        data: {
+                            status: SeatStatus.AVAILABLE,
+                            locked_by: null,
+                            locked_at: null
+                        }
+                    });
 
-    })
+                    io.to(`event_${eventid}`).emit("seat-unlocked", {
+                        seatid,
+                        userid,
+                        status: SeatStatus.AVAILABLE
+                    });
+                }
+            }, LOCK_TIMEOUT * 1000);
+        } catch (error) {
+            console.error("Error locking seat:", error);
+            socket.emit("lock-confirmed", { success: false, seatId: seatid });
+        }
+    });
 
+    // Unlock the seat
+    socket.on("unlock-seat", async (seatid: number, userid: number, eventid: number) => {
+        try {
+            const unlockedSeat = await UnlockSeat(seatid, userid, eventid);
 
-
-    // UNLOCK THE SEAT
-    socket.on("unlock-seat", async (seatid, userid, eventid) => {
-        const unlockedseat = await UnlockSeat(seatid, userid, eventid);
-
-        socket.emit('seat-updated', {
-            eventid,
-            seatid,
-            status: unlockedseat.status
-        });
-
-    })
-}
+            // Notify all users about the seat being unlocked
+            io.to(`event_${eventid}`).emit("seat-updated", {
+                seatid,
+                userid,
+                status: unlockedSeat.status
+            });
+        } catch (error) {
+            console.error("Error unlocking seat:", error);
+        }
+    });
+};

@@ -3,6 +3,7 @@ import { Role } from "../enums";
 
 
 export interface User {
+    id: number;
     fullName: string;
     username: string;
     email: string;
@@ -17,6 +18,7 @@ export interface Attendee extends User {
 }
 
 export interface Event {
+    id: number;
     title: string;
     description: string,
     date: Date;

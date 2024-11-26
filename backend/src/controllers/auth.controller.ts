@@ -134,7 +134,9 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
         maxAge: 24 * 60 * 60 * 1000,
     });
 
-    return new ApiResponse(res, 200, "Login Successful", userPayload, null);
+
+
+    return new ApiResponse(res, 200, "Login Successful", { userPayload, jwtToken }, null);
 })
 
 
