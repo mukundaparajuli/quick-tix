@@ -7,6 +7,7 @@ import { Socket } from "socket.io-client";
 import { useSocket } from "@/contexts/socketContext";
 import { useSession } from "next-auth/react";
 import clsx from "clsx";
+import { useRouter } from "next/navigation";
 
 // Types for your specific data structure
 interface Seat {
@@ -56,6 +57,7 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
     const { data: session } = useSession();
     const userId = Number(session?.user.id);
     const [socket, setSocket] = useState<Socket | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         if (!socket && newSocket) setSocket(newSocket);
@@ -84,9 +86,19 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
             updateSeatStatus(seatId, "BOOKED");
         };
 
+        const handlePayment = (data: any) => {
+            console.log(data);
+            const { booking, paymentUrl } = data;
+
+            router.replace(paymentUrl);
+            console.log("payment page")
+
+        }
+
         socket.on("seat-data", handleSeatData);
         socket.on("seat-updated", handleSeatUpdated);
         socket.on("seat-booked", handleSeatBooked);
+        socket.on("payment-page", handlePayment);
 
         return () => {
             socket.off("seat-data", handleSeatData);
@@ -160,10 +172,16 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
     const handleBooking = () => {
         if (!selectedSeats.length || !socket) return;
 
-        socket.emit("book-seats", {
+
+
+        console.log("handling booking");
+        console.log(selectedSeats);
+
+        socket.emit("book-seat",
             eventId,
-            seats: selectedSeats.map((seat) => seat.seatId),
-        });
+            selectedSeats,
+            userId
+        );
 
         socket.once("booking-confirmed", ({ success }) => {
             if (success) {

@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io"
 import { lockseat } from "./lock-seat";
 import db from "../src/config/db";
+import { bookseat } from "./book-seat";
 
 export const initializeSocket = (io: Server) => {
     io.on("connection", async (socket: Socket) => {
@@ -21,6 +22,7 @@ export const initializeSocket = (io: Server) => {
         });
 
 
+        bookseat(io, socket);
         lockseat(io, socket);
     })
 }

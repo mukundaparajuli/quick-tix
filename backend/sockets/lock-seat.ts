@@ -56,6 +56,7 @@ export const lockseat = async (io: any, socket: Socket) => {
             socket.emit("lock-confirmed", { success: false, seatId: seatid });
         }
     });
+    
 
     // Unlock the seat
     socket.on("unlock-seat", async (seatid: number, userid: number, eventid: number) => {

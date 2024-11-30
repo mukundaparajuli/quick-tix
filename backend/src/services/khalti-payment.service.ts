@@ -1,6 +1,6 @@
-import { PrismaClient, BookingStatus } from "@prisma/client";
+// import { PrismaClient, BookingStatus } from "@prisma/client";
 import logger from "../logger";
-import db from "../config/db";
+// import db from "../config/db";
 
 
 interface PaymentPayload {
@@ -15,10 +15,12 @@ interface PaymentPayload {
     };
 }
 
-const initiateKhaltiPayment = async (bookingId: number, user: any) => {
-    const booking = await db.booking.findUnique({
+const initiateKhaltiPayment = async (tx: any, bookingId: number, user: any) => {
+    console.log("bookignid=", bookingId);
+    const booking = await tx.booking.findUnique({
         where: { id: bookingId },
     });
+    console.log(booking);
 
     if (!booking) {
         throw new Error("Booking not found");
@@ -33,13 +35,15 @@ const initiateKhaltiPayment = async (bookingId: number, user: any) => {
     const WEBSITE_URL = process.env.KHALTI_WEBSITE_URL;
 
     if (!RETURN_URL || !WEBSITE_URL) {
+        console.log(RETURN_URL);
+        console.log(WEBSITE_URL);
         throw new Error("Khalti return URL or website URL is missing");
     }
 
     const payload: PaymentPayload = {
         return_url: RETURN_URL,
         website_url: WEBSITE_URL,
-        amount: booking.totalPrice * 100,
+        amount: 70000,
         purchase_order_id: booking.id.toString(),
         purchase_order_name: `Booking for event id: ${booking.id}`,
         customer_info: {
@@ -58,6 +62,7 @@ const initiateKhaltiPayment = async (bookingId: number, user: any) => {
     });
 
     if (!response.ok) {
+        console.log(await response.json())
         const errorDetails = await response.json();
         logger.error("Khalti payment initiation error:", errorDetails);
         throw new Error(
@@ -68,7 +73,7 @@ const initiateKhaltiPayment = async (bookingId: number, user: any) => {
     const paymentResponse = await response.json();
 
     // Create payment record in the database
-    await db.payment.create({
+    const payment = await tx.payment.create({
         data: {
             bookingId: booking.id,
             amount: booking.totalPrice,
@@ -78,6 +83,7 @@ const initiateKhaltiPayment = async (bookingId: number, user: any) => {
             paymentResponse: paymentResponse,
         },
     });
+    console.log("payment=", payment);
 
     return {
         booking,
