@@ -158,10 +158,7 @@ const bookSeat = async (
         // Initiate payment process
         const paymentResult = await initiateKhaltiPayment(tx, booking.id, user);
 
-        return {
-            booking: paymentResult.booking,
-            paymentUrl: paymentResult.paymentUrl
-        };
+        return paymentResult;
     }, {
         maxWait: 5000, // 5 seconds max wait to connect to prisma
         timeout: 20000, // 20 seconds

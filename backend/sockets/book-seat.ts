@@ -21,9 +21,13 @@ export const bookseat = async (io: Server, socket: Socket) => {
             }
 
             // Book the seat
-            const seat = await bookSeat(eventid, seats, user as Attendee);
-            console.log("seat=", seat);
-            io.to(`event_${eventid}`).emit("payment-page", { seat });
+            const paymentResult = await bookSeat(eventid, seats, user as Attendee);
+            console.log("seat=", paymentResult);
+            const number = io.to(`event_${eventid}`).emit("payment-page", { paymentResult });
+            console.log(number);
+
+
+
         } catch (error) {
             console.error("Error booking seat:", error);
 

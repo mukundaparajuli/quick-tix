@@ -8,6 +8,7 @@ import { useSocket } from "@/contexts/socketContext";
 import { useSession } from "next-auth/react";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
+import postWithAuth from "../../../../../../utils/postWithAuth";
 
 // Types for your specific data structure
 interface Seat {
@@ -58,6 +59,8 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
     const userId = Number(session?.user.id);
     const [socket, setSocket] = useState<Socket | null>(null);
     const router = useRouter();
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL
+
 
     useEffect(() => {
         if (!socket && newSocket) setSocket(newSocket);
@@ -86,12 +89,17 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
             updateSeatStatus(seatId, "BOOKED");
         };
 
-        const handlePayment = (data: any) => {
-            console.log(data);
-            const { booking, paymentUrl } = data;
+        const handlePayment = async (data: any) => {
+            console.log("data is =", data);
+            const { paymentResult } = data;
+            console.log(paymentResult);
 
-            router.replace(paymentUrl);
-            console.log("payment page")
+
+            router.push(paymentResult.paymentResponse.payment_url)
+
+
+
+
 
         }
 

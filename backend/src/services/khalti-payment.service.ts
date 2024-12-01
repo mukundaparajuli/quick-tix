@@ -26,8 +26,8 @@ const initiateKhaltiPayment = async (tx: any, bookingId: number, user: any) => {
         throw new Error("Booking not found");
     }
 
-    const LIVE_SECRET_KEY = process.env.LIVE_SECRET_KEY;
-    if (!LIVE_SECRET_KEY) {
+    const KHALTI_LIVE_SECRET_KEY = process.env.KHALTI_LIVE_SECRET_KEY;
+    if (!KHALTI_LIVE_SECRET_KEY) {
         throw new Error("Khalti live secret key is missing");
     }
 
@@ -35,7 +35,7 @@ const initiateKhaltiPayment = async (tx: any, bookingId: number, user: any) => {
     const WEBSITE_URL = process.env.KHALTI_WEBSITE_URL;
 
     if (!RETURN_URL || !WEBSITE_URL) {
-        console.log(RETURN_URL);
+        console.log("ru=", RETURN_URL);
         console.log(WEBSITE_URL);
         throw new Error("Khalti return URL or website URL is missing");
     }
@@ -54,7 +54,7 @@ const initiateKhaltiPayment = async (tx: any, bookingId: number, user: any) => {
 
     const response = await fetch("https://a.khalti.com/api/v2/epayment/initiate/", {
         headers: {
-            "Authorization": `Key ${LIVE_SECRET_KEY}`,
+            "Authorization": `Key ${KHALTI_LIVE_SECRET_KEY}`,
             "Content-Type": "application/json",
         },
         method: "POST",
@@ -85,10 +85,7 @@ const initiateKhaltiPayment = async (tx: any, bookingId: number, user: any) => {
     });
     console.log("payment=", payment);
 
-    return {
-        booking,
-        paymentUrl: paymentResponse.payment_url,
-    };
+    return payment;
 };
 
 

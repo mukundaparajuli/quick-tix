@@ -1,5 +1,14 @@
 import { Session } from "next-auth";
 
+
+/**
+ * @description postWithAuth is a service to ease the post request with authorization
+ * @param url 
+ * @param data 
+ * @param session 
+ * @returns response.json()
+ * @example postWithAuth(`${BACKEND_URL}/api/`, session)
+ */
 export default async function postWithAuth(url: string, data: any, session: Session | null) {
     console.log(url)
     console.log(data)

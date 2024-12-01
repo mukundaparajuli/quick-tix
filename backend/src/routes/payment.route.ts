@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { makePayment } from "../controllers/payment.controller";
+import { verifyPayment } from "../controllers/payment.controller";
 import { JwtValidation } from "../middlewares/jwt-validation";
 
 const router = Router();
 
-router.post('/', JwtValidation, makePayment);
+router.post('/verify-payment', JwtValidation, verifyPayment);
 
 
 export default router;
