@@ -1,5 +1,17 @@
 import { Session } from "next-auth";
 
+
+
+/**
+ * 
+ * @param url 
+ * @param session 
+ * @returns json 
+ * @description a utility function to make a get request with authentication
+ * @example getWithAuth(`${BACKEND_URL}/api/events`, session)
+ * 
+ */
+
 export default async function getWithAuth(url: string, session: Session | null) {
     if (!url) {
         throw new Error("Url not found!");

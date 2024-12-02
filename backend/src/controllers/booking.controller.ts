@@ -7,107 +7,6 @@ import logger from "../logger";
 import { initiateKhaltiPayment } from "../services";
 
 
-// Create a booking
-export const RegisterBooking = asyncHandler(async (req: Request, res: Response) => {
-    const { eventId, ticketCounts, seatIds, rowId, sectionId } = req.body;
-
-    return await db.$transaction(async (tx) => {
-        const user = req.user;
-
-        if (!user) {
-            return new ApiResponse(res, 404, "User not found!", null, null);
-        }
-
-        const userId: number = user.id;
-
-        if (user.role !== Role.ATTENDEE) {
-            return new ApiResponse(res, 403, "Only attendees can book an event", null, null);
-        }
-
-        const event = await tx.event.findUnique({
-            where: { id: Number(eventId) },
-        });
-
-        if (!event) {
-            return new ApiResponse(res, 404, "Event does not exist", null, null);
-        }
-
-        if (ticketCounts < 1 || ticketCounts > event.availableTickets) {
-            return new ApiResponse(res, 400, "Invalid Ticket Count", null, null);
-        }
-
-        if (!seatIds || seatIds.length !== ticketCounts) {
-            return new ApiResponse(res, 400, "Seat numbers do not match ticket count.", null, null);
-        }
-
-        const section = await tx.section.findUnique({
-            where: { id: Number(sectionId) },
-            include: { rows: true },
-        });
-
-        if (!section || !section.rows.some(row => row.id === Number(rowId))) {
-            return new ApiResponse(res, 400, "Invalid section or row", null, null);
-        }
-
-        // Check availability for all seats in one query
-        const seats = await tx.seat.findMany({
-            where: { id: { in: seatIds }, rowId: rowId, status: SeatStatus.AVAILABLE },
-        });
-
-        if (seats.length !== seatIds.length) {
-            return new ApiResponse(res, 400, "Some seats are not available or do not belong to the specified row.");
-        }
-
-        for (let seatId of seatIds) {
-            await tx.seat.update({
-                where: { id: seatId },
-                data: { status: SeatStatus.LOCKED },
-            });
-        }
-
-        const totalPrice = ticketCounts * event.price;
-        logger.info("Booking is about to be made");
-
-        const booking = await tx.booking.create({
-            data: {
-                eventId: event.id,
-                userId: userId,
-                ticketCounts: ticketCounts,
-                totalPrice: totalPrice,
-                status: BookingStatus.PENDING,
-                seats: {
-                    connect: seatIds.map((seatId: number) => ({ id: seatId })),
-                },
-            },
-            include: {
-                event: { select: { id: true, title: true, description: true, category: true } },
-                user: { select: { id: true, username: true, email: true, fullName: true } },
-                seats: { select: { id: true, seatId: true } },
-            },
-        });
-
-        if (!booking) {
-            return new ApiResponse(res, 500, "Error while creating a booking", null, null);
-        }
-
-        const result = await initiateKhaltiPayment(booking.id, user);
-
-        return new ApiResponse(
-            res,
-            200,
-            "Payment initiated successfully",
-            {
-                booking: result.booking,
-                paymentUrl: result.paymentUrl,
-            },
-            null
-        );
-    });
-});
-
-
-
-
 // Cancel a booking
 export const CancelBooking = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -230,6 +129,7 @@ export const GetABookingById = asyncHandler(async (req: Request, res: Response) 
                     },
                 },
             },
+            user: true
 
         }
     })

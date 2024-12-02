@@ -18,10 +18,9 @@ export const verifyPayment = asyncHandler(async (req: Request, res: Response) =>
 
         // Update booking status in the database
         const updatedBooking = await db.booking.update({
-            where: { id: bookingId },
+            where: { id: Number(bookingId) },
             data: {
                 status: "SUCCESSFUL",
-                // paymentDetails: paymentDetails, 
             },
         });
 

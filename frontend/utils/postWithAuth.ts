@@ -10,10 +10,6 @@ import { Session } from "next-auth";
  * @example postWithAuth(`${BACKEND_URL}/api/`, session)
  */
 export default async function postWithAuth(url: string, data: any, session: Session | null) {
-    console.log(url)
-    console.log(data)
-    console.log(session)
-
     const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -23,7 +19,6 @@ export default async function postWithAuth(url: string, data: any, session: Sess
         body: JSON.stringify(data),
     }
     )
-    console.log(await response.json())
 
     if (response.ok) {
         return await response.json();
