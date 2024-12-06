@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { DeleteAnEvent, GetAllEvents, GetAnEvent, GetEventsByCategory, getPopularEvents, RegisterEvent } from "../controllers/event.controller";
+import { DeleteAnEvent, GetAllEvents, GetAnEvent, GetEventsByCategory, getPopularEvents, RegisterEvent, SearchEvent } from "../controllers/event.controller";
 import { JwtValidation } from "../middlewares/jwt-validation";
 
 const router = Router();
@@ -10,5 +10,6 @@ router.get('/', JwtValidation, GetAllEvents)
 router.get('/:eventId', JwtValidation, GetAnEvent)
 router.get('/category/:category', JwtValidation, GetEventsByCategory)
 router.delete('/:eventId', JwtValidation, DeleteAnEvent)
+router.get('/search/:searchTerm', JwtValidation, SearchEvent)
 
 export default router;

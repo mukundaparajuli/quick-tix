@@ -246,39 +246,6 @@ export const DeleteAnEvent = asyncHandler(async (req: Request, res: Response) =>
 })
 
 
-// event registration lai complete garnu xa
-// flow ma afu clear hune tespaxi teskai anusar banauna khojne
-
-
-// create booking
-// export const RegisterBooking = asyncHandler(async (req: Request, res: Response) => {
-//     const { eventId, ticketCounts, seatIds } = req.body;
-
-//     return await db.$transaction(async (tx) => {
-//         // Your existing validation code here
-
-//         // Lock seats with timeout
-//         const LOCK_TIMEOUT = 15 * 60 * 1000; // 15 minutes
-//         const lockExpiry = new Date(Date.now() + LOCK_TIMEOUT);
-
-//         await tx.seat.updateMany({
-//             where: { id: { in: seatIds } },
-//             data: {
-//                 status: SeatStatus.LOCKED,
-//                 lockExpiresAt: lockExpiry
-//             }
-//         });
-
-//         const booking = await tx.booking.create({
-//             // Your existing booking creation code
-//         });
-
-//         return new ApiResponse(res, 200, "Booking created", booking, null);
-//     });
-// });
-
-
-
 // get popular events
 export const getPopularEvents = asyncHandler(async (req: Request, res: Response) => {
     const events = await db.event.findMany({
@@ -293,3 +260,40 @@ export const getPopularEvents = asyncHandler(async (req: Request, res: Response)
     })
     return new ApiResponse(res, 200, "Popular Events are here!", events, null)
 })
+
+
+/**
+ * @access private
+ * @description This function returns events whose titles match the search term.
+ */
+export const SearchEvent = asyncHandler(async (req: Request, res: Response) => {
+    const { searchTerm } = req.params;
+
+    if (!searchTerm || searchTerm.trim() === '') {
+        return new ApiResponse(res, 400, "Search term is required");
+    }
+
+    try {
+        const events = await db.event.findMany({
+            where: {
+                title: {
+                    contains: searchTerm,
+                    mode: 'insensitive',
+                },
+            },
+            include: {
+                location: true,
+            }
+
+        });
+
+        if (events.length === 0) {
+            return new ApiResponse(res, 404, "No events found matching the search term");
+        }
+
+        return new ApiResponse(res, 200, "Events retrieved successfully", events);
+    } catch (error) {
+        console.error("Error fetching events:", error);
+        return new ApiResponse(res, 500, "An error occurred while searching for events");
+    }
+});

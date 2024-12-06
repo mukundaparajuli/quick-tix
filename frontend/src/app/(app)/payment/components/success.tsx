@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import getWithAuth from "../../../../../utils/getWithAuth";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { FaDownload } from "react-icons/fa";
+import { FaDownload, FaHome } from "react-icons/fa";
+import { Separator } from "@/components/ui/separator";
 
 const Success = ({ bookingId }: { bookingId: string | null }) => {
     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL!;
@@ -57,7 +58,7 @@ const Success = ({ bookingId }: { bookingId: string | null }) => {
 
     return (
         <div className="h-[90vh] flex justify-center items-center">
-            <div className="min-w-2xl w-1/3 bg-white shadow-md p-6 mx-auto rounded-md">
+            <div className="min-w-2xl w-1/3 bg-white shadow-md p-6 mx-auto rounded-md ">
                 <h2 className="text-2xl font-bold text-center text-green-600">
                     Payment Successful!
                 </h2>
@@ -99,12 +100,17 @@ const Success = ({ bookingId }: { bookingId: string | null }) => {
                         </p>
                     </div>
                 </div>
-                <div className="py-8">
-                    <Button>
-                        <FaDownload />
-                        Download Ticket
-                    </Button>
-                </div>
+            </div>
+            <Separator />
+            <div className="flex justify-between items-center">
+                <Button>
+                    <FaHome />
+                    Dashboard
+                </Button>
+                <Button>
+                    <FaDownload />
+                    Download Ticket
+                </Button>
             </div>
         </div>
     );

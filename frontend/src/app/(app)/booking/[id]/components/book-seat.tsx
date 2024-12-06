@@ -97,10 +97,6 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
 
             router.push(paymentResult.paymentResponse.payment_url)
 
-
-
-
-
         }
 
         socket.on("seat-data", handleSeatData);
