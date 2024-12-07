@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import EventCard from "../../dashboard/components/EventCard";
 import { EventType } from "../../../../../types/eventType";
+import { SearchInput } from "../components"
 
 const Page = () => {
     const [searchedEvents, setSearchedEvents] = useState<EventType[] | null>(null);
@@ -26,6 +27,7 @@ const Page = () => {
     return (
         <div className="content-center">
             <h1 className="font-bold text-4xl">{searchTerm}</h1>
+            <SearchInput />
             {searchedEvents && searchedEvents.length >= 1 && searchedEvents.map((event) => (
                 <EventCard event={event} key={event.id} />
             ))}
