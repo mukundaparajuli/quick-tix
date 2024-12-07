@@ -10,6 +10,7 @@ import { Session } from "next-auth";
  * @example postWithAuth(`${BACKEND_URL}/api/`, session)
  */
 export default async function postWithAuth(url: string, data: any, session: Session | null) {
+    console.log("frontend ko token= ", session?.user)
     const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -20,10 +21,11 @@ export default async function postWithAuth(url: string, data: any, session: Sess
     }
     )
 
+    const resData = await response.json();
     if (response.ok) {
-        return await response.json();
+        return resData;
     }
 
-    console.log("error occured while making a post request");
+    console.log("error occured while making a post request: ", resData);
     throw new Error("Error occured while making a post request")
 }

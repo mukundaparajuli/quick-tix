@@ -57,9 +57,11 @@ export default function PopularEvents() {
             )}
 
             {/* Display popular events in the form of cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 max-h-[450vh] overflow-y-auto">
+            <div className="flex flex-col overflow-x-clip flex-wrap gap-4 p-4 max-h-[400vh] overflow-y-auto">
                 {Array.isArray(eventsToDisplay) && eventsToDisplay.map((event: EventType) => (
-                    <EventCard event={event} key={event.id} />
+                    <div className="flex-3 basis-[calc(50%_-_1rem)] md:basis-[calc(25%_-_1rem)]" key={event.id}>
+                        <EventCard event={event} />
+                    </div>
                 ))}
             </div>
         </div>

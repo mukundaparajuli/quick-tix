@@ -11,9 +11,8 @@ import { dummyEventData } from "@/constants/dummy-event-data";
 
 export default function EventCard({ event }: { event: EventType }) {
     const router = useRouter();
-    console.log(event);
     return (
-        <Card className="dark:bg-gray-800 text-black dark:text-white rounded-full shadow-lg hover:shadow-2xl scale-95 transition-all duration-300 p-0 w-[22vw] border-none m-0 cursor-pointer hover:scale-105"
+        <Card className="dark:bg-gray-800 text-black dark:text-white h-auto shadow-lg hover:shadow-2xl scale-95 transition-all duration-300 p-0 w-[22vw] border-none m-0 cursor-pointer hover:scale-105"
             onClick={() => { router.replace('dashboard/event/' + event.id) }}>
             {dummyEventData[event.id]?.image && <CardHeader className="p-0">
                 <Image

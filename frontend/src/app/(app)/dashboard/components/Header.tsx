@@ -1,10 +1,10 @@
 "use client";
 
 import { eventsMenu } from "@/constants/events-menu";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FaUser } from "react-icons/fa";
+import { FaSignOutAlt, FaUser } from "react-icons/fa";
 
 
 export default function Header() {
@@ -31,16 +31,21 @@ export default function Header() {
 
 
         {session?.user ?
-            (<div className="flex items-center justify-end text-lg w-1/4 cursor-pointer" >
-                <div className="flex items-center justify-center gap-4  text-lg">
+            (<div className="flex items-center justify-end text-lg w-1/4 cursor-pointer gap-6" >
+                <div className="flex items-center justify-center gap-4  text-lg" onClick={() => router.push("/profile")}>
                     <FaUser />
                     <p>{session.user.username}</p>
+                </div>
+                <div onClick={() => signOut()} className="flex justify-center items-center gap-2 bg-red-500 text-white rounded-md px-4 py-2">
+                    <FaSignOutAlt />
+                    <p>Log Out</p>
                 </div>
             </div>) :
             (< div className="flex items-center justify-end text-lg w-1/5 gap-4">
                 <Link href="/login" className="flex items-center justify-center gap-4 text-xl cursor-pointer" > Sign In</Link>
                 <Link href="/register" className="flex items-center justify-center gap-4  text-xl  rounded-full px-4 py-2 bg-blue-700 cursor-pointer"> Sign Up</Link>
             </div>)
+
         }
     </div >
     )

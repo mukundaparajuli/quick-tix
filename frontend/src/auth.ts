@@ -26,18 +26,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         throw new Error(errorData.message || "Login failed");
                     }
                     const data = await res.json();
-                    console.log(data);
-                    // console.log(data.data.userPayload);
-
-
-                    return {
+                    const user = {
                         id: data.data.userPayload.id,
                         fullName: data.data.userPayload.fullName,
                         email: data.data.userPayload.email,
                         username: data.data.userPayload.username,
                         role: data.data.userPayload.role,
                         accessToken: data.data.jwtToken,
-                    } as User
+                    }
+                    console.log("mapped user=", user);
+
+                    return user;
 
                 } catch (error) {
                     console.log("Auth error:", error);
@@ -47,24 +46,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }),
     ],
     callbacks: {
-        async jwt({ token, user }) {
-            if (user) {
-                token.id = user.id;
-                token.accessToken = user.accessToken;
-                token.fullName = user.fullName;
-                token.email = user.email;
-                token.username = user.username;
-                token.role = user.role;
-            }
-            return token;
-        },
         async session({ session, token }) {
+            console.log(session);
+            session.user.name = token.fullName as string;
             session.user.id = token.id as string;
             session.user.accessToken = token.accessToken as string;
             session.user.fullName = token.fullName as string;
             session.user.email = token.email as string;
             session.user.username = token.username as string;
-            session.user.role = token.role as string; return session;
+            session.user.role = token.role as string;
+            console.log("session= ", session)
+            return session;
         },
     },
     session: {

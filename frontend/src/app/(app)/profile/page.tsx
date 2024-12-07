@@ -7,6 +7,7 @@ export default function Page() {
     return (
         <div>
             Hello {session?.user?.fullName} with userid: {session?.user.id}
+            Status: {status}
         </div>
     )
 }
