@@ -5,13 +5,17 @@ import { FaSearch } from 'react-icons/fa';
 import React, { useState } from 'react';
 
 const Search = () => {
+    const [searchTerm, setSearcTerm] = useState<string | null>(null)
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [startDate, setStartDate] = useState<string | null>(null);
     const [endDate, setEndDate] = useState<string | null>(null);
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
     const handleSearch = () => {
         console.log("Search by:", { selectedCategory, startDate, endDate });
-        // Add your search logic here
+
+        const searchUrl = `${BACKEND_URL}/event&?searchTerm=${searchTerm}?category=${selectedCategory}?from=${startDate}?to=${endDate}`
+        console.log(searchUrl);
     };
 
     return (
@@ -30,7 +34,7 @@ const Search = () => {
                     />
                 </div>
 
-                {/* Category Dropdown */}
+
                 <div className="w-48">
                     <Select onValueChange={(value) => setSelectedCategory(value)}>
                         <SelectTrigger>
@@ -44,7 +48,7 @@ const Search = () => {
                     </Select>
                 </div>
 
-                {/* Start Date Picker */}
+
                 <div className="w-48">
                     <Label htmlFor="start-date-picker" className="sr-only">
                         Start Date
@@ -57,7 +61,7 @@ const Search = () => {
                     />
                 </div>
 
-                {/* End Date Picker */}
+
                 <div className="w-48">
                     <Label htmlFor="end-date-picker" className="sr-only">
                         End Date

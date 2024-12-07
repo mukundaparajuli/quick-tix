@@ -264,36 +264,38 @@ export const getPopularEvents = asyncHandler(async (req: Request, res: Response)
 
 /**
  * @access private
- * @description This function returns events whose titles match the search term.
+ * @description This function returns events matching the provided filters (searchTerm, category, date range).
  */
 export const SearchEvent = asyncHandler(async (req: Request, res: Response) => {
-    const { searchTerm } = req.params;
-
-    if (!searchTerm || searchTerm.trim() === '') {
-        return new ApiResponse(res, 400, "Search term is required");
-    }
-
     try {
-        const events = await db.event.findMany({
-            where: {
-                title: {
-                    contains: searchTerm,
-                    mode: 'insensitive',
-                },
-            },
-            include: {
-                location: true,
-            }
+        const { searchTerm, category, from, to } = req.query;
+        console.log("searchTerm", searchTerm)
 
-        });
+        // Initialize an empty filter object
+        const filter: any = {};
 
-        if (events.length === 0) {
-            return new ApiResponse(res, 404, "No events found matching the search term");
+        // Add filters dynamically based on query parameters
+        if (searchTerm && searchTerm !== 'null') {
+            filter.title = { contains: searchTerm, mode: 'insensitive' };
         }
 
-        return new ApiResponse(res, 200, "Events retrieved successfully", events);
+        if (category && category !== 'null') {
+            filter.category = category;
+        }
+
+        if (from && to) {
+            filter.date = { gte: new Date(from as string), lte: new Date(to as string) }; // Ensures "date" matches the range
+        }
+
+        // Fetch events matching the filter
+        const events = await db.event.findMany({
+            where: filter
+        });
+
+        // Respond with the filtered events
+        res.status(200).json(events);
     } catch (error) {
         console.error("Error fetching events:", error);
-        return new ApiResponse(res, 500, "An error occurred while searching for events");
+        res.status(500).json({ error: "Server error" });
     }
 });

@@ -5,11 +5,11 @@ import { JwtValidation } from "../middlewares/jwt-validation";
 const router = Router();
 
 router.get('/popular-events', getPopularEvents);
+router.get('/search', SearchEvent)
 router.post('/', JwtValidation, RegisterEvent)
 router.get('/', JwtValidation, GetAllEvents)
 router.get('/:eventId', JwtValidation, GetAnEvent)
 router.get('/category/:category', JwtValidation, GetEventsByCategory)
 router.delete('/:eventId', JwtValidation, DeleteAnEvent)
-router.get('/search/:searchTerm', JwtValidation, SearchEvent)
 
 export default router;
