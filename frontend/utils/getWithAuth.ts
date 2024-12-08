@@ -28,8 +28,9 @@ export default async function getWithAuth(url: string, session: Session | null) 
         },
     });
     const result = await response.json();
+    console.log("result is", result);
     if (!response.ok) {
-        throw new Error('Failed to fetch data. Error: ' + result.message);
+        throw new Error('Failed to fetch data. Error: ' + result.error);
     }
     return result.data;
 }

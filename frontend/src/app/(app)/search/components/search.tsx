@@ -14,8 +14,8 @@ const Search = () => {
     const handleSearch = () => {
         console.log("Search by:", { selectedCategory, startDate, endDate });
 
-        const searchUrl = `${BACKEND_URL}/event&?searchTerm=${searchTerm}?category=${selectedCategory}?from=${startDate}?to=${endDate}`
-        console.log(searchUrl);
+        const searchUrl = `${BACKEND_URL}/api/event/search?searchTerm=${searchTerm}&category=${selectedCategory}&from=${startDate}&to=${endDate}`
+        console.log(searchUrl)
     };
 
     return (

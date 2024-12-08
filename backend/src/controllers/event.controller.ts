@@ -289,11 +289,14 @@ export const SearchEvent = asyncHandler(async (req: Request, res: Response) => {
 
         // Fetch events matching the filter
         const events = await db.event.findMany({
-            where: filter
+            where: filter,
+            include: {
+                location: true,
+                venue: true,
+            }
         });
 
-        // Respond with the filtered events
-        res.status(200).json(events);
+        return new ApiResponse(res, 200, "Your search result is here!", events, null)
     } catch (error) {
         console.error("Error fetching events:", error);
         res.status(500).json({ error: "Server error" });
