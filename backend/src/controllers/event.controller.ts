@@ -117,16 +117,50 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
 
 
-// get all events
+// Get all events with pagination
 export const GetAllEvents = asyncHandler(async (req: Request, res: Response) => {
-    const events = await db.event.findMany();
+    const { page = 1, limit = 10 } = req.query; // Default values for page and limit
+    const pageNumber = parseInt(page as string, 10); // Convert query params to integers
+    const limitNumber = parseInt(limit as string, 10);
 
-    if (!events || events.length === 0) {
-        return new ApiResponse(res, 404, "No events were found!", null, null)
+    if (isNaN(pageNumber) || isNaN(limitNumber) || pageNumber < 1 || limitNumber < 1) {
+        return new ApiResponse(res, 400, "Invalid pagination parameters!", null, null);
     }
 
-    return new ApiResponse(res, 200, "all the events are here", events, null);
-})
+    const skip = (pageNumber - 1) * limitNumber; // Calculate the number of records to skip
+
+    const [events, totalEvents] = await Promise.all([
+        db.event.findMany({
+            skip,
+            take: limitNumber,
+            include: {
+                location: true,
+                venue: true
+            }
+        }),
+        db.event.count(), // Get the total number of events for pagination metadata
+    ]);
+
+    if (!events || events.length === 0) {
+        return new ApiResponse(res, 404, "No events were found!", null, null);
+    }
+
+    const totalPages = Math.ceil(totalEvents / limitNumber);
+
+    return new ApiResponse(
+        res,
+        200,
+        "All the events are here",
+        events,
+        {
+            currentPage: pageNumber,
+            totalPages,
+            totalEvents,
+            limit: limitNumber,
+        }
+    );
+});
+
 
 
 // get a event by id

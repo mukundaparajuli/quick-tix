@@ -1,19 +1,19 @@
 export const eventsMenu = [
     {
         name: "Browse Events",
-        path: "/",
+        path: "/browse",
     },
     {
         name: "Popular Events",
-        path: "//popular",
+        path: "/popular",
     },
     {
         name: "Music",
-        path: "//music",
+        path: "/music",
     },
     {
         name: "Sports",
-        path: "//sports",
+        path: "/sports",
     },
 ];
 

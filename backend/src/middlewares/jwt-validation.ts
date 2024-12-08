@@ -20,8 +20,6 @@ export const JwtValidation = asyncHandler(async (req: Request, res: Response, ne
                 return new ApiResponse(res, 403, "JWT verification failed. Please Login again", null, err);
             }
 
-
-
             if (decoded) {
                 req.user = decoded.user;
             }
