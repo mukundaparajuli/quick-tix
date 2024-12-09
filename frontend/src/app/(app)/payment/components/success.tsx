@@ -6,18 +6,41 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { FaDownload, FaHome } from "react-icons/fa";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
+interface BookingDetail {
+    id: string;
+    eventId: string;
+    status: string;
+    ticketCounts: number;
+    totalPrice: number;
+    seats: string[];
+    user: {
+        username: string;
+        fullName: string;
+        email: string;
+    };
+}
+
+const InfoRow = ({ label, value }: { label: string; value: string | number | JSX.Element }) => (
+    <p className="text-gray-700">
+        <span className="font-medium">{label}:</span> {value}
+    </p>
+);
 
 const Success = ({ bookingId }: { bookingId: string | null }) => {
     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL!;
     const { data: session } = useSession();
+    const router = useRouter();
 
-    const [bookingDetail, setBookingDetail] = useState<any>(null);
+    const [bookingDetail, setBookingDetail] = useState<BookingDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!bookingId) {
-            setError("Invalid booking ID.");
+            toast.error("Booking ID not available!");
             setLoading(false);
             return;
         }
@@ -29,7 +52,6 @@ const Success = ({ bookingId }: { bookingId: string | null }) => {
                     `${BACKEND_URL}/api/booking/${bookingId}`,
                     session
                 );
-                console.log(response);
                 setBookingDetail(response);
             } catch (err) {
                 setError("An error occurred while fetching booking details.");
@@ -38,76 +60,66 @@ const Success = ({ bookingId }: { bookingId: string | null }) => {
             }
         };
 
+        toast.promise(fetchBookingInfo, {
+            loading: "Loading booking details...",
+            success: "Booking details loaded successfully!",
+            error: "Failed to fetch booking details.",
+        });
+
         fetchBookingInfo();
     }, [bookingId, BACKEND_URL]);
 
-    if (loading) {
-        return <div className="text-center text-gray-600">Loading booking details...</div>;
-    }
-
-    if (error) {
-        return <div className="text-center text-red-600">{error}</div>;
-    }
-
+    if (loading) return <div className="text-center text-gray-600">Loading booking details...</div>;
+    if (error) return <div className="text-center text-red-600">{error}</div>;
     if (!bookingDetail) {
-        return <div className="text-center text-gray-600">No booking details found.</div>;
+        toast.error("No booking details found.");
+        return <div className="text-center text-gray-600">No booking details available.</div>;
     }
 
-    const { id, eventId, status, ticketCounts, totalPrice, seats, user } =
-        bookingDetail;
+    const { id, eventId, status, ticketCounts, totalPrice, seats, user } = bookingDetail;
 
     return (
-        <div className="h-[90vh] flex justify-center items-center">
-            <div className="min-w-2xl w-1/3 bg-white shadow-md p-6 mx-auto rounded-md ">
+        <div className="flex flex-col items-center gap-6">
+            <div className="w-full max-w-2xl bg-white shadow-md p-6 rounded-md">
                 <h2 className="text-2xl font-bold text-center text-green-600">
                     Payment Successful!
                 </h2>
-
-                <div className="mt-6">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Booking Information</h3>
-                    <div className="space-y-2">
-                        <p className="text-gray-700">
-                            <span className="font-medium">Booking ID:</span> {id}
-                        </p>
-                        <p className="text-gray-700">
-                            <span className="font-medium">Event ID:</span> {eventId}
-                        </p>
-                        <p className="text-gray-700">
-                            <span className="font-medium">Status:</span> {status}
-                        </p>
-                        <p className="text-gray-700">
-                            <span className="font-medium">Tickets:</span> {ticketCounts}
-                        </p>
-                        <p className="text-gray-700">
-                            <span className="font-medium">Total Price:</span> ${totalPrice}
-                        </p>
-                        <p className="text-gray-700">
-                            <span className="font-medium">Seats:</span>{" "}
-                            {seats.length > 0 ? seats.join(", ") : "No seats selected"}
-                        </p>
-                    </div>
-
-                    <h3 className="text-xl font-semibold text-gray-800 mt-6 mb-4">User Information</h3>
-                    <div className="space-y-2">
-                        <p className="text-gray-700">
-                            <span className="font-medium">Username:</span> {user?.username}
-                        </p>
-                        <p className="text-gray-700">
-                            <span className="font-medium">Full Name:</span> {user?.fullName}
-                        </p>
-                        <p className="text-gray-700">
-                            <span className="font-medium">Email:</span> {user?.email}
-                        </p>
-                    </div>
+                <div className="mt-6 space-y-6">
+                    <section>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                            Booking Information
+                        </h3>
+                        <div className="space-y-2">
+                            <InfoRow label="Booking ID" value={id} />
+                            <InfoRow label="Event ID" value={eventId} />
+                            <InfoRow label="Status" value={status} />
+                            <InfoRow label="Tickets" value={ticketCounts} />
+                            <InfoRow label="Total Price" value={`$${totalPrice}`} />
+                            <InfoRow
+                                label="Seats"
+                                value={seats.length > 0 ? seats.join(", ") : "No seats selected"}
+                            />
+                        </div>
+                    </section>
+                    <section>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                            User Information
+                        </h3>
+                        <div className="space-y-2">
+                            <InfoRow label="Username" value={user.username} />
+                            <InfoRow label="Full Name" value={user.fullName} />
+                            <InfoRow label="Email" value={user.email} />
+                        </div>
+                    </section>
                 </div>
             </div>
             <Separator />
-            <div className="flex justify-between items-center">
-                <Button>
+            <div className="flex justify-center items-center gap-4">
+                <Button onClick={() => router.push("/dashboard")} className="flex items-center gap-2">
                     <FaHome />
                     Dashboard
                 </Button>
-                <Button>
+                <Button className="flex items-center gap-2">
                     <FaDownload />
                     Download Ticket
                 </Button>

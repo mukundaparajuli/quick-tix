@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaSignOutAlt, FaUser } from "react-icons/fa";
 import { toast } from "sonner";
-
+import { ModeToggle } from "@/components/themes"
 
 export default function Header() {
     const router = useRouter();
@@ -52,6 +52,9 @@ export default function Header() {
             </div>)
 
         }
+        <div>
+            <ModeToggle />
+        </div>
     </div >
     )
 }

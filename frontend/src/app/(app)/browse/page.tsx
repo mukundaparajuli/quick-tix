@@ -18,7 +18,7 @@ export default function Page() {
         setLoading(true);
         try {
             const response = await getWithAuth(
-                `${BACKEND_URL}/api/event?page=${page}&limit=5`,
+                `${BACKEND_URL}/api/event?page=${page}&limit=4`,
                 session
             );
             if (response.length === 0) {
@@ -55,8 +55,8 @@ export default function Page() {
 
     return (
         <div className="flex flex-col overflow-x-clip flex-wrap gap-4 p-4 max-h-[400vh] overflow-y-auto">
-            {events.map((event) => (
-                <div className="flex-3 basis-[calc(50%_-_1rem)] md:basis-[calc(25%_-_1rem)]" key={event.id}>
+            {events.map((event, index) => (
+                <div className="flex-3 basis-[calc(50%_-_1rem)] md:basis-[calc(25%_-_1rem)]" key={index}>
                     <EventCard event={event} />
                 </div>
             ))}
