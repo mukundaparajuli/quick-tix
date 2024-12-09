@@ -54,13 +54,12 @@ export default function Page() {
     }, [page, session]);
 
     return (
-        <div>
-            {
-                events.map((event) =>
-                (
-                    <EventCard event={event} key={event.id} />
-                ))
-            }
+        <div className="flex flex-col overflow-x-clip flex-wrap gap-4 p-4 max-h-[400vh] overflow-y-auto">
+            {events.map((event) => (
+                <div className="flex-3 basis-[calc(50%_-_1rem)] md:basis-[calc(25%_-_1rem)]" key={event.id}>
+                    <EventCard event={event} />
+                </div>
+            ))}
         </div>
     )
 }

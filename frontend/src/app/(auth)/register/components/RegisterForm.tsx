@@ -39,7 +39,6 @@ const RegisterForm = ({ className, ...props }: RegisterFormProps) => {
             });
             if (response.ok) {
                 const result = await response.json();
-                console.log(result);
                 return result;
             }
             console.log(await response.json());

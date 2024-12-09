@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io"
 import { lockseat } from "./lock-seat";
-import db from "../src/config/db";
+import db from "../config/db";
 import { bookseat } from "./book-seat";
 
 export const initializeSocket = (io: Server) => {

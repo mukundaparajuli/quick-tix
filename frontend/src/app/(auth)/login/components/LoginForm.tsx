@@ -1,10 +1,17 @@
-"use client"
+"use client";
 
 import { useForm } from "react-hook-form";
 import LoginSchema from "../../../../../schemas/LoginSchema";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +19,7 @@ import { Icons } from "@/components/icons";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 interface LoginFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
@@ -21,27 +29,35 @@ const LoginForm = ({ className, ...props }: LoginFormProps) => {
         resolver: zodResolver(LoginSchema),
         defaultValues: {
             email: "",
-            password: ""
-        }
+            password: "",
+        },
     });
 
     const mutation = useMutation({
         mutationFn: async (data: z.infer<typeof LoginSchema>) => {
             const result = await signIn("credentials", {
-                redirect: true,
-                redirectTo: "/dashboard",
+                redirect: false,
                 email: data.email,
                 password: data.password,
             });
 
-            console.log(result);
-        }
-    });
+            if (result?.error) {
+                throw new Error(result.error);
+            }
 
+            return result;
+        },
+        onSuccess: () => {
+            toast.success("Logged in successfully!");
+            router.push("/dashboard");
+        },
+        onError: (error: Error) => {
+            toast.error(`Login failed: ${error.message}`);
+        },
+    });
 
     const onSubmit = (formData: z.infer<typeof LoginSchema>) => {
         mutation.mutate(formData);
-        console.log(formData);
     };
 
     return (
@@ -101,7 +117,7 @@ const LoginForm = ({ className, ...props }: LoginFormProps) => {
                         </div>
                         <div className="grid gap-1">
                             <Button type="submit" disabled={mutation.isPending}>
-                                {mutation.isPending ? 'Logging in...' : 'Login'}
+                                {mutation.isPending ? "Logging in..." : "Login"}
                             </Button>
                         </div>
                     </div>

@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
-import { lockSeat, UnlockSeat } from "../src/services";
-import db from "../src/config/db";
-import { SeatStatus } from "../src/enums";
+import { lockSeat, UnlockSeat } from "../services";
+import db from "../config/db";
+import { SeatStatus } from "../enums";
 
 export const lockseat = async (io: any, socket: Socket) => {
     const LOCK_TIMEOUT: number = Number(process.env.LOCK_TIMEOUT);
@@ -56,7 +56,7 @@ export const lockseat = async (io: any, socket: Socket) => {
             socket.emit("lock-confirmed", { success: false, seatId: seatid });
         }
     });
-    
+
 
     // Unlock the seat
     socket.on("unlock-seat", async (seatid: number, userid: number, eventid: number) => {

@@ -5,12 +5,17 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaSignOutAlt, FaUser } from "react-icons/fa";
+import { toast } from "sonner";
 
 
 export default function Header() {
     const router = useRouter();
-
     const { data: session } = useSession();
+
+    const handleLogOut = () => {
+        signOut();
+        toast.success("Logged out successfully!")
+    }
 
     return (<div className="fixed z-10 top-0 left-0 w-full h-20 bg-white dark:bg-gray-800 text-black dark:text-white flex items-center justify-between px-10 border-b-2  shadow-lg ">
 
@@ -36,7 +41,7 @@ export default function Header() {
                     <FaUser />
                     <p>{session.user.username}</p>
                 </div>
-                <div onClick={() => signOut()} className="flex justify-center items-center gap-2 bg-red-500 text-white rounded-md px-4 py-2">
+                <div onClick={() => handleLogOut()} className="flex justify-center items-center gap-2 bg-red-500 text-white rounded-md px-4 py-2">
                     <FaSignOutAlt />
                     <p>Log Out</p>
                 </div>

@@ -1,9 +1,8 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
 import { Provider } from "@/lib/Provider";
 import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from "sonner";
 
 export default async function RootLayout({
   children,
@@ -17,6 +16,7 @@ export default async function RootLayout({
       <body className="light dark:bg-gray-800 bg-slate-100" >
         <SessionProvider session={session}>
           <Provider>
+            <Toaster />
             {children}
           </Provider>
         </SessionProvider>

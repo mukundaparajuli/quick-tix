@@ -1,8 +1,8 @@
 import { Server, Socket } from "socket.io";
-import { Attendee, Seat } from "../src/types/types";
-import { bookSeat } from "../src/services";
-import db from "../src/config/db";
-import ApiError from "../src/types/api-error";
+import { Attendee, Seat } from "../types/types";
+import { bookSeat } from "../services";
+import db from "../config/db";
+import ApiError from "../types/api-error";
 
 export const bookseat = async (io: Server, socket: Socket) => {
     socket.on("book-seat", async (eventid: number, seats: Seat[], userid: number) => {

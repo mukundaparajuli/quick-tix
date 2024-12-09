@@ -8,7 +8,7 @@ import morgan from "morgan";
 import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { initializeSocket } from "../sockets";
+import { initializeSocket } from "./sockets";
 
 dotenv.config();
 
