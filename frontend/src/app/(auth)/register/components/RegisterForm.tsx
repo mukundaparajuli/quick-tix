@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Icons } from "@/components/icons";
 import RegisterSchema from "../../../../../schemas/RegisterSchema";
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 
 
@@ -27,28 +28,27 @@ const RegisterForm = ({ className, ...props }: RegisterFormProps) => {
         }
     });
 
-    const mutation = useMutation({
-        mutationFn: async (formData: z.infer<typeof RegisterSchema>) => {
-            console.log("here i am")
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-            if (response.ok) {
-                const result = await response.json();
-                return result;
-            }
-            console.log(await response.json());
+    const registerUser = async (formData: z.infer<typeof RegisterSchema>) => {
+        console.log("here i am")
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        if (response.ok) {
+            const result = await response.json();
+            return result;
         }
-    })
 
+    }
+
+    const mutation = useMutation({
+        mutationFn: registerUser
+    })
     const onSubmit = (formData: z.infer<typeof RegisterSchema>) => {
-        console.log("registering...")
         mutation.mutate(formData);
-        console.log(formData);
     };
 
     return (
@@ -203,7 +203,7 @@ const RegisterForm = ({ className, ...props }: RegisterFormProps) => {
                     </Button>
                 </div>
             </form>
-        </Form>
+        </Form >
     );
 };
 

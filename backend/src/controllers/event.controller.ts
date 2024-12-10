@@ -11,24 +11,28 @@ import ApiError from "../types/api-error";
 
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
-    const { title, description, date, price, totalTickets, availableTickets, organizerName, organizerEmail, category } = req.body;
+    const { title, description, date, organizerName, organizerEmail, category } = req.body;
     const images = req.files;
     const location = JSON.parse(req.body.location);
     const sections = JSON.parse(req.body.sections);
     const venue = JSON.parse(req.body.venue);
-
+    const price = Number(req.body.price);
+    const totalTickets = Number(req.body.totalTickets);
+    const availableTickets = Number(req.body.availableTickets);
 
     if (!images || images.length == 0) {
         throw new ApiError(404, "Images not available")
     }
 
-    const imagesPath = images.map((img) => (img.path));
+    const imagesPath = images?.map((img: any) => (img.path));
 
     let cloudinaryLinks = [{ url: null }]
 
     if (images) {
         try {
+            console.log(images);
             cloudinaryLinks = await Promise.all(imagesPath.map((image: string) => uploadToCloudinary(image)));
+            console.log(cloudinaryLinks);
         } catch (error) {
             throw new ApiError(500, error as string);
         }
@@ -74,7 +78,7 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
     // Check if organizer exists
     const organizer = await db.user.findFirst({
-        where: { email: organizerEmail }
+        where: { email: String(organizerEmail) }
     });
     console.log(organizerEmail);
     console.log(organizer);
@@ -93,6 +97,9 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
     }
 
+    if (!imagesUrl || imagesUrl.length == 0) {
+        throw new ApiError(404, "Image url not found!");
+    }
 
     // upload the images to the cloudinary and get the link
     // Create the event
@@ -138,7 +145,7 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
                 await db.seat.create({
                     data: {
                         rowId: createdRow.id,
-                        seatId: seat.id ?? 12,
+                        seatId: String(seat.id) ?? "12",
                     },
                 });
             }));

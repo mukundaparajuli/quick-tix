@@ -21,7 +21,7 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(ATTENDEE) // organizer or attendee
-  image     String
+  image     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   verified  Boolean  @default(false)
@@ -45,10 +45,10 @@ model Event {
   description      String
   category         EventCategory @default(OTHERS)
   images           String[]
+  tags             String?
   date             DateTime
   venueId          Int
   price            Float
-  totalTickets     Int
   availableTickets Int
   organizerId      Int
   locationId       Int
@@ -59,11 +59,50 @@ model Event {
   location  Location @relation(fields: [locationId], references: [id])
   organizer User     @relation(fields: [organizerId], references: [id])
 
-  bookings Booking[]
-  Section  Section[]
-  Seat     Seat[]
+  agenda     Agenda[]
+  bookings   Booking[]
+  Section    Section[]
+  Seat       Seat[]
+  TicketType TicketType[]
+  Sponsors   Sponsors[]
 
+  @@index([date])
+  @@index([category])
   @@map("events")
+}
+
+model Agenda {
+  id       Int      @id @default(autoincrement())
+  time     DateTime
+  activity String
+  eventId  Int
+
+  event Event @relation(fields: [eventId], references: [id])
+}
+
+model TicketType {
+  id           Int                @id @unique @default(autoincrement())
+  type         String
+  price        Float
+  currency     String
+  availability TicketAvailability
+  eventId      Int
+
+  event Event @relation(fields: [eventId], references: [id])
+}
+
+enum TicketAvailability {
+  AVAILABLE
+  SOLD_OUT
+}
+
+model Sponsors {
+  id      Int     @id @unique @default(autoincrement())
+  name    String
+  website String?
+  eventId Int
+
+  event Event @relation(fields: [eventId], references: [id])
 }
 
 enum EventCategory {
@@ -106,6 +145,8 @@ model Location {
   city      String
   state     String
   country   String
+  latitude  Float?
+  longitude Float?
   venues    Venue[] //Venues associated with this location
   events    Event[] // Events associated with this location
   createdAt DateTime @default(now())
@@ -152,6 +193,8 @@ model Booking {
   seats    Seat[]
   payments Payment[]
 
+  @@index([eventId])
+  @@index([userId])
   @@map("bookings")
 }
 
