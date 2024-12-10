@@ -2,6 +2,7 @@ import db from "../config/db";
 
 // add location
 const addLocation = async (locationData: { address: string; city: string; state: string; country: string }) => {
+    console.log(locationData);
     const { address, city, state, country } = locationData;
 
 

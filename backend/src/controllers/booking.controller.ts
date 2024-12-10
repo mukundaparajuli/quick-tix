@@ -2,9 +2,8 @@ import { Request, Response } from "express";
 import asyncHandler from "../utils/async-handler";
 import ApiResponse from "../types/api-response";
 import db from "../config/db";
-import { Role, BookingStatus, SeatStatus } from "../enums";
-import logger from "../logger";
-import { initiateKhaltiPayment } from "../services";
+import { Role } from "../enums";
+
 
 
 // Cancel a booking

@@ -21,6 +21,7 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(ATTENDEE) // organizer or attendee
+  image     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   verified  Boolean  @default(false)
@@ -43,6 +44,7 @@ model Event {
   title            String
   description      String
   category         EventCategory @default(OTHERS)
+  images           String[]
   date             DateTime
   venueId          Int
   price            Float

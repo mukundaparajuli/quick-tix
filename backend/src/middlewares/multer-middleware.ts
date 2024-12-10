@@ -1,3 +1,4 @@
+
 import { Request } from "express";
 import multer from "multer";
 import path from "path";
@@ -9,7 +10,7 @@ const storage = multer.diskStorage({
         cb(null, destinationPath);
     },
     filename: function (req: Request, file: any, cb: Function) {
-        const newFileName: string = new Date() + file.originalname;
+        const newFileName: string = `${Date.now()}-file.originalname`;
         cb(null, newFileName);
     }
 });
@@ -26,9 +27,6 @@ const fileFilter = (req: Request, file: any, cb: Function) => {
     return cb(null, true);
 }
 
-const upload = multer({
+export const upload = multer({
     storage, limits: { fileSize: 50 * 1024 * 1024 }, fileFilter
 })
-
-
-module.exports = upload;

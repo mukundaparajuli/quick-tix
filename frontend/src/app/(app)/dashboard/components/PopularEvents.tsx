@@ -27,7 +27,7 @@ export default function PopularEvents() {
         Array.isArray(fetchedEvents?.data) && fetchedEvents.data.length > 0
             ? fetchedEvents.data
             : dummyEventData;
-
+    console.log(fetchedEvents?.data)
     return (
         <div className="p-5 bg-white dark:bg-gray-800 flex flex-col gap-4">
             <div>

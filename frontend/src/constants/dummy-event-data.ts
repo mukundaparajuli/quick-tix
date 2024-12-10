@@ -199,7 +199,142 @@ export const dummyEventData = [
         location: "Brooklyn Bridge Park, Brooklyn"
     },
     {
-        id: 23,
+        id: 24,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 25,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 26,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 27,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 28,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 29,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 30,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 31,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 32,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 33,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 34,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 35,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 36,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 37,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 38,
+        name: "Comedy Night: Laughter and Libations 3",
+        category: "Comedy",
+        description: "A night of stand-up comedy and drinks",
+        image: "https:/picsum.photos/2400/2500",
+        date: "February 25, 2024",
+        location: "The Comedy Cellar, New York City"
+    },
+    {
+        id: 39,
         name: "Comedy Night: Laughter and Libations 3",
         category: "Comedy",
         description: "A night of stand-up comedy and drinks",

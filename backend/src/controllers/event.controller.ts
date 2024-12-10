@@ -4,18 +4,47 @@ import ApiResponse from "../types/api-response";
 import db from "../config/db";
 import { EventCategory, Role } from "../enums";
 import logger from "../logger";
-import { addLocation, addVenue } from "../services";
+import { addLocation, addVenue, uploadToCloudinary } from "../services";
+import ApiError from "../types/api-error";
 
 
 
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
-    const { title, description, date, price, totalTickets, availableTickets, organizerName, organizerEmail, category, sections, location, venue } = req.body;
+    const { title, description, date, price, totalTickets, availableTickets, organizerName, organizerEmail, category } = req.body;
+    const images = req.files;
+    const location = JSON.parse(req.body.location);
+    const sections = JSON.parse(req.body.sections);
+    const venue = JSON.parse(req.body.venue);
 
+
+    if (!images || images.length == 0) {
+        throw new ApiError(404, "Images not available")
+    }
+
+    const imagesPath = images.map((img) => (img.path));
+
+    let cloudinaryLinks = [{ url: null }]
+
+    if (images) {
+        try {
+            cloudinaryLinks = await Promise.all(imagesPath.map((image: string) => uploadToCloudinary(image)));
+        } catch (error) {
+            throw new ApiError(500, error as string);
+        }
+    }
+
+    console.log(cloudinaryLinks);
+    const imagesUrl = cloudinaryLinks.map((imgUrl) => imgUrl.url);
+    console.log(imagesUrl);
+
+
+    console.log(imagesPath);
     // Check if all fields are present
     if (!title || !description || !date || !venue || !location || !price || !totalTickets || !availableTickets || !organizerName || !organizerEmail) {
         return new ApiResponse(res, 403, "All fields are mandatory to be filled", null, null);
     }
+    console.log(req.body);
 
     // register the location first
     const { address, city, country, state } = location;
@@ -44,10 +73,11 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
     }
 
     // Check if organizer exists
-    const organizer = await db.user.findUnique({
+    const organizer = await db.user.findFirst({
         where: { email: organizerEmail }
     });
-
+    console.log(organizerEmail);
+    console.log(organizer);
     if (!organizer) {
         return new ApiResponse(res, 404, "Organizer not found", null, null);
     }
@@ -60,13 +90,18 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
     if (!Object.values(EventCategory).includes(category)) {
         return new ApiResponse(res, 403, "Invalid Category")
+
     }
+
+
+    // upload the images to the cloudinary and get the link
     // Create the event
     const newEvent = await db.event.create({
         data: {
             title,
             description,
             category,
+            images: imagesUrl,
             date: eventDate,
             venue: { connect: { id: venueId } },
             price,
@@ -290,7 +325,7 @@ export const getPopularEvents = asyncHandler(async (req: Request, res: Response)
             location: true,
             venue: true,
         },
-        take: 20
+        take: 34
     })
     return new ApiResponse(res, 200, "Popular Events are here!", events, null)
 })
@@ -300,6 +335,8 @@ export const getPopularEvents = asyncHandler(async (req: Request, res: Response)
  * @access private
  * @description This function returns events matching the provided filters (searchTerm, category, date range).
  */
+
+
 export const SearchEvent = asyncHandler(async (req: Request, res: Response) => {
     try {
         const { searchTerm, category, from, to } = req.query;
