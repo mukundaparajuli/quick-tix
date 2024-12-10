@@ -76,7 +76,7 @@ export const GetAllBookings = asyncHandler(async (req: Request, res: Response) =
 });
 
 // Get all the bookings for a particular user
-export const GetBookingsForAUser = asyncHandler(async (req: Request, res: Response) => {
+export const GetBookingsForAnUser = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user;
 
     // Check if user exists
@@ -94,6 +94,9 @@ export const GetBookingsForAUser = asyncHandler(async (req: Request, res: Respon
     const bookings = await db.booking.findMany({
         where: {
             userId,
+        },
+        include: {
+            event: true,
         }
     });
 

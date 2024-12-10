@@ -1,13 +1,12 @@
 "use client"
 import { useSession } from "next-auth/react";
+import { BookingsInfo } from "./components";
 
 export default function Page() {
-    const { data: session, status } = useSession();
-    console.log(session);
+
     return (
-        <div>
-            Hello {session?.user?.fullName} with userid: {session?.user.id}
-            Status: {status}
+        <div className="flex justify-center">
+            <BookingsInfo />
         </div>
     )
 }

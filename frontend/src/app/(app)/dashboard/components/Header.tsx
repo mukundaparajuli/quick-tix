@@ -17,7 +17,7 @@ export default function Header() {
         toast.success("Logged out successfully!")
     }
 
-    return (<div className="fixed z-10 top-0 left-0 w-full h-20 bg-white dark:bg-gray-800 text-black dark:text-white flex items-center justify-between px-10 border-b-2  shadow-lg ">
+    return (<div className="fixed z-10 top-0 left-0 w-full h-20 bg-white dark:bg-gray-800 text-black dark:text-white flex items-center justify-between px-10 border-b-2  shadow-xl ">
 
         <h1 className="text-4xl font-semibold w-1/5 cursor-pointer" onClick={() => router.replace("/")}>Quick Tix</h1>
 
