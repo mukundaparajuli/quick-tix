@@ -56,6 +56,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Save } from 'lucide-react';
+import { FaPlus } from 'react-icons/fa';
 
 const SeatLayoutForm: React.FC<{ setSectionData: React.Dispatch<React.SetStateAction<typeof SectionSchema[]>> }> = ({ setSectionData }) => {
     const [sections, setSections] = useState<Section[]>([]);
@@ -271,6 +272,7 @@ const SeatLayoutForm: React.FC<{ setSectionData: React.Dispatch<React.SetStateAc
                 </div>
             </CardContent>
         </Card>
+
     );
 };
 

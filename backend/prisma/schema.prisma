@@ -86,9 +86,11 @@ model TicketType {
   price        Float
   currency     String
   availability TicketAvailability
-  eventId      Int
 
-  event Event @relation(fields: [eventId], references: [id])
+  seats Seat[]
+
+  Event   Event? @relation(fields: [eventId], references: [id])
+  eventId Int?
 }
 
 enum TicketAvailability {
@@ -100,9 +102,8 @@ model Sponsors {
   id      Int     @id @unique @default(autoincrement())
   name    String
   website String?
-  eventId Int
-
-  event Event @relation(fields: [eventId], references: [id])
+  Event   Event?  @relation(fields: [eventId], references: [id])
+  eventId Int?
 }
 
 enum EventCategory {
@@ -229,20 +230,22 @@ enum BookingStatus {
 // seats
 
 model Seat {
-  id        Int        @id @default(autoincrement())
-  seatId    String
-  row       Row        @relation(fields: [rowId], references: [id])
-  rowId     Int
-  status    SeatStatus @default(AVAILABLE)
-  bookings  Booking?   @relation(fields: [bookingId], references: [id])
-  locked_by Int?
-  locked_at DateTime?
-  User      User?      @relation(fields: [locked_by], references: [id]) // Make relation nullable
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  Event     Event?     @relation(fields: [eventId], references: [id])
-  eventId   Int?
-  bookingId Int?
+  id           Int        @id @default(autoincrement())
+  seatId       String
+  row          Row        @relation(fields: [rowId], references: [id])
+  rowId        Int
+  status       SeatStatus @default(AVAILABLE)
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
+  ticketTypeId Int
+  bookings     Booking?   @relation(fields: [bookingId], references: [id])
+  locked_by    Int?
+  locked_at    DateTime?
+  User         User?      @relation(fields: [locked_by], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  Event        Event?     @relation(fields: [eventId], references: [id])
+  eventId      Int?
+  bookingId    Int?
 }
 
 enum SeatStatus {

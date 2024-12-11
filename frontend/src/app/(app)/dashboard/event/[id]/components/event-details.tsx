@@ -1,3 +1,4 @@
+"use client"
 import React from 'react';
 import { Calendar, Clock, MapPin, Mail, Phone, Globe, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

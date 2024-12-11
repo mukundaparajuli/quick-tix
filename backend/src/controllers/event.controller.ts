@@ -6,6 +6,7 @@ import { EventCategory, Role } from "../enums";
 import logger from "../logger";
 import { addLocation, addVenue, uploadToCloudinary } from "../services";
 import ApiError from "../types/api-error";
+import { TicketType } from "@prisma/client";
 
 
 
@@ -19,6 +20,7 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
     const price = Number(req.body.price);
     const totalTickets = Number(req.body.totalTickets);
     const availableTickets = Number(req.body.availableTickets);
+    const ticketTypes = JSON.parse(req.body.ticketTypes);
 
     if (!images || images.length == 0) {
         throw new ApiError(404, "Images not available")
@@ -116,6 +118,9 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
             availableTickets,
             location: { connect: { id: locId } },
             organizer: { connect: { id: organizer.id } },
+            ticketTypes: {
+
+            }
         },
         include: {
             organizer: true,
@@ -124,6 +129,8 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
         },
     });
+
+
     // Create sections, rows, and seats in a batch
     await Promise.all(sections.map(async (section: any) => {
         const createdSection = await db.section.create({
@@ -151,6 +158,19 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
             }));
         }));
     }));
+
+    // Create Ticket Types
+    const ticketTypePromises = ticketTypes.map((ticketType: TicketType) =>
+        db.ticketType.create({
+            data: {
+                type: ticketType.type,
+                price: ticketType.price,
+                currency: ticketType.currency,
+                availability: ticketType.availability,
+                eventId: newEvent.id,
+            },
+        })
+    );
 
     logger.info(`Event registered successfully: ${title} by ${organizerEmail}`);
 
