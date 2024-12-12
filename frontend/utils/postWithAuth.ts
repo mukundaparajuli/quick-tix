@@ -42,6 +42,7 @@ export async function postWithAuthFormData(url: string, data: any, session: Sess
     for (let [key, value] of data.entries()) {
         console.log(`${key}: ${value}`);
     }
+    console.log(data);
 
     const response = await fetch(url, {
         method: 'POST',

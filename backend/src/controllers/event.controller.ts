@@ -12,14 +12,13 @@ import { Agenda, TicketType } from "@prisma/client";
 
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
-    // console.log(req.body);
-    const { title, description, date, organizerName, organizerEmail, category } = req.body;
+    const { title, description, date, organizerName, organizerEmail, category, location, venue } = req.body;
     const images = req.files;
     const price = Number(req.body.price);
     const totalTickets = Number(req.body.totalTickets);
     const availableTickets = Number(req.body.availableTickets);
 
-    console.log("backend data=", req.body.imaages);
+    console.log("backend data=", req.body);
 
     if (!images || images.length == 0) {
         throw new ApiError(404, "Images not available")
@@ -31,9 +30,7 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
     if (images) {
         try {
-            console.log(images);
             cloudinaryLinks = await Promise.all(imagesPath.map((image: string) => uploadToCloudinary(image)));
-            console.log(cloudinaryLinks);
         } catch (error) {
             throw new ApiError(500, error as string);
         }
@@ -52,14 +49,14 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
     console.log(req.body);
 
     // register the location first
-    const { address, city, country, state } = location;
+    const { address, city, country, state } = JSON.parse(location);
     const loc = await addLocation({ address, city, country, state })
     const locId = loc.id;
 
     // register the venue here
     let venueId;
     {
-        const { name, description, capacity, amenities } = venue;
+        const { name, description, capacity, amenities } = JSON.parse(venue);
         const ven = await addVenue({ name, description, amenities, capacity, locId });
         venueId = ven.id;
     }

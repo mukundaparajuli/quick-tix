@@ -105,7 +105,7 @@ const DEFAULT_FORM_VALUES = {
         amenities: "",
     },
 };
-const finalData = new FormData();
+let finalData = new FormData();
 
 export default function EventRegistrationForm({ className, ...props }: RegisterEventFormProps) {
     const [currentStep, setCurrentStep] = useState(0);
@@ -144,11 +144,12 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
         console.log(form.getValues());
         console.log(eventInfo, sectionData)
         try {
+            // finalData = new FormData();
             if (!session) throw new Error("No active session");
             if (!eventInfo) throw new Error("No event information");
             const sections = sectionData;
             const data = { ...eventInfo, sections }
-
+            console.log("data=", data)
 
             Object.entries(data).forEach(([key, value]) => {
                 if (typeof value === "object" && value !== null) {
@@ -160,15 +161,16 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
             });
 
 
-            for (let [key, value] of finalData.entries()) {
-                console.log(`${key}: ${value}`);
-            }
+
 
 
             console.log("final data= ", finalData);
             const result = await postWithAuthFormData(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/event`, finalData, session);
-            console.log(result);
+            finalData = new FormData()
+            console.log("after resetting..", [...finalData]);
         } catch (error) {
+            finalData = new FormData()
+            console.log("after resetting..", [...finalData]);
             console.log('Final submission error:', error);
         }
     };
@@ -188,9 +190,6 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
         }
 
         if (currentStep === STEPS.length - 2) {
-            console.log("calling...");
-            console.log(form.getValues('agendas'))
-            // await form.handleSubmit(handleSubmitEvent)();
             await handleSubmitEvent(form.getValues());
         }
 
