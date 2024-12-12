@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { any, z } from "zod";
 import { EventCategory } from "../enums/event-category.enum";
 
 // Define LocationSchema
@@ -43,6 +43,12 @@ export const AgendaSchema = z.object({
     activiy: z.string(),
 })
 
+export const imageFileSchema = z
+    .instanceof(File)
+    .refine((file) => file.size <= 5 * 1024 * 1024, { message: "File size must not exceed 5MB" }) // Size check
+    .refine((file) => ["image/jpeg", "image/png"].includes(file.type), { message: "Invalid file type" }); // MIME type check
+
+
 // Define RegisterEventSchema
 const RegisterEventSchema = z.object({
     title: z.string(),
@@ -55,6 +61,7 @@ const RegisterEventSchema = z.object({
     organizerEmail: z.string().email("Please provide a valid email"),
     category: z.enum([...Object.values(EventCategory)] as [string, ...string[]]).optional(),
     agendas: z.array(AgendaSchema),
+    // images: z.instanceof(File).array(),
     location: LocationSchema,
     venue: VenueSchema,
 });

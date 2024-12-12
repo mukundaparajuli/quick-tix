@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from "react";
@@ -14,7 +15,7 @@ import EventInformationForm from "./event-info-form";
 import LocationInfoForm from "./location-info-form";
 import VenueInfoForm from "./venue-info-form";
 import SeatLayoutForm from "./seat-layout-form";
-import postWithAuth from "../../../../../../utils/postWithAuth";
+import postWithAuth, { postWithAuthFormData } from "../../../../../../utils/postWithAuth";
 import EventDetailForm from "./event-detail-form";
 
 // Types
@@ -104,6 +105,7 @@ const DEFAULT_FORM_VALUES = {
         amenities: "",
     },
 };
+const finalData = new FormData();
 
 export default function EventRegistrationForm({ className, ...props }: RegisterEventFormProps) {
     const [currentStep, setCurrentStep] = useState(0);
@@ -146,7 +148,25 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
             if (!eventInfo) throw new Error("No event information");
             const sections = sectionData;
             const data = { ...eventInfo, sections }
-            const result = await postWithAuth(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/event`, data, session);
+
+
+            Object.entries(data).forEach(([key, value]) => {
+                if (typeof value === "object" && value !== null) {
+                    finalData.append(key, JSON.stringify(value));
+                    console.log(finalData);
+                } else {
+                    finalData.append(key, String(value));
+                }
+            });
+
+
+            for (let [key, value] of finalData.entries()) {
+                console.log(`${key}: ${value}`);
+            }
+
+
+            console.log("final data= ", finalData);
+            const result = await postWithAuthFormData(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/event`, finalData, session);
             console.log(result);
         } catch (error) {
             console.log('Final submission error:', error);
@@ -213,7 +233,11 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleSubmitEvent)} className={cn("space-y-6", className)} {...props}>
-                    {CurrentStepComponent && <CurrentStepComponent form={form as any} />}
+                    {CurrentStepComponent && CurrentStepComponent === EventDetailForm ? (
+                        <CurrentStepComponent form={form as any} finalData={finalData} />
+                    ) : (
+                        CurrentStepComponent && <CurrentStepComponent form={form as any} />
+                    )}
                 </form>
             </Form>
 
