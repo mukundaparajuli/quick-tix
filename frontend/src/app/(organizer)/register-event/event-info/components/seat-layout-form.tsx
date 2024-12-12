@@ -58,7 +58,7 @@ import { Input } from '@/components/ui/input';
 import { Save } from 'lucide-react';
 import { FaPlus } from 'react-icons/fa';
 
-const SeatLayoutForm: React.FC<{ setSectionData: React.Dispatch<React.SetStateAction<typeof SectionSchema[]>> }> = ({ setSectionData }) => {
+const SeatLayoutForm: React.FC<{ setSectionData: any }> = ({ setSectionData }: any) => {
     const [sections, setSections] = useState<Section[]>([]);
     const [currentSection, setCurrentSection] = useState<Section>({
         sectionName: '',

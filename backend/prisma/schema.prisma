@@ -59,7 +59,7 @@ model Event {
   location  Location @relation(fields: [locationId], references: [id])
   organizer User     @relation(fields: [organizerId], references: [id])
 
-  agenda     Agenda[]
+  agendas     Agenda[]
   bookings   Booking[]
   Section    Section[]
   Seat       Seat[]

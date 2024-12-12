@@ -10,7 +10,7 @@ import { Session } from "next-auth";
  * @example postWithAuth(`${BACKEND_URL}/api/`, session)
  */
 export default async function postWithAuth(url: string, data: any, session: Session | null) {
-    console.log("frontend ko token= ", session?.user)
+    console.log("json.stringify= ", JSON.stringify(data))
     const response = await fetch(url, {
         method: 'POST',
         headers: {

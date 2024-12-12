@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -14,6 +15,7 @@ import LocationInfoForm from "./location-info-form";
 import VenueInfoForm from "./venue-info-form";
 import SeatLayoutForm from "./seat-layout-form";
 import postWithAuth from "../../../../../../utils/postWithAuth";
+import EventDetailForm from "./event-detail-form";
 
 // Types
 interface RegisterEventFormProps extends React.HTMLAttributes<HTMLFormElement> { }
@@ -47,6 +49,12 @@ const FORM_COMPONENTS = {
 
 const STEPS: FormStep[] = [
     {
+        id: 'Step 5',
+        name: 'Event Details',
+        component: EventDetailForm,
+        fields: ['agendas.time', 'agendas.activity']
+    },
+    {
         id: 'Step 1',
         name: "Event Information",
         component: EventInformationForm,
@@ -69,7 +77,7 @@ const STEPS: FormStep[] = [
         name: 'Seat Layout Information',
         component: null,
         fields: []
-    }
+    },
 ] as const;
 
 const DEFAULT_FORM_VALUES = {
@@ -82,6 +90,7 @@ const DEFAULT_FORM_VALUES = {
     organizerName: "",
     organizerEmail: "",
     category: "",
+    agendas: [{ time: "", activity: "" }],
     location: {
         address: "",
         city: "",
@@ -108,6 +117,8 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
     });
 
     const handleSubmitEvent = async (formData: z.infer<typeof RegisterEventSchema>) => {
+        console.log("submitting...", formData);
+        console.log("eta ko form data", formData);
         try {
             const processedFormData = {
                 ...formData,
@@ -120,6 +131,7 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
             };
 
             setEventInfo(processedFormData);
+            console.log(processedFormData);
             console.log('Event information saved');
         } catch (error) {
             console.error('Form submission error:', error);
@@ -127,6 +139,7 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
     };
 
     const handleFinalSubmission = async () => {
+        console.log(form.getValues());
         console.log(eventInfo, sectionData)
         try {
             if (!session) throw new Error("No active session");
@@ -147,6 +160,7 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
 
     const handleNext = async () => {
         const isValid = await handleStepValidation();
+        console.log("is valid =", form.getValues());
 
         if (!isValid) {
             console.log('Please check all required fields');
@@ -154,7 +168,10 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
         }
 
         if (currentStep === STEPS.length - 2) {
-            await form.handleSubmit(handleSubmitEvent)();
+            console.log("calling...");
+            console.log(form.getValues('agendas'))
+            // await form.handleSubmit(handleSubmitEvent)();
+            await handleSubmitEvent(form.getValues());
         }
 
         setCurrentStep(prev => Math.min(prev + 1, STEPS.length - 1));

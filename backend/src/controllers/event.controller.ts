@@ -6,21 +6,20 @@ import { EventCategory, Role } from "../enums";
 import logger from "../logger";
 import { addLocation, addVenue, uploadToCloudinary } from "../services";
 import ApiError from "../types/api-error";
-import { TicketType } from "@prisma/client";
+import { Agenda, TicketType } from "@prisma/client";
 
 
 
 // create event
 export const RegisterEvent = asyncHandler(async (req: Request, res: Response) => {
+    console.log(req.body);
     const { title, description, date, organizerName, organizerEmail, category } = req.body;
     const images = req.files;
-    const location = JSON.parse(req.body.location);
-    const sections = JSON.parse(req.body.sections);
-    const venue = JSON.parse(req.body.venue);
     const price = Number(req.body.price);
     const totalTickets = Number(req.body.totalTickets);
     const availableTickets = Number(req.body.availableTickets);
-    const ticketTypes = JSON.parse(req.body.ticketTypes);
+
+    console.log("backend data=", req.body.agendas);
 
     if (!images || images.length == 0) {
         throw new ApiError(404, "Images not available")
@@ -133,6 +132,7 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
     // Create sections, rows, and seats in a batch
     await Promise.all(sections.map(async (section: any) => {
+
         const createdSection = await db.section.create({
             data: {
                 eventId: newEvent.id,
@@ -171,6 +171,18 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
             },
         })
     );
+
+
+    // create agendas for the event
+    // const agendasPromises = agendas.map((agenda: Agenda) => (
+    //     db.agenda.create({
+    //         data: {
+    //             time: agenda.time,
+    //             activity: agenda.activity,
+    //             eventId: newEvent.id
+    //         }
+    //     })
+    // ))
 
     logger.info(`Event registered successfully: ${title} by ${organizerEmail}`);
 
