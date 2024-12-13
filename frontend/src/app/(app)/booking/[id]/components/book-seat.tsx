@@ -8,6 +8,7 @@ import { useSocket } from "@/contexts/socketContext";
 import { useSession } from "next-auth/react";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
+import { PaymentMethod } from ".";
 import postWithAuth from "../../../../../../utils/postWithAuth";
 
 // Types for your specific data structure
@@ -196,70 +197,137 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
     };
 
     return (
-        <Card className="w-full max-w-4xl mx-auto">
-            <CardHeader>
-                <CardTitle>Select Your Seats</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="flex flex-col items-center space-y-8">
-                    <div className="w-3/4 h-8 bg-gray-300 rounded-lg flex items-center justify-center text-sm">
-                        SCREEN
-                    </div>
-                    {layout.map((section) => (
-                        <div key={section.id} className="w-full">
-                            {[...section.rows]
-                                .sort((a, b) => b.rowNumber - a.rowNumber)
-                                .map((row) => (
-                                    <div key={row.id} className="flex items-center gap-2">
-                                        <div className="w-8 text-sm font-medium">{row.rowNumber}</div>
-                                        <div className="flex gap-2">
-                                            {row.seats.map((seat) => (
-                                                <Button
-                                                    key={seat.id}
-                                                    variant="outline"
-                                                    className={`w-8 h-8 p-0 flex items-center justify-center text-xs ${getSeatColor(seat.status)}`}
-                                                    onClick={() => handleSeatClick(seat.id, section.id, row.id)}
-                                                    disabled={seat.status === "BOOKED"}
-                                                >
-                                                    {seat.seatId}
-                                                </Button>
-                                            ))}
+        <div>
+            <Card className="w-full max-w-4xl mx-auto">
+                <CardHeader>
+                    <CardTitle>Select Your Seats</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center space-y-8">
+                        <div className="w-3/4 h-8 bg-gray-300 rounded-lg flex items-center justify-center text-sm">
+                            SCREEN
+                        </div>
+                        {layout.map((section) => (
+                            <div key={section.id} className="w-full">
+                                {[...section.rows]
+                                    .sort((a, b) => b.rowNumber - a.rowNumber)
+                                    .map((row) => (
+                                        <div key={row.id} className="flex items-center gap-2">
+                                            <div className="w-8 text-sm font-medium">{row.rowNumber}</div>
+                                            <div className="flex gap-2">
+                                                {row.seats.map((seat) => (
+                                                    <Button
+                                                        key={seat.id}
+                                                        variant="outline"
+                                                        className={`w-8 h-8 p-0 flex items-center justify-center text-xs ${getSeatColor(seat.status)}`}
+                                                        onClick={() => handleSeatClick(seat.id, section.id, row.id)}
+                                                        disabled={seat.status === "BOOKED"}
+                                                    >
+                                                        {seat.seatId}
+                                                    </Button>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                        </div>
-                    ))}
-                    <div className="flex gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 bg-gray-200 rounded"></div>
-                            AVAILABLE
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                            SELECTED
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-                            LOCKED
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 bg-gray-500 rounded"></div>
-                            BOOKED
-                        </div>
-                    </div>
-                    {selectedSeats.length > 0 && (
-                        <div className="space-y-4">
-                            <div className="text-sm">
-                                Selected: {selectedSeats.map((seat) => seat.label).join(", ")}
+                                    ))}
                             </div>
-                            <Button onClick={handleBooking} className="bg-red-500 text-white">
-                                Book Selected Seats
-                            </Button>
+                        ))}
+                        <div className="flex gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-gray-200 rounded"></div>
+                                AVAILABLE
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                                SELECTED
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+                                LOCKED
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-gray-500 rounded"></div>
+                                BOOKED
+                            </div>
                         </div>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
+                        {selectedSeats.length > 0 && (
+                            <div className="space-y-4">
+                                <div className="text-sm">
+                                    Selected: {selectedSeats.map((seat) => seat.label).join(", ")}
+                                </div>
+                                <Button onClick={handleBooking} className="bg-red-500 text-white">
+                                    Book Selected Seats
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+            <Card className="w-full max-w-4xl mx-auto">
+                <CardHeader>
+                    <CardTitle>Select Your Seats</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center space-y-8">
+                        <div className="w-3/4 h-8 bg-gray-300 rounded-lg flex items-center justify-center text-sm">
+                            SCREEN
+                        </div>
+                        {layout.map((section) => (
+                            <div key={section.id} className="w-full">
+                                {[...section.rows]
+                                    .sort((a, b) => b.rowNumber - a.rowNumber)
+                                    .map((row) => (
+                                        <div key={row.id} className="flex items-center gap-2">
+                                            <div className="w-8 text-sm font-medium">{row.rowNumber}</div>
+                                            <div className="flex gap-2">
+                                                {row.seats.map((seat) => (
+                                                    <Button
+                                                        key={seat.id}
+                                                        variant="outline"
+                                                        className={`w-8 h-8 p-0 flex items-center justify-center text-xs ${getSeatColor(seat.status)}`}
+                                                        onClick={() => handleSeatClick(seat.id, section.id, row.id)}
+                                                        disabled={seat.status === "BOOKED"}
+                                                    >
+                                                        {seat.seatId}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                            </div>
+                        ))}
+                        <div className="flex gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-gray-200 rounded"></div>
+                                AVAILABLE
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                                SELECTED
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+                                LOCKED
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-gray-500 rounded"></div>
+                                BOOKED
+                            </div>
+                        </div>
+                        {selectedSeats.length > 0 && (
+                            <div className="space-y-4">
+                                <div className="text-sm">
+                                    Selected: {selectedSeats.map((seat) => seat.label).join(", ")}
+                                </div>
+                                <Button onClick={handleBooking} className="bg-red-500 text-white">
+                                    Book Selected Seats
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+            <PaymentMethod />
+        </div>
     );
 };
 

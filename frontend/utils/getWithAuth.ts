@@ -34,3 +34,4 @@ export default async function getWithAuth(url: string, session: Session | null) 
     }
     return result.data;
 }
+

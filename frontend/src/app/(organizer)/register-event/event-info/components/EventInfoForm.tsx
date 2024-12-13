@@ -15,7 +15,7 @@ import EventInformationForm from "./event-info-form";
 import LocationInfoForm from "./location-info-form";
 import VenueInfoForm from "./venue-info-form";
 import SeatLayoutForm from "./seat-layout-form";
-import postWithAuth, { postWithAuthFormData } from "../../../../../../utils/postWithAuth";
+import { postWithAuthFormData } from "../../../../../../utils/postWithAuth";
 import EventDetailForm from "./event-detail-form";
 
 // Types
@@ -144,7 +144,6 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
         console.log(form.getValues());
         console.log(eventInfo, sectionData)
         try {
-            // finalData = new FormData();
             if (!session) throw new Error("No active session");
             if (!eventInfo) throw new Error("No event information");
             const sections = sectionData;
@@ -159,19 +158,10 @@ export default function EventRegistrationForm({ className, ...props }: RegisterE
                     finalData.append(key, String(value));
                 }
             });
-
-
-
-
-
-            console.log("final data= ", finalData);
             const result = await postWithAuthFormData(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/event`, finalData, session);
             finalData = new FormData()
-            console.log("after resetting..", [...finalData]);
         } catch (error) {
-            finalData = new FormData()
-            console.log("after resetting..", [...finalData]);
-            console.log('Final submission error:', error);
+            finalData = new FormData();
         }
     };
 

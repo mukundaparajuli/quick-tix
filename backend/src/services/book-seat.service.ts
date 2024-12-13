@@ -1,4 +1,6 @@
+import db from "../config/db";
 import { PaymentMethod, Role } from "../enums";
+import logger from "../logger";
 import ApiError from "../types/api-error";
 import { Attendee, Seat } from "../types/types";
 import esewaPaymentInitialization from "./esewa-payment.service";
@@ -106,18 +108,3 @@ const initiatePayment = async (
 
 
 
-
-const db = {
-    $transaction: async (callback: Function) => await callback({
-        event: {
-            findUnique: async (query: any) => (query.where.id === 1 ? { id: 1, name: "Test Event" } : null),
-        },
-        seat: {
-            findMany: async (query: any) => query.where.id.in.map((id: number) => ({ id, price: 100, isBooked: false })),
-            updateMany: async () => ({}),
-        },
-        booking: {
-            create: async (data: any) => ({ id: 1, ...data }),
-        },
-    }),
-};
