@@ -10,7 +10,8 @@ const addLocation = async (locationData: { address: string; city: string; state:
         throw new Error("All location fields are mandatory.");
     }
 
-
+    const allLocation = await db.location.findMany();
+    console.log(allLocation);
     const locationExists = await db.location.findFirst({
         where: { address, city, state, country }
     });

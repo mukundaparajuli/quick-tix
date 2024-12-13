@@ -17,11 +17,13 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
     const price = Number(req.body.price);
     const totalTickets = Number(req.body.totalTickets);
     const availableTickets = Number(req.body.availableTickets);
+    const sections = JSON.parse(req.body.sections);
 
     console.log("backend data=", req.body);
 
     if (!images || images.length == 0) {
-        throw new ApiError(404, "Images not available")
+        console.log("images not available")
+        // throw new ApiError(404, "Images not available")
     }
 
     const imagesPath = images?.map((img: any) => (img.path));
@@ -31,13 +33,15 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
     if (images) {
         try {
             cloudinaryLinks = await Promise.all(imagesPath.map((image: string) => uploadToCloudinary(image)));
+            console.log(cloudinaryLinks)
         } catch (error) {
             throw new ApiError(500, error as string);
         }
     }
 
     console.log(cloudinaryLinks);
-    const imagesUrl = cloudinaryLinks.map((imgUrl) => imgUrl.url);
+    const imagesUrl = cloudinaryLinks.map((imgUrl) => imgUrl?.url).filter((url) => url !== undefined);
+
     console.log(imagesUrl);
 
 
@@ -66,7 +70,9 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
     const eventDate = new Date(date);
 
 
-    if (isNaN(eventDate.getTime()) || eventDate < new Date()) {
+    if (new Date(eventDate) < new Date(Date.now())) {
+        console.log(date)
+        console.log(new Date(Date.now()))
         return new ApiResponse(res, 400, "Invalid or past event date.", null, null);
     }
 
@@ -86,6 +92,7 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
     // Check if the user is an organizer
     if (organizer.role !== Role.ORGANIZER) {
+        console.log(organizer.role);
         console.log("error here")
         return new ApiResponse(res, 401, "You are not authorized to organize this event", null, null);
     }
@@ -95,9 +102,9 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
     }
 
-    if (!imagesUrl || imagesUrl.length == 0) {
-        throw new ApiError(404, "Image url not found!");
-    }
+    // if (!imagesUrl || imagesUrl.length == 0) {
+    //     throw new ApiError(404, "Image url not found!");
+    // }
 
     // upload the images to the cloudinary and get the link
     // Create the event
@@ -110,13 +117,13 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
             date: eventDate,
             venue: { connect: { id: venueId } },
             price,
-            totalTickets,
+            // totalTickets,
             availableTickets,
             location: { connect: { id: locId } },
             organizer: { connect: { id: organizer.id } },
-            ticketTypes: {
+            // ticketTypes: {
 
-            }
+            // }
         },
         include: {
             organizer: true,

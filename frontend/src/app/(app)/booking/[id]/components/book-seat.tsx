@@ -10,6 +10,7 @@ import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { PaymentMethod } from ".";
 import postWithAuth from "../../../../../../utils/postWithAuth";
+import { EnumValues } from "zod";
 
 // Types for your specific data structure
 interface Seat {
@@ -61,6 +62,7 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const router = useRouter();
     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL
+    const [paymentMethod, setPaymentMethod] = useState<'KHALTI' | 'ESEWA' | null>(null);
 
 
     useEffect(() => {
@@ -185,7 +187,8 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
         socket.emit("book-seat",
             eventId,
             selectedSeats,
-            userId
+            userId,
+            paymentMethod
         );
 
         socket.once("booking-confirmed", ({ success }) => {
@@ -197,8 +200,8 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
     };
 
     return (
-        <div>
-            <Card className="w-full max-w-4xl mx-auto">
+        <div className="w-full max-w-4xl mx-auto ">
+            <Card className="w-full max-w-4xl mx-auto gap-8">
                 <CardHeader>
                     <CardTitle>Select Your Seats</CardTitle>
                 </CardHeader>
@@ -313,20 +316,26 @@ const BookSeat: React.FC<BookSeatProps> = ({ eventId, seatLayout }) => {
                                 BOOKED
                             </div>
                         </div>
-                        {selectedSeats.length > 0 && (
-                            <div className="space-y-4">
-                                <div className="text-sm">
-                                    Selected: {selectedSeats.map((seat) => seat.label).join(", ")}
-                                </div>
-                                <Button onClick={handleBooking} className="bg-red-500 text-white">
-                                    Book Selected Seats
-                                </Button>
-                            </div>
-                        )}
+
                     </div>
                 </CardContent>
             </Card>
-            <PaymentMethod />
+            <div className="w-full p-8">
+                <PaymentMethod setPaymentMethod={setPaymentMethod} />
+            </div>
+            <div></div>
+            {
+                selectedSeats.length > 0
+                && paymentMethod && (
+                    <div className="space-y-4">
+                        <div className="text-sm">
+                            Selected: {selectedSeats.map((seat) => seat.label).join(", ")}
+                        </div>
+                        <Button onClick={handleBooking} className="bg-red-500 text-white">
+                            Book Selected Seats
+                        </Button>
+                    </div>
+                )}
         </div>
     );
 };
