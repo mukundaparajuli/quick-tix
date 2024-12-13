@@ -33,3 +33,8 @@ export enum SeatStatus {
     BOOKED = 'BOOKED',
     LOCKED = 'LOCKED',
 }
+
+export enum PaymentMethod {
+    ESEWA = 'ESEWA',
+    KHALTI = 'KHALTI'
+}

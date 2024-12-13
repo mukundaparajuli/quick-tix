@@ -1,168 +1,123 @@
-import db from "../config/db";
-import { BookingStatus, Role } from "../enums";
-import logger from "../logger";
+import { PaymentMethod, Role } from "../enums";
 import ApiError from "../types/api-error";
 import { Attendee, Seat } from "../types/types";
+import esewaPaymentInitialization from "./esewa-payment.service";
 import initiateKhaltiPayment from "./khalti-payment.service";
 
-// Validate seats for the specific event
+// Main Function
+const bookSeat = async (
+    eventId: number,
+    seats: Seat[],
+    user: Attendee,
+    method: PaymentMethod
+): Promise<{ booking: any; paymentUrl: string }> => {
+    if (!user) throw new ApiError(404, "User not found!");
+    if (user.role !== Role.ATTENDEE) throw new ApiError(403, "Unauthorized action");
+
+    return await db.$transaction(async (tx) => {
+        const event = await validateEvent(tx, eventId);
+        const validSeats = await validateSeats(tx, eventId, seats);
+        const booking = await createBooking(tx, event, user, validSeats);
+
+        logger.info("Booking created, initiating payment", { bookingId: booking.id });
+
+        const paymentUrl = await initiatePayment(tx, booking, method, user);
+
+        return { booking, paymentUrl };
+    });
+};
+
+// Helper Functions
+const validateEvent = async (tx: any, eventId: number): Promise<any> => {
+    const event = await tx.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new ApiError(404, "Event not found!");
+    return event;
+};
+
 const validateSeats = async (
     tx: any,
     eventId: number,
     seats: Seat[]
 ): Promise<Seat[]> => {
-
-    console.log("seats xa ta=", seats);
-    // Check if seats exist and belong to the correct event
-    const validSeats = await tx.seat.findMany({
+    const seatIds = seats.map((seat) => seat.id);
+    const availableSeats = await tx.seat.findMany({
         where: {
-            id: { in: seats.map(seat => seat.id) },
+            id: { in: seatIds },
             eventId: eventId,
-            booking: null // Ensure seats are not already booked
-        }
+            isBooked: false,
+        },
     });
 
-    // Validate number of seats
-    if (validSeats.length !== seats.length) {
-        throw new ApiError(400, "Some selected seats are invalid or already booked");
+    if (availableSeats.length !== seats.length) {
+        throw new ApiError(400, "One or more seats are invalid or already booked");
     }
 
-    return validSeats;
+    return availableSeats;
 };
 
-// Create booking record
 const createBooking = async (
     tx: any,
     event: any,
     user: Attendee,
     seats: Seat[]
 ): Promise<any> => {
-    const totalPrice = seats.length * event.price;
+    // Calculate total price
+    const totalPrice = seats.reduce((sum, seat) => sum + seat.price, 0);
 
-    // Create booking record
+    // Create the booking record
     const booking = await tx.booking.create({
         data: {
             eventId: event.id,
             userId: user.id,
-            ticketCounts: seats.length,
-            totalPrice: totalPrice,
-            status: BookingStatus.PENDING,
+            totalPrice,
             seats: {
                 connect: seats.map((seat) => ({ id: seat.id })),
             },
         },
-        include: {
-            event: {
-                select: {
-                    id: true,
-                    title: true,
-                    description: true,
-                    category: true
-                }
-            },
-            user: {
-                select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                    fullName: true
-                }
-            },
-            seats: {
-                select: {
-                    id: true,
-                    seatId: true
-                }
-            },
-        },
     });
 
-    console.log(booking);
-
-    // Log booking details
-    logger.info(`Booking created successfully`, {
-        bookingId: booking.id,
-        eventId: event.id,
-        userId: user.id,
-        seatCount: seats.length,
-        totalPrice
+    // Mark the seats as booked
+    await tx.seat.updateMany({
+        where: { id: { in: seats.map((seat) => seat.id) } },
+        data: { isBooked: true },
     });
 
     return booking;
 };
 
-// Main seat booking service function
-const bookSeat = async (
-    eventId: number,
-    seats: Seat[],
-    user: Attendee
-): Promise<{
+const initiatePayment = async (
+    tx: any,
     booking: any,
-    paymentUrl: string
-}> => {
-
-
-    console.log("seats=", seats);
-
-    // Validate input
-    if (!user) {
-        throw new ApiError(404, "User not found!");
+    method: PaymentMethod,
+    user: Attendee
+): Promise<string> => {
+    switch (method) {
+        case PaymentMethod.KHALTI:
+            return initiateKhaltiPayment(tx, booking.id, user);
+        case PaymentMethod.ESEWA:
+            return esewaPaymentInitialization({
+                amount: booking.totalPrice,
+                transactionUuid: booking.id,
+            });
+        default:
+            throw new ApiError(400, "Invalid payment method");
     }
-
-    // Check user authorization
-    if (user.role !== Role.ATTENDEE) {
-        throw new ApiError(403, "You are not authorized to perform this action");
-    }
-
-    // Use database transaction for atomic operations
-    return await db.$transaction(async (tx) => {
-        // Find the event
-        const event = await tx.event.findUnique({
-            where: { id: Number(eventId) },
-            include: {
-                location: true,
-                organizer: true,
-                bookings: true
-            }
-        });
-
-        // Validate event existence
-        if (!event) {
-            throw new ApiError(404, "Event not found!");
-        }
-
-        // Validate seat count
-        if (seats.length < 1) {
-            throw new ApiError(400, "At least one seat must be selected");
-        }
-
-        if (seats.length >= event.availableTickets) {
-            throw new ApiError(403, "Not enough available tickets");
-        }
-
-        // Validate and get seats
-        const validSeats = await tx.seat.findMany({
-            where: {
-                id: { in: seats.map(seat => seat?.seatId) },
-                eventId: eventId,
-                bookings: null // Ensure seats are not already booked
-            }
-        });
-
-        console.log(validSeats);
-        // Create booking record
-        const booking = await createBooking(tx, event, user, validSeats);
-
-        console.log("now we will initiate payment")
-
-        // Initiate payment process
-        const paymentResult = await initiateKhaltiPayment(tx, booking.id, user);
-
-        return paymentResult;
-    }, {
-        maxWait: 5000, // 5 seconds max wait to connect to prisma
-        timeout: 20000, // 20 seconds
-    });
 };
 
-export default bookSeat;
+
+
+
+const db = {
+    $transaction: async (callback: Function) => await callback({
+        event: {
+            findUnique: async (query: any) => (query.where.id === 1 ? { id: 1, name: "Test Event" } : null),
+        },
+        seat: {
+            findMany: async (query: any) => query.where.id.in.map((id: number) => ({ id, price: 100, isBooked: false })),
+            updateMany: async () => ({}),
+        },
+        booking: {
+            create: async (data: any) => ({ id: 1, ...data }),
+        },
+    }),
+};

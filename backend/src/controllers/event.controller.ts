@@ -157,17 +157,17 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
     }));
 
     // Create Ticket Types
-    const ticketTypePromises = ticketTypes.map((ticketType: TicketType) =>
-        db.ticketType.create({
-            data: {
-                type: ticketType.type,
-                price: ticketType.price,
-                currency: ticketType.currency,
-                availability: ticketType.availability,
-                eventId: newEvent.id,
-            },
-        })
-    );
+    // const ticketTypePromises = ticketTypes.map((ticketType: TicketType) =>
+    //     db.ticketType.create({
+    //         data: {
+    //             type: ticketType.type,
+    //             price: ticketType.price,
+    //             currency: ticketType.currency,
+    //             availability: ticketType.availability,
+    //             eventId: newEvent.id,
+    //         },
+    //     })
+    // );
 
 
     // create agendas for the event
