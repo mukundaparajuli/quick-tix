@@ -29,7 +29,6 @@ const RegisterForm = ({ className, ...props }: RegisterFormProps) => {
     });
 
     const registerUser = async (formData: z.infer<typeof RegisterSchema>) => {
-        console.log("here i am")
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/register`, {
             method: 'POST',
             headers: {
@@ -37,9 +36,12 @@ const RegisterForm = ({ className, ...props }: RegisterFormProps) => {
             },
             body: JSON.stringify(formData)
         });
+        const data = await response.json();
         if (response.ok) {
-            const result = await response.json();
-            return result;
+            return data;
+        } else {
+            toast.error(`Registration Failed: ${data?.message}`);
+            throw new Error("Error occurred while registering the user");
         }
 
     }

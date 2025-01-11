@@ -52,7 +52,10 @@ const LoginForm = ({ className, ...props }: LoginFormProps) => {
             router.push("/dashboard");
         },
         onError: (error: Error) => {
-            toast.error(`Login failed: ${error.message}`);
+            const errorMessage = error.message === "CredentialsSignin"
+                ? "Invalid email or password."
+                : "An unexpected error occurred. Please try again.";
+            toast.error(`Login failed: ${errorMessage}`);
         },
     });
 

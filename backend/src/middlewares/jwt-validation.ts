@@ -1,8 +1,7 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import asyncHandler from "../utils/async-handler";
 import ApiResponse from "../types/api-response";
-import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
-import logger from "../logger";
+import jwt from 'jsonwebtoken';
 
 
 

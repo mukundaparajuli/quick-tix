@@ -1,6 +1,7 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { User } from "next-auth";
+import { toast } from "sonner";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
@@ -19,12 +20,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         credentials: "include",
                         body: JSON.stringify(credentials),
                     });
-
-                    if (!res.ok) {
-                        const errorData = await res.json();
-                        console.log("Login failed:", errorData);
-                        throw new Error(errorData.message || "Login failed");
-                    }
                     const data = await res.json();
                     const user = {
                         id: data.data.userPayload.id,
