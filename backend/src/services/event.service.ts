@@ -7,11 +7,12 @@ import { venueService } from "./venue.service";
 import { agendasService } from "./agendas.service";
 import { sponsorService } from "./sponsor.service";
 import { ticketService } from "./ticket.service";
+import { promocodeService } from "./promocode.service";
 
 export class EventServices {
     // create an event
     async createEvent(req: Request) {
-        const { title, description, category, tags, date, agendas, venue, location, ticketTypes, sponsors } = req.body;
+        const { title, description, category, tags, date, agendas, venue, location, ticketTypes, sponsors, promocodes } = req.body;
 
         if (!title || !description || !category || !tags || !date || !agendas || !location || !ticketTypes || !sponsors) {
             throw new ApiError(400, "Please fill all the necessary fields");
@@ -49,6 +50,7 @@ export class EventServices {
         await agendasService.createAgenda(event.id, agendas);
         await sponsorService.createSponsors(event.id, sponsors);
         await ticketService.createTicketTypes(event.id, ticketTypes);
+        await promocodeService.createPromocode(event.id, promocodes);
 
         //return the event
         return event;
