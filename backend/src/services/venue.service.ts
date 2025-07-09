@@ -1,39 +1,34 @@
-// services/venueService.ts
-
 import db from "../config/db";
+import ApiError from "../types/api-error";
 
+type Venue = {
+    name: string;
+    capacity: number;
+    amenities: string[];
+    locationId: number;
+}
 
-export const addVenue = async (venueData: { name: string, capacity: number, amenities: string[], description: string, locId: number }) => {
-    const { name, capacity, amenities, description, locId } = venueData;
+export class VenueService {
 
-    const isLocationValid = await db.location.findUnique({
-        where: { id: locId },
-    });
+    // create venue
+    async createVenue(venue: Venue) {
+        const { name, capacity, amenities, locationId } = venue;
+        if (!name || !capacity || !amenities || !locationId) {
+            throw new ApiError(400, "Please provide the valid fields to create a venue");
+        }
 
-    if (!isLocationValid) {
-        throw new Error("The location you provided is invalid. Please provide a valid location.");
+        if (!venue) {
+            throw new ApiError(404, "Please provide venue info");
+        }
+
+        const createdVenue = await db.venue.create({
+            data: venue,
+        })
+
+        if (!createdVenue) {
+            throw new ApiError(500, "Error occured while creating an event")
+        }
     }
 
-    const venueExists = await db.venue.findFirst({
-        where: { name, capacity, locationId: locId },
-    });
 
-    if (venueExists) {
-        return venueExists;
-    }
-
-
-    const newVenue = await db.venue.create({
-        data: {
-            name,
-            capacity,
-            amenities,
-            description,
-            location: { connect: { id: locId } },
-        },
-    });
-
-    return newVenue;
-};
-
-export default addVenue;
+}

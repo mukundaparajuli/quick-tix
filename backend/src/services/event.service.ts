@@ -224,4 +224,36 @@ export class EventServices {
             throw new ApiError(404, "No events found for this category")
         }
     }
+
+    // search event
+    async searchEvents(req: Request) {
+        const { searchTerm, category, from, to } = req.query;
+
+        // Initialize an empty filter object
+        const filter: any = {};
+
+        // Add filters dynamically based on query parameters
+        if (searchTerm && searchTerm !== 'null') {
+            filter.title = { contains: searchTerm, mode: 'insensitive' };
+        }
+
+        if (category && category !== 'null') {
+            filter.category = category;
+        }
+
+        if (from && to) {
+            filter.date = { gte: new Date(from as string), lte: new Date(to as string) }; // Ensures "date" matches the range
+        }
+
+        // Fetch events matching the filter
+        const events = await db.event.findMany({
+            where: filter,
+            include: {
+                location: true,
+                venue: true,
+            }
+        });
+
+        return events;
+    };
 }
