@@ -4,11 +4,12 @@ import PopularEvents from "./components/PopularEvents";
 export default function DashboardPage() {
   return <div>
     {/* header */}
-    <Header />
+    {/* <Header /> */}
     {/* banner */}
-    <Banner />
+    {/* <Banner /> */}
     {/* filters for events */}
-    <PopularEvents />
+    {/* <PopularEvents /> */}
     {/* events list */}
+    Hello world!
   </div>;
 }

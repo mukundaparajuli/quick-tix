@@ -2,132 +2,47 @@ import { Request, Response } from "express";
 import ApiResponse from "../types/api-response";
 import db from "../config/db";
 import asyncHandler from "../utils/async-handler";
-import bcrypt from 'bcrypt'
-import { User } from "../types/types";
 import jwt from 'jsonwebtoken'
 import logger from "../logger";
 import { generateVerificationToken } from "../utils/generate-verification-code";
 import { sendVerificationEmail } from "../utils/send-verification-email";
+import { authService } from "../services/auth.service";
 
 
 
 // register a user
-
 export const RegisterUser = asyncHandler(async (req: Request, res: Response) => {
-    const { fullName, username, email, password, role } = await req.body;
-
-    if (!fullName || !username || !email || !password) {
-        return new ApiResponse(res, 400, 'All fields are required', null, null);
-    }
-
-    console.log(req.body);
-    // check if email is already in use
-    const checkEmail = await db.user.findUnique({
-        where: {
-            email
-        }
-    })
-    if (checkEmail) {
-        return new ApiResponse(res, 403, "Email is already in use", null, null);
-    }
-
-
-    // check if username is already in use
-    const checkUsername = await db.user.findUnique({
-        where: {
-            username
-        }
-    })
-    if (checkUsername) {
-        return new ApiResponse(res, 403, "Username unavailable. Please use other username", null, null);
-    }
-
-
-    const hashedPassword: string = await bcrypt.hash(password, 10);
-
-    const newUser: User = await db.user.create({
-        data: {
-            fullName,
-            username,
-            email,
-            role,
-            password: hashedPassword
-        }
-    });
-
-    console.log("new user is here: ", newUser);
+    const user = await authService.registerUser(req);
 
     // send verification email
-    const verificationToken = generateVerificationToken(newUser);
-    const { data, error } = await sendVerificationEmail(newUser.email, verificationToken);
-    // logger.info(data, error);
+    const verificationToken = generateVerificationToken(user);
+    const data = await sendVerificationEmail(user.email, verificationToken);
 
-    const { password: _, ...userWithoutPassword } = newUser;
+    console.log(data);
+    const { password, ...userWithoutPassword } = user;
     return new ApiResponse(res, 200, 'Register Successful', userWithoutPassword, null);
 })
 
+// register an organizer
 
+export const RegisterOrganizer = asyncHandler(async (req: Request, res: Response) => {
+    const user = await authService.registerOrganizer(req);
+
+    // send verification email
+    const verificationToken = generateVerificationToken(user);
+    const data = await sendVerificationEmail(user.email, verificationToken);
+
+    console.log(data);
+    const { password, ...userWithoutPassword } = user;
+    return new ApiResponse(res, 200, 'Register Successful', userWithoutPassword, null);
+})
 
 
 // login a user
 
 export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
-    const { email, username, password } = await req.body;
+    const { jwtToken, user } = await authService.loginUser(req);
 
-    // if (email or username) or password is not present send error 
-    if (!(email || username) || !password) {
-        return new ApiResponse(res, 400, 'All fields are required', null, null);
-    }
-
-    let validUser;
-
-    // if email is provided find user by email
-    if (email) {
-        validUser = await db.user.findUnique({
-            where: {
-                email
-            }
-        })
-    }
-
-    // if username is provided find user by username
-    if (username) {
-        validUser = await db.user.findUnique({
-            where: {
-                username
-            }
-        })
-    }
-
-    // if not valid user send error
-    if (!validUser) {
-        return new ApiResponse(res, 404, "User not found", null, null);
-    }
-
-    // here we will have the valid user
-    const checkPassword = await bcrypt.compare(password, validUser.password);
-
-    // check if password is valid
-    if (!checkPassword) {
-        return new ApiResponse(res, 403, "Wrong Password", null, null);
-    }
-
-    const userPayload = {
-        id: validUser.id,
-        fullName: validUser.fullName,
-        username: validUser.username,
-        email: validUser.email,
-        role: validUser.role,
-    }
-    // logger.info("user payload: ", userPayload)
-    const secret = process.env.JWT_SECRET_KEY;
-
-    if (!secret) {
-        return new ApiResponse(res, 500, 'Secret keys are not defined', null, null);
-    }
-
-    // Generate tokens
-    const jwtToken = jwt.sign({ user: userPayload }, secret, { expiresIn: '1d' });
 
     // store the tokens in cookies 
     res.cookie('jwtToken', jwtToken, {
@@ -138,8 +53,7 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
     });
 
 
-
-    return new ApiResponse(res, 200, "Login Successful", { userPayload, jwtToken }, null);
+    return new ApiResponse(res, 200, "Login Successful", { user, jwtToken }, null);
 })
 
 
@@ -154,7 +68,6 @@ export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
 
     logger.info('User logged out successfully');
 
-    // Send a success response
     return new ApiResponse(res, 200, "Logout successful", null, null);
 });
 

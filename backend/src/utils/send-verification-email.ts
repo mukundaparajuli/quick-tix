@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import ApiError from "../types/api-error";
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = new Resend(resendApiKey);
@@ -15,5 +16,8 @@ export const sendVerificationEmail = async (email: string, verificationToken: st
         html: `<p>Visit this link to verify your email: http://localhost:5000/api/auth/verify-email/${verificationToken}</p>`,
     });
 
-    return { data, error };
+    if (error) {
+        throw new ApiError(500, "Error occured while sending an email")
+    }
+    return data;
 };
