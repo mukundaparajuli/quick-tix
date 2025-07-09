@@ -1,9 +1,10 @@
 import { Request } from "express";
 import ApiError from "../types/api-error";
-import { Role } from "@prisma/client";
+import { EventCategory, Role } from "@prisma/client";
 import db from "../config/db";
 
 export class EventServices {
+    // create an event
     async createEvent(req: Request) {
         const { title, description, category, tags, date, agendas, location, ticketTypes, sponsors } = req.body;
 
@@ -96,6 +97,7 @@ export class EventServices {
         // if agendas, location, ticketTypes, sponsors are present update them with the respective services
     }
 
+    // delete an event
     async deleteEvent(req: Request) {
         const { eventId } = req.params;
 
@@ -142,5 +144,84 @@ export class EventServices {
             }
         })
         return deletedEvent;
+    }
+
+    // get all events
+    async getAllEvents(req: Request) {
+        const events = await db.event.findMany();
+        if (!events) {
+            throw new ApiError(404, "No events found")
+        }
+        return events;
+    }
+
+    // get event by id
+    async getEventById(req: Request) {
+        const { eventId } = req.query;
+
+        if (!eventId) {
+            throw new ApiError(400, "Please provide a valid event id")
+        }
+
+        const event = await db.event.findFirst({
+            where: {
+                id: +eventId
+            }
+        })
+
+        if (!event) {
+            throw new ApiError(400, "Please provide a valid event id");
+        }
+
+        return event;
+    }
+
+    // get events by an organizer
+    async getEventsForAnOrganizer(req: Request) {
+        const { organizerId } = req.params;
+
+        if (!organizerId) {
+            throw new ApiError(400, "Please provide a valid organizer id to get the events");
+        }
+
+        //get all the events
+        const events = await db.event.findMany({
+            where: {
+                organizerProfileId: +organizerId
+            }
+        })
+
+        if (!events) {
+            throw new ApiError(404, "No events were found for the organizer id");
+        }
+
+        return events;
+    }
+
+    // get event by category 
+    async getEventsByCategory(req: Request) {
+        const { category } = req.params;
+
+        if (!category) {
+            throw new ApiError(400, "Please provide a valid category")
+        }
+
+        // Normalize input: trim spaces and convert to uppercase for comparison
+        const normalizedCategory = (category as string).trim().toUpperCase();
+        const matchedCategory = Object.values(EventCategory).find(
+            (cat) => cat.toUpperCase() === normalizedCategory
+        );
+        if (!matchedCategory) {
+            throw new ApiError(400, "Invalid category provided");
+        }
+        const events = await db.event.findMany({
+            where: {
+                category: matchedCategory as EventCategory
+            }
+        });
+
+        if (!events) {
+            throw new ApiError(404, "No events found for this category")
+        }
     }
 }

@@ -26,7 +26,7 @@ export const RegisterUser = asyncHandler(async (req: Request, res: Response) => 
 // register an organizer
 
 export const RegisterOrganizer = asyncHandler(async (req: Request, res: Response) => {
-    const user = await authService.registerOrganizer(req);
+    const { user } = await authService.registerOrganizer(req);
 
     // send verification email
     const verificationToken = generateVerificationToken(user);
