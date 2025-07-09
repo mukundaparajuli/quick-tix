@@ -1,31 +1,47 @@
 import db from "../config/db";
+import ApiError from "../types/api-error";
 
-// add location
-const addLocation = async (locationData: { address: string; city: string; state: string; country: string }) => {
-    console.log(locationData);
-    const { address, city, state, country } = locationData;
+type Location = {
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    latitude?: number;
+    longitude?: number;
+}
 
+export class LocationService {
+    async createLocation(location: Location) {
+        const { address, city, state, country, latitude, longitude } = location;
 
-    if (!address || !city || !state || !country) {
-        throw new Error("All location fields are mandatory.");
+        if (!address || !city || !state || !country) {
+            throw new ApiError(400, "Please provide valid fields to create a location");
+        }
+
+        const createdLocation = await db.location.create({
+            data: location
+        })
+
+        return createdLocation;
     }
 
-    const allLocation = await db.location.findMany();
-    console.log(allLocation);
-    const locationExists = await db.location.findFirst({
-        where: { address, city, state, country }
-    });
+    async updateLocation(id: number, location: Partial<Location>) {
+        if (!id) {
+            throw new ApiError(400, "Location ID is required for update");
+        }
+        if (!location || Object.keys(location).length === 0) {
+            throw new ApiError(400, "At least one field must be provided to update the location");
+        }
 
-    if (locationExists) {
-        return locationExists;
+        const updatedLocation = await db.location.update({
+            where: { id },
+            data: location,
+        });
+
+        if (!updatedLocation) {
+            throw new ApiError(500, "Error occurred while updating the venue");
+        }
+
+        return updatedLocation;
     }
-
-
-    const newLocation = await db.location.create({
-        data: { address, city, state, country }
-    });
-
-    return newLocation;
-};
-
-export default addLocation;
+}
