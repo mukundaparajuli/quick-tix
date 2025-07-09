@@ -3,6 +3,8 @@ import ApiError from "../types/api-error";
 import db from "../config/db";
 import * as bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { sendVerificationEmail } from "../utils/send-verification-email";
+import { generateVerificationToken } from "../utils/generate-verification-code";
 
 export default class AuthService {
     async registerUser(req: Request) {
@@ -123,6 +125,16 @@ export default class AuthService {
 
         if (!isPasswordValid) {
             throw new ApiError(401, "Unauthorized Invalid Credentials")
+        }
+
+        //check if the user is verfied or not
+        const isVerified = user.verified;
+
+        if (!isVerified) {
+            //first send the verification email
+            const verificationToken = generateVerificationToken(user);
+            await sendVerificationEmail(user.email, verificationToken);
+            throw new ApiError(401, "Please verify your email to login")
         }
         const userPayload = {
             id: user.id,

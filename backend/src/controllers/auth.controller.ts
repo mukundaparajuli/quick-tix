@@ -73,13 +73,10 @@ export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
 
 export const VerifyEmail = asyncHandler(async (req: Request, res: Response) => {
     const { verificationToken } = req.params;
-    // logger.info(verificationToken)
     const decoded = jwt.verify(verificationToken, process.env.JWT_SECRET_KEY as string);
-    // logger.info(decoded);
     if (!decoded || typeof decoded === 'string') {
         return new ApiResponse(res, 400, "Invalid verification token", null, null);
     }
-    // logger.info("decoded: ", decoded)
 
     const user = await db.user.findUnique({
         where: {

@@ -20,8 +20,8 @@ model User {
   password           String
   role               Role              @default(ATTENDEE)
   image              String?
-  organizerProfileId Int?
-  organizerProfile   OrganizerProfile? @relation(fields: [organizerProfileId], references: [id], onDelete: SetNull)
+  organizerProfileId Int?              @unique
+  organizerProfile   OrganizerProfile?
   verified           Boolean           @default(false)
   bookings           Booking[]
   events             Event[]           @relation("EventAttendees")
@@ -41,7 +41,8 @@ model OrganizerProfile {
   businessName    String
   organizedEvents Event[]
   isKycVerified   Boolean   @default(false)
-  users           User[]
+  userId          Int       @unique
+  user            User      @relation(fields: [userId], references: [id])
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
