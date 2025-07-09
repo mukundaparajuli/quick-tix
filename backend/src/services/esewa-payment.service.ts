@@ -19,6 +19,7 @@ export default async function esewaPaymentInitialization(
         transactionUuid: string;
     }
 ): Promise<any> {
+
     const merchantCode = process.env.NEXT_PUBLIC_ESEWA_MERCHANT_CODE;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 

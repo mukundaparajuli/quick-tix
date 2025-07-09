@@ -2,11 +2,16 @@ import { Request } from "express";
 import ApiError from "../types/api-error";
 import { EventCategory, Role } from "@prisma/client";
 import db from "../config/db";
+import { locationService } from "./location.service";
+import { venueService } from "./venue.service";
+import { agendasService } from "./agendas.service";
+import { sponsorService } from "./sponsor.service";
+import { ticketService } from "./ticket.service";
 
 export class EventServices {
     // create an event
     async createEvent(req: Request) {
-        const { title, description, category, tags, date, agendas, location, ticketTypes, sponsors } = req.body;
+        const { title, description, category, tags, date, agendas, venue, location, ticketTypes, sponsors } = req.body;
 
         if (!title || !description || !category || !tags || !date || !agendas || !location || !ticketTypes || !sponsors) {
             throw new ApiError(400, "Please fill all the necessary fields");
@@ -19,7 +24,12 @@ export class EventServices {
         }
 
         let agendaId, venueId, locationId;
-        // use agneda service, venue service and location service to create and return their respective ids
+
+        const createdLocation = await locationService.createLocation(location);
+        locationId = createdLocation.id;
+
+        const createdVenue = await venueService.createVenue({ ...venue, locationId })
+        venueId = createdVenue.id;
 
 
         const event = await db.event.create({
@@ -36,8 +46,9 @@ export class EventServices {
             }
         })
 
-        //provide the event id while creating sponsors and tickettypes
-        // ticketservice and sponsors service will create the respective data
+        await agendasService.createAgenda(event.id, agendas);
+        await sponsorService.createSponsors(event.id, sponsors);
+        await ticketService.createTicketTypes(event.id, ticketTypes);
 
         //return the event
         return event;

@@ -45,3 +45,5 @@ export class LocationService {
         return updatedLocation;
     }
 }
+
+export const locationService = new LocationService();

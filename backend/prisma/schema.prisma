@@ -59,7 +59,7 @@ model Event {
   tags               String[]
   date               DateTime
   agendaId           Int?
-  agenda             Agenda?           @relation(fields: [agendaId], references: [id], onDelete: SetNull)
+  agenda             Agenda[]
   organizerProfileId Int?
   organizerProfile   OrganizerProfile? @relation(fields: [organizerProfileId], references: [id], onDelete: Restrict)
   venueId            Int?
@@ -83,9 +83,10 @@ model Event {
 
 model Agenda {
   id        Int       @id @default(autoincrement())
-  time      DateTime
+  time      String
   activity  String
-  events    Event[]
+  event     Event     @relation(fields: [eventId], references: [id])
+  eventId   Int
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?

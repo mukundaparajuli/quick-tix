@@ -32,7 +32,6 @@ app.use(express.static("public"));
 // CORS configuration
 app.use(cors({
     origin: "*",
-    //  process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -68,7 +67,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 // Use `server.listen` to run both HTTP and Socket.IO
-server.listen(port, '192.168.18.138', () => {
-    console.log(`Server is running on http://192.168.49.115:${port}`);
+server.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
 });
 

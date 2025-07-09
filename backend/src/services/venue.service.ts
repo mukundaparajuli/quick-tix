@@ -28,7 +28,29 @@ export class VenueService {
         if (!createdVenue) {
             throw new ApiError(500, "Error occured while creating an event")
         }
+        return createdVenue;
     }
 
+    // update venue 
+    async updateVenue(id: number, venue: Partial<Venue>) {
+        if (!id) {
+            throw new ApiError(400, "Venue ID is required for update");
+        }
+        if (!venue || Object.keys(venue).length === 0) {
+            throw new ApiError(400, "At least one field must be provided to update the venue");
+        }
 
+        const updatedVenue = await db.venue.update({
+            where: { id },
+            data: venue,
+        });
+
+        if (!updatedVenue) {
+            throw new ApiError(500, "Error occurred while updating the venue");
+        }
+
+        return updatedVenue;
+    }
 }
+
+export const venueService = new VenueService();

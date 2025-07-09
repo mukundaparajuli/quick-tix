@@ -76,14 +76,6 @@ export default class AuthService {
 
         //create a transaction to create user and organizer profile
         const registeredUser = await db.$transaction(async (tx) => {
-
-            // create organizer
-            const organizerProfile = await tx.organizerProfile.create({
-                data: {
-                    businessName
-                }
-            })
-
             //create user
             const user = await tx.user.create({
                 data: {
@@ -92,12 +84,17 @@ export default class AuthService {
                     email,
                     password: hashedPassword,
                     locationId,
-                    organizerProfileId: organizerProfile.id
                 }
             });
+            // create organizer
+            const organizerProfile = await tx.organizerProfile.create({
+                data: {
+                    businessName: businessName as string,
+                    userId: user.id
+                }
+            })
             return { user, organizerProfile };
         });
-
         return registeredUser;
     }
 
