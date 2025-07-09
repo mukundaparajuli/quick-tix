@@ -11,12 +11,13 @@ import { Icons } from "@/components/icons";
 import RegisterSchema from "../../../../../schemas/RegisterSchema";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-
+import { useRouter } from "next/navigation";
 
 
 interface RegisterFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 const RegisterForm = ({ className, ...props }: RegisterFormProps) => {
+    const router = useRouter();
     const form = useForm<z.infer<typeof RegisterSchema>>({
         resolver: zodResolver(RegisterSchema),
         defaultValues: {
@@ -47,8 +48,17 @@ const RegisterForm = ({ className, ...props }: RegisterFormProps) => {
     }
 
     const mutation = useMutation({
-        mutationFn: registerUser
+        mutationFn: registerUser,
+        onSuccess: () => {
+            toast.success("Logged in successfully!");
+            router.push("/login");
+        },
+        onError: (error: Error) => {
+            toast.error(`Login failed: ${error.message}`);
+        }
     })
+
+
     const onSubmit = (formData: z.infer<typeof RegisterSchema>) => {
         mutation.mutate(formData);
     };

@@ -19,6 +19,7 @@ export default function Page() {
     if (isLoading) return <div>Loading...</div>
     return (
         <div>
+            {console.log("seat", data)}
             <div>Booking for {id}</div>
             {data && data.Section && data.id && <BookSeat seatLayout={data.Section} eventId={data.id} />}
         </div>

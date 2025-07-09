@@ -3,9 +3,10 @@ import { Attendee, Seat } from "../types/types";
 import { bookSeat } from "../services";
 import db from "../config/db";
 import ApiError from "../types/api-error";
+import { PaymentMethod } from "../enums";
 
 export const bookseat = async (io: Server, socket: Socket) => {
-    socket.on("book-seat", async (eventid: number, seats: Seat[], userid: number) => {
+    socket.on("book-seat", async (eventid: number, seats: Seat[], userid: number, method: PaymentMethod) => {
         try {
             // Validate input
             if (!userid) {
@@ -21,7 +22,7 @@ export const bookseat = async (io: Server, socket: Socket) => {
             }
 
             // Book the seat
-            const paymentResult = await bookSeat(eventid, seats, user as Attendee);
+            const paymentResult = await bookSeat(eventid, seats, user as Attendee, method);
             console.log("seat=", paymentResult);
             const number = io.to(`event_${eventid}`).emit("payment-page", { paymentResult });
             console.log(number);

@@ -64,7 +64,7 @@ const createBooking = async (
     seats: Seat[]
 ): Promise<any> => {
     // Calculate total price
-    const totalPrice = seats.reduce((sum, seat) => sum + seat.price, 0);
+    const totalPrice = seats.reduce((sum, seat) => sum + (seat.price ?? 0), 0);
 
     // Create the booking record
     const booking = await tx.booking.create({
@@ -107,4 +107,4 @@ const initiatePayment = async (
 };
 
 
-
+export default bookSeat;

@@ -20,6 +20,7 @@ export const RegisterUser = asyncHandler(async (req: Request, res: Response) => 
         return new ApiResponse(res, 400, 'All fields are required', null, null);
     }
 
+    console.log(req.body);
     // check if email is already in use
     const checkEmail = await db.user.findUnique({
         where: {
@@ -53,6 +54,8 @@ export const RegisterUser = asyncHandler(async (req: Request, res: Response) => 
             password: hashedPassword
         }
     });
+
+    console.log("new user is here: ", newUser);
 
     // send verification email
     const verificationToken = generateVerificationToken(newUser);
@@ -141,8 +144,6 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
 
 
 // logout user
-
-
 export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
     res.cookie('jwtToken', '', {
         httpOnly: true,

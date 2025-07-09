@@ -15,19 +15,21 @@ export default function PopularEvents() {
         queryFn: async () => {
             const res = await fetch(`${baseUrl}/api/event/popular-events`, { method: "GET" });
             const data = await res.json();
+            console.log("evnets are here", data.data);
             if (!res.ok || !data) {
                 throw new Error("Failed to fetch popular events");
             }
-            return data;
+            return data.data;
         },
     });
 
     // Derive the events to display, falling back to dummyEventData if needed
-    const eventsToDisplay =
-        Array.isArray(fetchedEvents?.data) && fetchedEvents.data.length > 0
-            ? fetchedEvents.data
-            : dummyEventData;
-    console.log(fetchedEvents?.data)
+    const eventsToDisplay = fetchedEvents;
+    // Array.isArray(fetchedEvents?.data) && fetchedEvents.data.length > 0
+    //     ? fetchedEvents.data
+    //     : dummyEventData;
+    // console.log(eventsToDisplay.data);
+
     return (
         <div className="p-5 bg-white dark:bg-gray-800 flex flex-col gap-4">
             <div>
@@ -37,7 +39,7 @@ export default function PopularEvents() {
 
             {/* Options to filter popular events */}
             <div className="overflow-x-auto flex gap-2">
-                {popularEventMenu.map((i) => (
+                {eventsToDisplay && Array.isArray(eventsToDisplay) && eventsToDisplay.map((i: any) => (
                     <div
                         key={i.name}
                         onClick={() => setSelectedEvent(i.name)}

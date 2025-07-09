@@ -13,7 +13,7 @@ import { initializeSocket } from "./sockets";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT;
+const port = Number(process.env.PORT);
 const morganFormat = ":method :url :status :response-time ms";
 const server = createServer(app);
 const io = new Server(server, {
@@ -31,7 +31,8 @@ app.use(express.static("public"));
 
 // CORS configuration
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: "*",
+    //  process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -67,6 +68,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 // Use `server.listen` to run both HTTP and Socket.IO
-server.listen(port, () => {
-    console.log("listening to the port " + port);
+server.listen(port, '192.168.18.138', () => {
+    console.log(`Server is running on http://192.168.49.115:${port}`);
 });
+

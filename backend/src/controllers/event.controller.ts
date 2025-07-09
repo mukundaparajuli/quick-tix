@@ -21,31 +21,32 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
 
     console.log("backend data=", req.body);
 
-    if (!images || images.length == 0) {
-        console.log("images not available")
-        // throw new ApiError(404, "Images not available")
-    }
+    // if (!images || images.length == 0) {
+    //     console.log("images not available")
+    //     // throw new ApiError(404, "Images not available")
+    // }
 
-    const imagesPath = images?.map((img: any) => (img.path));
+    // const imagesPath = images?.map((img: any) => (img.path));
 
-    let cloudinaryLinks = [{ url: null }]
+    // let cloudinaryLinks = [{ url: null }]
 
-    if (images) {
-        try {
-            cloudinaryLinks = await Promise.all(imagesPath.map((image: string) => uploadToCloudinary(image)));
-            console.log(cloudinaryLinks)
-        } catch (error) {
-            throw new ApiError(500, error as string);
-        }
-    }
+    // if (images) {
+    //     try {
+    //         cloudinaryLinks = await Promise.all(imagesPath.map((image: string) => uploadToCloudinary(image)));
+    //         console.log(cloudinaryLinks)
+    //     } catch (error) {
+    //         throw new ApiError(500, error as string);
+    //     }
+    // }
 
-    console.log(cloudinaryLinks);
-    const imagesUrl = cloudinaryLinks.map((imgUrl) => imgUrl?.url).filter((url) => url !== undefined);
+    // console.log(cloudinaryLinks);
+    // const imagesUrl = cloudinaryLinks.map((imgUrl) => imgUrl?.url).filter((url) => url !== undefined);
+    const imagesUrl = ["kalsdjfalks"];
 
     console.log(imagesUrl);
 
 
-    console.log(imagesPath);
+    // console.log(imagesPath);
     // Check if all fields are present
     if (!title || !description || !date || !venue || !location || !price || !totalTickets || !availableTickets || !organizerName || !organizerEmail) {
         return new ApiResponse(res, 403, "All fields are mandatory to be filled", null, null);
@@ -66,15 +67,17 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
     }
 
 
+    console.log(date);
     // Validate date and number fields
-    const eventDate = new Date(date);
+    const eventDate = new Date(date.split("T")[0]);
+    console.log(eventDate);
 
 
-    if (new Date(eventDate) < new Date(Date.now())) {
-        console.log(date)
-        console.log(new Date(Date.now()))
-        return new ApiResponse(res, 400, "Invalid or past event date.", null, null);
-    }
+    // if (new Date(eventDate) < new Date(Date.now())) {
+    //     console.log(date)
+    //     console.log(new Date(Date.now()))
+    //     return new ApiResponse(res, 400, "Invalid or past event date.", null, null);
+    // }
 
     if (price <= 0 || totalTickets <= 0 || availableTickets < 0) {
         return new ApiResponse(res, 400, "Invalid values for price or tickets.", null, null);
@@ -152,14 +155,14 @@ export const RegisterEvent = asyncHandler(async (req: Request, res: Response) =>
             });
 
             console.log(row.seats);
-            await Promise.all(row.seats.map(async (seat: any) => {
-                await db.seat.create({
-                    data: {
-                        rowId: createdRow.id,
-                        seatId: String(seat.id) ?? "12",
-                    },
-                });
-            }));
+            // await Promise.all(row.seats.map(async (seat: any) => {
+            //     await db.seat.create({
+            //         data: {
+            //             rowId: createdRow.id,
+            //             seatId: String(seat.id) ?? "12",
+            //         },
+            //     });
+            // }));
         }));
     }));
 

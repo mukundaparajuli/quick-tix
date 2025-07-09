@@ -13,10 +13,12 @@ interface EsewaConfigInterface {
     signed_field_names: string;
 }
 
-export default async function esewaPaymentInitialization({ amount, transactionUuid }: {
-    amount: number;
-    transactionUuid: string;
-}): Promise<any> {
+export default async function esewaPaymentInitialization(
+    { amount, transactionUuid }: {
+        amount: number;
+        transactionUuid: string;
+    }
+): Promise<any> {
     const merchantCode = process.env.NEXT_PUBLIC_ESEWA_MERCHANT_CODE;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 

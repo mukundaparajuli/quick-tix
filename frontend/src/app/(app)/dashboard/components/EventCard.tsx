@@ -15,7 +15,7 @@ export default function EventCard({ event }: { event: EventType }) {
     return (
         <Card className="dark:bg-gray-800 text-black dark:text-white h-auto shadow-lg hover:shadow-2xl scale-95 transition-all duration-300 p-0 w-[22vw] border-none m-0 cursor-pointer hover:scale-105"
             onClick={() => { router.replace('dashboard/event/' + event.id) }}>
-            {event && dummyEventData &&
+            {event && dummyEventData && dummyEventData[event?.id]?.image &&
                 <CardHeader className="p-0">
                     {dummyEventData[event?.id]?.image && <Image
                         alt="Event Name"

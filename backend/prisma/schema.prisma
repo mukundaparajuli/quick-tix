@@ -1,6 +1,6 @@
 generator erd {
   provider = "prisma-erd-generator"
-  output   = "./erd.svg" // or specify your own path
+  output   = "./erd.svg"
 }
 
 generator client {
@@ -12,59 +12,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// users 
-
 model User {
-  id        Int      @id @default(autoincrement())
-  fullName  String
-  username  String   @unique
-  email     String   @unique
-  password  String
-  role      Role     @default(ATTENDEE) // organizer or attendee
-  image     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  verified  Boolean  @default(false)
-
-  // Relations
-  events   Event[] // Events the user is organizing
-  bookings Booking[] // Bookings made by the user
-  Seat     Seat[]
+  id                 Int               @id @default(autoincrement())
+  fullName           String
+  username           String            @unique
+  email              String            @unique
+  password           String
+  role               Role              @default(ATTENDEE)
+  image              String?
+  organizerProfileId Int?
+  organizerProfile   OrganizerProfile? @relation(fields: [organizerProfileId], references: [id])
+  verified           Boolean           @default(false)
+  Seat               Seat[]
+  bookings           Booking[]
+  events             Event[]
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
   @@map("users")
 }
 
-enum Role {
-  ORGANIZER
-  ATTENDEE
+model OrganizerProfile {
+  id              Int     @id @default(autoincrement())
+  businessName    String
+  organizedEvents Event[]
+  isKycVerified   Boolean @default(false)
+  User            User[]
 }
 
 model Event {
-  id               Int           @id @default(autoincrement())
-  title            String
-  description      String
-  category         EventCategory @default(OTHERS)
-  images           String[]
-  tags             String?
-  date             DateTime
-  venueId          Int
-  price            Float
-  availableTickets Int
-  organizerId      Int
-  locationId       Int
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id                 Int               @id @default(autoincrement())
+  title              String
+  description        String
+  category           EventCategory     @default(OTHERS)
+  images             String[]
+  tags               String?
+  date               DateTime
+  agenda             Agenda            @relation(fields: [agendaId], references: [id])
+  agendaId           Int
+  OrganizerProfile   OrganizerProfile? @relation(fields: [organizerProfileId], references: [id])
+  organizerProfileId Int?
 
-  venue     Venue    @relation(fields: [venueId], references: [id])
-  location  Location @relation(fields: [locationId], references: [id])
-  organizer User     @relation(fields: [organizerId], references: [id])
-
-  agendas    Agenda[]
-  bookings   Booking[]
-  Section    Section[]
-  Seat       Seat[]
-  TicketType TicketType[]
-  Sponsors   Sponsors[]
+  Sponsors    Sponsors[]
+  ticketTypes TicketType[]
+  Venue       Venue?       @relation(fields: [venueId], references: [id])
+  venueId     Int?
+  Location    Location?    @relation(fields: [locationId], references: [id])
+  locationId  Int?
+  attendees   User[]
 
   @@index([date])
   @@index([category])
@@ -75,35 +70,93 @@ model Agenda {
   id       Int      @id @default(autoincrement())
   time     DateTime
   activity String
-  eventId  Int
-
-  event Event @relation(fields: [eventId], references: [id])
-}
-
-model TicketType {
-  id           Int                @id @unique @default(autoincrement())
-  type         String
-  price        Float
-  currency     String
-  availability TicketAvailability
-
-  seats Seat[]
-
-  Event   Event? @relation(fields: [eventId], references: [id])
-  eventId Int?
-}
-
-enum TicketAvailability {
-  AVAILABLE
-  SOLD_OUT
+  Event    Event[]
 }
 
 model Sponsors {
   id      Int     @id @unique @default(autoincrement())
   name    String
   website String?
-  Event   Event?  @relation(fields: [eventId], references: [id])
   eventId Int?
+  Event   Event?  @relation(fields: [eventId], references: [id])
+}
+
+model Venue {
+  id          Int      @id @default(autoincrement())
+  name        String
+  capacity    Int
+  amenities   String[]
+  description String?
+  locationId  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  location    Location @relation(fields: [locationId], references: [id])
+  events      Event[]
+}
+
+model Location {
+  id        Int      @id @default(autoincrement())
+  address   String
+  city      String
+  state     String
+  country   String
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  venues    Venue[]
+  events    Event[]
+}
+
+model Booking {
+  id           Int           @id @default(autoincrement())
+  eventId      Int
+  userId       Int
+  ticketCounts Int
+  totalPrice   Float
+  status       BookingStatus @default(PENDING)
+  createdAt    DateTime      @default(now())
+  event        Event         @relation(fields: [eventId], references: [id])
+  user         User          @relation(fields: [userId], references: [id])
+  payments     Payment?
+
+  @@index([eventId])
+  @@index([userId])
+  @@map("bookings")
+}
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  bookingId       Int           @unique
+  amount          Float
+  paymentProvider String
+  paymentStatus   PaymentStatus @default(PENDING)
+  transactionId   String?
+  paymentResponse Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  booking         Booking       @relation(fields: [bookingId], references: [id])
+
+  @@map("payments")
+}
+
+model TicketType {
+  id       Int    @id @default(autoincrement())
+  name     String
+  features Json
+
+  createdAt DateTime @default(Date.now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ORGANIZER
+  ATTENDEE
+}
+
+enum TicketAvailability {
+  AVAILABLE
+  SOLD_OUT
 }
 
 enum EventCategory {
@@ -125,95 +178,6 @@ enum EventCategory {
   OTHERS
 }
 
-// venue model
-model Venue {
-  id          Int      @id @default(autoincrement())
-  name        String
-  capacity    Int
-  amenities   String[]
-  description String?
-  location    Location @relation(fields: [locationId], references: [id])
-  locationId  Int
-  events      Event[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// Location model for venue details
-model Location {
-  id        Int      @id @default(autoincrement())
-  address   String
-  city      String
-  state     String
-  country   String
-  latitude  Float?
-  longitude Float?
-  venues    Venue[] //Venues associated with this location
-  events    Event[] // Events associated with this location
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// sections like VIP
-model Section {
-  id        Int      @id @default(autoincrement())
-  name      String
-  rows      Row[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  eventId   Int
-  Event     Event    @relation(fields: [eventId], references: [id])
-}
-
-// Rows in each section (e.g., Row A, Row B)
-model Row {
-  id        Int      @id @default(autoincrement())
-  rowNumber Int
-  section   Section  @relation(fields: [sectionId], references: [id])
-  sectionId Int
-  seats     Seat[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// bookings
-
-model Booking {
-  id           Int           @id @default(autoincrement())
-  eventId      Int
-  userId       Int
-  ticketCounts Int
-  totalPrice   Float
-  status       BookingStatus @default(PENDING)
-  createdAt    DateTime      @default(now())
-
-  event Event @relation(fields: [eventId], references: [id])
-  user  User  @relation(fields: [userId], references: [id])
-
-  // Relations
-  seats    Seat[]
-  payments Payment[]
-
-  @@index([eventId])
-  @@index([userId])
-  @@map("bookings")
-}
-
-model Payment {
-  id              Int           @id @default(autoincrement())
-  booking         Booking       @relation(fields: [bookingId], references: [id])
-  bookingId       Int           @unique
-  amount          Float
-  paymentProvider String
-  paymentStatus   PaymentStatus @default(PENDING)
-  transactionId   String?
-  paymentResponse Json?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  @@map("payments")
-}
-
 enum PaymentStatus {
   PENDING
   SUCCESSFUL
@@ -225,27 +189,6 @@ enum BookingStatus {
   FAILED
   PENDING
   SUCCESSFUL
-}
-
-// seats
-
-model Seat {
-  id           Int        @id @default(autoincrement())
-  seatId       String
-  row          Row        @relation(fields: [rowId], references: [id])
-  rowId        Int
-  status       SeatStatus @default(AVAILABLE)
-  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
-  ticketTypeId Int
-  bookings     Booking?   @relation(fields: [bookingId], references: [id])
-  locked_by    Int?
-  locked_at    DateTime?
-  User         User?      @relation(fields: [locked_by], references: [id])
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  Event        Event?     @relation(fields: [eventId], references: [id])
-  eventId      Int?
-  bookingId    Int?
 }
 
 enum SeatStatus {
