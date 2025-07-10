@@ -10,6 +10,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { initializeSocket } from "./sockets";
 import { env } from "./config/env.config";
+import { startCleanupJob } from "./jobs/cleanup-booking.job";
 
 dotenv.config();
 
@@ -28,6 +29,9 @@ export const io = new Server(server, {
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static("public"));
+
+// Start background jobs
+startCleanupJob();
 
 // CORS configuration
 app.use(cors({
