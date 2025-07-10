@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import asyncHandler from "../utils/async-handler";
 import ApiResponse from "../types/api-response";
 import jwt from 'jsonwebtoken';
+import { env } from "../config/env.config";
 
 
 
@@ -13,7 +14,7 @@ export const JwtValidation = asyncHandler(async (req: Request, res: Response, ne
     }
 
     try {
-        jwt.verify(token, process.env.JWT_SECRET_KEY as string, (err: any, decoded: any) => {
+        jwt.verify(token, env.JWT_SECRET_KEY as string, (err: any, decoded: any) => {
             if (err) {
                 console.log(err);
                 return new ApiResponse(res, 403, "JWT verification failed. Please Login again", null, err);

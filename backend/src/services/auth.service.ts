@@ -5,6 +5,7 @@ import * as bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendVerificationEmail } from "../utils/send-verification-email";
 import { generateVerificationToken } from "../utils/generate-verification-code";
+import { env } from "../config/env.config";
 
 export default class AuthService {
     async registerUser(req: Request) {
@@ -141,7 +142,7 @@ export default class AuthService {
             role: user.role,
         }
         // logger.info("user payload: ", userPayload)
-        const secret = process.env.JWT_SECRET_KEY;
+        const secret = env.JWT_SECRET_KEY;
 
         if (!secret) {
             throw new ApiError(404, "Jwt verfication not found")

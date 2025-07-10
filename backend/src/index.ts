@@ -9,16 +9,17 @@ import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { initializeSocket } from "./sockets";
+import { env } from "./config/env.config";
 
 dotenv.config();
 
 const app = express();
-const port = Number(process.env.PORT);
+const port = env.PORT;
 const morganFormat = ":method :url :status :response-time ms";
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.FRONTEND_URL || "http://localhost:3000",
+        origin: env.FRONTEND_URL || "http://localhost:3000",
         methods: ["GET", "POST"],
         credentials: true
     }
@@ -38,23 +39,6 @@ app.use(cors({
 
 }));
 
-// Logging middleware
-app.use(
-    morgan(morganFormat, {
-        stream: {
-            write: (message) => {
-                const logObject = {
-                    method: message.split(" ")[0],
-                    url: message.split(" ")[1],
-                    status: message.split(" ")[2],
-                    responseTime: message.split(" ")[3],
-                };
-                logger.info(JSON.stringify(logObject));
-            },
-        },
-    })
-);
-
 // Socket.IO initialization
 initializeSocket(io);
 
@@ -66,7 +50,6 @@ app.get("/", (req: Request, res: Response) => {
     res.send("Server is running");
 });
 
-// Use `server.listen` to run both HTTP and Socket.IO
 server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });

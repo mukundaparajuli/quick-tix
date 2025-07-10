@@ -7,6 +7,7 @@ import logger from "../logger";
 import { generateVerificationToken } from "../utils/generate-verification-code";
 import { sendVerificationEmail } from "../utils/send-verification-email";
 import { authService } from "../services/auth.service";
+import { env } from "../config/env.config";
 
 
 
@@ -47,7 +48,7 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
     // store the tokens in cookies 
     res.cookie('jwtToken', jwtToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: env.NODE_ENV === 'production',
         sameSite: 'strict',
         maxAge: 24 * 60 * 60 * 1000,
     });
@@ -61,7 +62,7 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
 export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
     res.cookie('jwtToken', '', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: env.NODE_ENV === 'production',
         sameSite: 'strict',
         expires: new Date(0),
     });
@@ -73,7 +74,7 @@ export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
 
 export const VerifyEmail = asyncHandler(async (req: Request, res: Response) => {
     const { verificationToken } = req.params;
-    const decoded = jwt.verify(verificationToken, process.env.JWT_SECRET_KEY as string);
+    const decoded = jwt.verify(verificationToken, env.JWT_SECRET_KEY as string);
     if (!decoded || typeof decoded === 'string') {
         return new ApiResponse(res, 400, "Invalid verification token", null, null);
     }
