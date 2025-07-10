@@ -3,8 +3,6 @@ import dotenv from 'dotenv';
 import routes from "./routes/index";
 import errorHandler from "./middlewares/error-handler";
 import cookieParser from 'cookie-parser';
-import logger from "./logger";
-import morgan from "morgan";
 import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";

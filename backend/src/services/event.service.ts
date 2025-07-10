@@ -9,7 +9,7 @@ import { sponsorService } from "./sponsor.service";
 import { ticketService } from "./ticket.service";
 import { promocodeService } from "./promocode.service";
 
-export class EventServices {
+export class EventService {
     // create an event
     async createEvent(req: Request) {
         const { title, description, category, tags, date, agendas, venue, location, ticketTypes, sponsors, promocodes } = req.body;
@@ -270,3 +270,5 @@ export class EventServices {
         return events;
     };
 }
+
+export const eventService = new EventService();

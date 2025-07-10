@@ -111,12 +111,13 @@ export class BookingService {
         return result;
     }
 
-    async confirmBooking(bookingId: number) {
+    async confirmBooking(req: Request) {
+        const { bookingId } = req.params;
         const result = await db.$transaction(async (tx) => {
             // find booking
             const booking = await tx.booking.findUnique({
                 where: {
-                    id: bookingId,
+                    id: +bookingId,
                     status: BookingStatus.PENDING,
                     deletedAt: null
                 },
@@ -137,7 +138,7 @@ export class BookingService {
 
             // now mark the respective seats in the booking as BOOKED
             await tx.seat.updateMany({
-                where: { bookingId: bookingId },
+                where: { bookingId: +bookingId },
                 data: { status: SeatStatus.BOOKED },
             });
 

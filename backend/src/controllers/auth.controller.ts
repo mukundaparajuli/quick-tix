@@ -3,7 +3,6 @@ import ApiResponse from "../types/api-response";
 import db from "../config/db";
 import asyncHandler from "../utils/async-handler";
 import jwt from 'jsonwebtoken'
-import logger from "../logger";
 import { generateVerificationToken } from "../utils/generate-verification-code";
 import { sendVerificationEmail } from "../utils/send-verification-email";
 import { authService } from "../services/auth.service";
@@ -66,8 +65,6 @@ export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
         sameSite: 'strict',
         expires: new Date(0),
     });
-
-    logger.info('User logged out successfully');
 
     return new ApiResponse(res, 200, "Logout successful", null, null);
 });
