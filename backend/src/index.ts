@@ -15,9 +15,8 @@ dotenv.config();
 
 const app = express();
 const port = env.PORT;
-const morganFormat = ":method :url :status :response-time ms";
 const server = createServer(app);
-const io = new Server(server, {
+export const io = new Server(server, {
     cors: {
         origin: env.FRONTEND_URL || "http://localhost:3000",
         methods: ["GET", "POST"],

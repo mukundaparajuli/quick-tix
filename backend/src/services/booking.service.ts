@@ -2,6 +2,8 @@ import { Request } from "express";
 import db from "../config/db";
 import { BookingStatus, DiscountType, SeatStatus } from "@prisma/client";
 import ApiError from "../types/api-error";
+import { initializeSocket } from "../sockets";
+import { io } from "..";
 
 //lock seat for 10 minutes
 const LOCK_DURATION_SECONDS = 600;
@@ -102,6 +104,89 @@ export class BookingService {
             });
 
             return { bookingId: booking.id, seatIds, expiresAt: new Date(Date.now() + LOCK_DURATION_SECONDS * 1000) };
+        });
+
+        // broadcast seat status 
+        await initializeSocket(io).broadcastSeatStatus(eventId, seatIds, "RESERVED");
+        return result;
+    }
+
+    async confirmBooking(bookingId: number) {
+        const result = await db.$transaction(async (tx) => {
+            // find booking
+            const booking = await tx.booking.findUnique({
+                where: {
+                    id: bookingId,
+                    status: BookingStatus.PENDING,
+                    deletedAt: null
+                },
+                include: {
+                    seats: true
+                }
+            })
+
+            if (!booking) {
+                throw new ApiError(404, `No pending booking was not found for this booking id:${bookingId}`);
+            }
+
+            //if booking is found and is in pendint state change it to CONFIRMED
+            const updatedBooking = await tx.booking.update({
+                where: { id: booking.id },
+                data: { status: BookingStatus.CONFIRMED }
+            });
+
+            // now mark the respective seats in the booking as BOOKED
+            await tx.seat.updateMany({
+                where: { bookingId: bookingId },
+                data: { status: SeatStatus.BOOKED },
+            });
+
+            return booking;
+        });
+        await initializeSocket(io).broadcastSeatStatus(result.eventId, result.seats.map(s => s.id), SeatStatus.BOOKED);
+        return result;
+    }
+
+    async releaseExpiredReservations() {
+        await db.$transaction(async (tx) => {
+            // find all expired bookings
+            const expiredBookings = await tx.booking.findMany({
+                where: {
+                    status: BookingStatus.PENDING,
+                    createdAt: { lte: new Date(Date.now() - LOCK_DURATION_SECONDS * 1000) },
+                    deletedAt: null
+                },
+                include: {
+                    seats: true
+                }
+            })
+
+            // for each booking change the booking status to CANCELLED and seats' status to AVAILABLE
+            for (const booking of expiredBookings) {
+                await tx.seat.updateMany({
+                    where: {
+                        bookingId: booking.id,
+                        deletedAt: null
+                    },
+                    data: {
+                        bookingId: null,
+                        status: SeatStatus.AVAILABLE
+                    }
+                });
+
+                await tx.booking.update({
+                    where: {
+                        id: booking.id,
+                        deletedAt: null
+                    },
+                    data: {
+                        status: BookingStatus.CANCELLED
+                    }
+                })
+                await initializeSocket(io).broadcastSeatStatus(booking.eventId, booking.seats.map(s => s.id), SeatStatus.AVAILABLE);
+            }
         })
     }
 }
+
+export const bookingService = new BookingService();

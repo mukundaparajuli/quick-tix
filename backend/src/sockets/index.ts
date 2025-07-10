@@ -11,4 +11,6 @@ export const initializeSocket = (io: Server) => {
     async function broadcastSeatStatus(eventId: number, seatIds: number[], status: "RESERVED" | "BOOKED" | "AVAILABLE") {
         io.to(`event:${eventId}`).emit("seatStatusUpdate", { seatIds, status });
     }
+
+    return { broadcastSeatStatus };
 }
