@@ -42,3 +42,8 @@ export const SearchEvent = asyncHandler(async (req: Request, res: Response) => {
     const events = await eventService.searchEvents(req);
     return new ApiResponse(res, 200, "Searched events are fetched successfully", events);
 })
+
+export const GetPopularEvents = asyncHandler(async (req: Request, res: Response) => {
+    const events = await eventService.getPopularEvents(req);
+    return new ApiResponse(res, 200, "Popular events are fetched successfully", events);
+})

@@ -1,221 +1,209 @@
-"use client"
+'use client';
 
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { cn } from "@/lib/utils";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Icons } from "@/components/icons";
-import RegisterSchema from "../../../../../schemas/RegisterSchema";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { RegisterSchema, RegisterFormData } from '@/schemas/RegisterSchema';
+import { cn } from '@/lib/utils';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Icons } from '@/components/icons';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import axios from '@/api/axios';
+import { useAuth } from '@/hooks/useAuth';
 
+interface RegisterFormProps extends React.HTMLAttributes<HTMLFormElement> {
+    isOrganizer?: boolean;
+}
 
-interface RegisterFormProps extends React.HTMLAttributes<HTMLDivElement> { }
-
-const RegisterForm = ({ className, ...props }: RegisterFormProps) => {
+const RegisterForm = ({ className, isOrganizer = false, ...props }: RegisterFormProps) => {
     const router = useRouter();
-    const form = useForm<z.infer<typeof RegisterSchema>>({
+    const { signIn } = useAuth();
+
+    const form = useForm<RegisterFormData>({
         resolver: zodResolver(RegisterSchema),
         defaultValues: {
-            fullName: "",
-            username: "",
-            email: "",
-            password: "",
-            confirmPassword: ""
-        }
+            fullName: '',
+            username: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            address: '',
+            city: '',
+            state: '',
+            country: '',
+            latitude: undefined,
+            longitude: undefined,
+            businessName: isOrganizer ? '' : undefined,
+        },
     });
 
-    const registerUser = async (formData: z.infer<typeof RegisterSchema>) => {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-        const data = await response.json();
-        if (response.ok) {
-            return data;
-        } else {
-            toast.error(`Registration Failed: ${data?.message}`);
-            throw new Error("Error occurred while registering the user");
-        }
-
-    }
+    const registerUser = async (formData: RegisterFormData) => {
+        const { confirmPassword, ...data } = formData; // Exclude confirmPassword
+        const endpoint = isOrganizer ? '/auth/register-organizer' : '/auth/register';
+        const response = await axios.post(endpoint, data, { withCredentials: true });
+        return response.data;
+    };
 
     const mutation = useMutation({
         mutationFn: registerUser,
         onSuccess: () => {
-            toast.success("Logged in successfully!");
-            router.push("/login");
+            toast.success('Registration successful! Please check your email to verify your account.');
+            router.push('/auth/signin');
         },
-        onError: (error: Error) => {
-            toast.error(`Login failed: ${error.message}`);
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || 'Registration failed');
+        },
+    });
+
+    const onSubmit: SubmitHandler<RegisterFormData> = (data) => {
+        mutation.mutate(data);
+    };
+
+    const handleGoogleSignIn = async () => {
+        const result = await signIn('google', { redirect: false });
+        if (result?.error) {
+            toast.error('Google sign-in failed');
+        } else {
+            toast.success('Signed up with Google');
+            router.push('/dashboard');
         }
-    })
-
-
-    const onSubmit = (formData: z.infer<typeof RegisterSchema>) => {
-        mutation.mutate(formData);
     };
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-                <div className={cn("grid gap-6", className)} {...props}>
-                    <div className="grid gap-2">
-                        <div className="grid gap-1">
-                            <FormField
-                                control={form.control}
-                                name="fullName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="sr-only" htmlFor="fullName">
-                                            Full Name
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                id="fullName"
-                                                placeholder="Full Name"
-                                                type="text"
-                                                autoCapitalize="none"
-                                                autoComplete="fullName"
-                                                autoCorrect="off"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid gap-1">
-                            <FormField
-                                control={form.control}
-                                name="username"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="sr-only" htmlFor="username">
-                                            Username
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                id="username"
-                                                placeholder="username"
-                                                type="text"
-                                                autoCapitalize="none"
-                                                autoComplete="username"
-                                                autoCorrect="off"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid gap-1">
-                            <FormField
-                                control={form.control}
-                                name="email"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="sr-only" htmlFor="email">
-                                            Email
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                id="email"
-                                                placeholder="name@example.com"
-                                                type="email"
-                                                autoCapitalize="none"
-                                                autoComplete="email"
-                                                autoCorrect="off"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid gap-1">
-                            <FormField
-                                control={form.control}
-                                name="password"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="sr-only" htmlFor="password">
-                                            Password
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                id="password"
-                                                placeholder="password"
-                                                type="password"
-                                                autoCapitalize="none"
-                                                autoComplete="off"
-                                                autoCorrect="off"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid gap-1">
-                            <FormField
-                                control={form.control}
-                                name="confirmPassword"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="sr-only" htmlFor="confirmPassword">
-                                            Confirm Password
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                id="password"
-                                                placeholder="confirm password"
-                                                type="password"
-                                                autoCapitalize="none"
-                                                autoComplete="off"
-                                                autoCorrect="off"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid gap-1">
-                            <Button type="submit" disabled={mutation.isPending}>
-                                {mutation.isPending ? 'Registering...' : 'Register'}
-                            </Button>
-                        </div>
-                    </div>
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">
-                                Or continue with
-                            </span>
-                        </div>
-                    </div>
-                    <Button variant="outline" type="button">
-                        <Icons.google className="mr-2 h-4 w-4" />
-                        Google
+            <form onSubmit={form.handleSubmit(onSubmit)} className={cn('grid gap-6', className)} {...props}>
+                <div className="grid gap-2">
+                    <FormField
+                        control={form.control}
+                        name="fullName"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Full Name</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="John Doe" disabled={mutation.isPending} {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="username"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Username</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="johndoe" disabled={mutation.isPending} {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type="email"
+                                        placeholder="name@example.com"
+                                        autoComplete="email"
+                                        disabled={mutation.isPending}
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Password</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type="password"
+                                        placeholder="Password"
+                                        autoComplete="new-password"
+                                        disabled={mutation.isPending}
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Confirm Password</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type="password"
+                                        placeholder="Confirm password"
+                                        autoComplete="new-password"
+                                        disabled={mutation.isPending}
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    {isOrganizer && (
+                        <FormField
+                            control={form.control}
+                            name="businessName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Business Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Event Co." disabled={mutation.isPending} {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
+                    <Button type="submit" disabled={mutation.isPending}>
+                        {mutation.isPending ? 'Registering...' : 'Register'}
                     </Button>
                 </div>
+                <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    </div>
+                </div>
+                <Button
+                    variant="outline"
+                    type="button"
+                    disabled={mutation.isPending}
+                    onClick={handleGoogleSignIn}
+                >
+                    <Icons.google className="mr-2 h-4 w-4" />
+                    Google
+                </Button>
             </form>
-        </Form >
+        </Form>
     );
 };
 

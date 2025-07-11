@@ -107,7 +107,7 @@ export class EventService {
             data: eventUpdateData
         })
 
-        // if agendas, location, ticketTypes, sponsors are present update them with the respective services
+        return updatedEvent;
     }
 
     // delete an event
@@ -269,6 +269,25 @@ export class EventService {
 
         return events;
     };
+
+    // get popular events
+    async getPopularEvents(req: Request) {
+        // Example: Get events with the most attendees (popularity by attendee count)
+        const popularEvents = await db.event.findMany({
+            orderBy: {
+                attendees: {
+                    _count: 'desc'
+                }
+            },
+            take: 10,
+            include: {
+                attendees: true,
+                location: true,
+                venue: true,
+            }
+        });
+        return popularEvents;
+    }
 }
 
 export const eventService = new EventService();
