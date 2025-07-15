@@ -15,11 +15,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             async authorize(credentials) {
                 try {
                     const response = await axios.post(
-                        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
+                        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`,
                         credentials,
                         { withCredentials: true }
                     );
-                    return response.data.user;
+                    console.log("response", response.data)
+                    return response.data.data;
                 } catch (error: any) {
                     if (error.response?.data?.message === 'Please verify your email to login') {
                         throw new Error('Please verify your email to login');
@@ -39,11 +40,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     callbacks: {
         async jwt({ token, user, account }: { token: any; user?: any; account?: any }) {
             if (user) {
-                token.id = user.id;
-                token.fullName = user.fullName;
+                token.id = user.user.id;
+                token.fullName = user.user.fullName;
                 token.username = user.username;
-                token.email = user.email;
-                token.role = user.role;
+                token.email = user.user.email;
+                token.role = user.user.role;
+                token.access_token = user.jwtToken;
             }
             if (account?.provider === 'google') {
                 try {
@@ -70,6 +72,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             session.user.username = token.username;
             session.user.email = token.email;
             session.user.role = token.role;
+            session.access_token = token.access_token;
             return session;
         },
     },

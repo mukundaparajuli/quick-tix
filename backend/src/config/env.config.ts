@@ -11,7 +11,6 @@ const envSchema = z.object({
     REFRESH_SECRET_KEY: z.string().min(32),
     NODE_ENV: z.enum(['development', 'production']).default('development'),
     FRONTEND_URL: z.string().url(),
-
     RESEND_API_KEY: z.string(),
 
     // Khalti configuration

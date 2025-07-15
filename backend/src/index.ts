@@ -8,7 +8,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { initializeSocket } from "./sockets";
 import { env } from "./config/env.config";
-import { startCleanupJob } from "./jobs/cleanup-booking.job";
+import { startCleanupJob } from "./jobs/cleanup.job";
 
 dotenv.config();
 
@@ -29,13 +29,13 @@ app.use(cookieParser());
 app.use(express.static("public"));
 
 // Start background jobs
-startCleanupJob();
+// startCleanupJob();
 
 // CORS configuration
 app.use(cors({
-    origin: "*",
+    origin: env.FRONTEND_URL || "http://localhost:3000",
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 
 }));

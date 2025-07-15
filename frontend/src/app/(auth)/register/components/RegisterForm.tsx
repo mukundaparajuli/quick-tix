@@ -51,6 +51,7 @@ const RegisterForm = ({ className, isOrganizer = false, ...props }: RegisterForm
         const { confirmPassword, ...data } = formData; // Exclude confirmPassword
         const endpoint = isOrganizer ? '/auth/register-organizer' : '/auth/register';
         const response = await axios.post(endpoint, data, { withCredentials: true });
+        console.log(response.data)
         return response.data;
     };
 
@@ -58,7 +59,7 @@ const RegisterForm = ({ className, isOrganizer = false, ...props }: RegisterForm
         mutationFn: registerUser,
         onSuccess: () => {
             toast.success('Registration successful! Please check your email to verify your account.');
-            router.push('/auth/signin');
+            router.push('/login');
         },
         onError: (error: any) => {
             toast.error(error.response?.data?.message || 'Registration failed');

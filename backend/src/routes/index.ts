@@ -4,7 +4,6 @@ import AuthRoutes from "./auth.route";
 import EventRoutes from "./event.route";
 import BookingRoutes from "./booking.route";
 import SeatRoutes from "./seat.route";
-import PaymentRoutes from "./payment.route";
 
 const router = Router();
 
@@ -13,7 +12,6 @@ router.use('/auth', AuthRoutes);
 router.use('/event', EventRoutes);
 router.use('/booking', BookingRoutes);
 router.use('/seat', SeatRoutes);
-router.use('/payment', PaymentRoutes);
 
 
 export default router;

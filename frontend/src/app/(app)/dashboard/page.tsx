@@ -1,15 +1,12 @@
 import Header from "./components/Header";
 import Banner from "./components/Banner";
 import PopularEvents from "./components/PopularEvents";
+import AllEvents from "./components/AllEvents";
 export default function DashboardPage() {
   return <div>
-    {/* header */}
-    {/* <Header /> */}
-    {/* banner */}
-    {/* <Banner /> */}
-    {/* filters for events */}
+    <Header />
+    <Banner />
     {/* <PopularEvents /> */}
-    {/* events list */}
-    Hello world!
+    <AllEvents />
   </div>;
 }

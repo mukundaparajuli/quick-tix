@@ -24,7 +24,7 @@ export class EventService {
             throw new ApiError(401, "Unauthorized you are not authorized to create an event");
         }
 
-        let agendaId, venueId, locationId;
+        let agendasId, venueId, locationId;
 
         const createdLocation = await locationService.createLocation(location);
         locationId = createdLocation.id;
@@ -40,7 +40,7 @@ export class EventService {
                 category,
                 tags,
                 date,
-                agendaId,
+                agendasId,
                 organizerProfileId: user.organizerProfile.id,
                 venueId,
                 locationId,
@@ -162,25 +162,36 @@ export class EventService {
     // get all events
     async getAllEvents(req: Request) {
         const events = await db.event.findMany();
-        if (!events) {
-            throw new ApiError(404, "No events found")
-        }
+        console.log("all events: ", events)
+        // if (!events) {
+        //     throw new ApiError(404, "No events found")
+        // }
         return events;
     }
 
     // get event by id
     async getEventById(req: Request) {
-        const { eventId } = req.query;
+        const { eventId } = req.params;
 
         if (!eventId) {
             throw new ApiError(400, "Please provide a valid event id")
         }
 
+        console.log(eventId);
         const event = await db.event.findFirst({
             where: {
                 id: +eventId
+            },
+            include: {
+                location: true,
+                organizerProfile: true,
+                venue: true,
+                sponsors: true,
+                agendas: true,
+                ticketTypes: true,
             }
         })
+        console.log(event)
 
         if (!event) {
             throw new ApiError(400, "Please provide a valid event id");

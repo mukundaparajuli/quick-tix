@@ -5,31 +5,26 @@ import getWithAuth from "../../../../../../utils/getWithAuth";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { EventDetailsPage } from "./components";
+import { useEventDetails } from "@/hooks/useEventDetails";
+import { Event } from "./types";
 
 export default function EventDetail() {
-    const { data: session } = useSession();
     const { id } = useParams();
+    const { eventDetails, isPending, isError, error }: {
+        eventDetails: any,
+        isPending: Boolean,
+        isError: Boolean,
+        error: any
+    } = useEventDetails(id as string);
 
-    const { data, error, isLoading } = useQuery({
-        queryKey: ["event-detail", id],
-        queryFn: async () => {
-            if (!id || !session) throw new Error("Invalid request");
-            const result = await getWithAuth(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/event/${id}`,
-                session
-            );
-            return result;
-        },
-    });
 
-    if (isLoading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error.message}</div>;
-
+    if (isPending) return <div>Loading...</div>;
+    if (isError) return <div>Error: {error?.message}</div>;
+    const eventData = eventDetails.data;
     return (
         <div>
-            {data ? (
-                // <EventDetailsPage event={data} />
-                <EventDetailsPage />
+            {eventDetails ? (
+                <EventDetailsPage event={eventData} />
             ) : (
                 <div>No event details available.</div>
             )}

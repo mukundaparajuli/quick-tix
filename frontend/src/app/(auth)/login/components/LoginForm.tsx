@@ -40,7 +40,7 @@ const LoginForm = ({ className, ...props }: LoginFormProps) => {
             password: data.password,
             redirect: false,
         });
-
+        console.log(result);
         if (result?.error) {
             toast.error(result.error === 'Please verify your email to login'
                 ? 'Please check your email to verify your account'

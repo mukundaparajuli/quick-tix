@@ -43,12 +43,14 @@ export const RegisterOrganizer = asyncHandler(async (req: Request, res: Response
 export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
     const { jwtToken, user } = await authService.loginUser(req);
 
+    console.log(user);
+
 
     // store the tokens in cookies 
     res.cookie('jwtToken', jwtToken, {
-        httpOnly: true,
+        httpOnly: false,
         secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000,
     });
 

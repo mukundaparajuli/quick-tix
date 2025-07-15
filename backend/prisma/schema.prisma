@@ -58,8 +58,8 @@ model Event {
   images             String[]
   tags               String[]
   date               DateTime
-  agendaId           Int?
-  agenda             Agenda[]
+  agendasId          Int?
+  agendas            Agendas?          @relation(fields: [agendasId], references: [id])
   organizerProfileId Int?
   organizerProfile   OrganizerProfile? @relation(fields: [organizerProfileId], references: [id], onDelete: Restrict)
   venueId            Int?
@@ -85,13 +85,21 @@ model Agenda {
   id        Int       @id @default(autoincrement())
   time      String
   activity  String
-  event     Event     @relation(fields: [eventId], references: [id])
-  eventId   Int
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+  Agendas   Agendas?  @relation(fields: [agendasId], references: [id])
+  agendasId Int?
 
   @@map("agendas")
+}
+
+model Agendas {
+  id        Int      @id @default(autoincrement())
+  agendas   Agenda[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Event     Event[]
 }
 
 model Sponsor {

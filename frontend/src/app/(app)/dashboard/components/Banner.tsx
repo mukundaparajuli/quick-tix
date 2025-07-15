@@ -17,7 +17,7 @@ export default function Banner() {
         router.push(`/search/${searchValue}`)
     }
 
-    return <div className="w-full flex items-center justify-center mt-40 dark:bg-gray-800 -z-10">
+    return <div className="w-full flex items-center justify-center mt-40 dark:bg-gray-800 -z-10 h-full pb-24">
         <div>
             <div className="relative">
                 <Image src={bannerImageSrc} alt="banner" width={1000} height={1000} className="rounded-3xl " />
@@ -31,7 +31,7 @@ export default function Banner() {
                 </div>
             </div>
 
-            <div className="absolute top-[40rem] left-0 w-full flex items-center justify-center hover:scale-105 transition-all duration-300">
+            <div className="absolute top-[42rem] left-0 w-full flex items-center justify-center hover:scale-105 transition-all duration-300">
                 <div className="dark:bg-gray-800/90 bg-white  rounded-full px-4 py-2 flex gap-4 border-2 border-slate-500 justify-between items-center">
                     {!showInputBar
                         ?
@@ -39,7 +39,7 @@ export default function Banner() {
                             <div className="flex gap-4 justify-between items-center">
                                 {bannerSearchMenu.map((item, index) => (
                                     <div className="flex justify-center items-center gap-8" key={index}>
-                                        <div className="flex flex-col items-start justify-between dark:text-white cursor-pointer hover:scale-105 transition-all duration-300">
+                                        <div className="flex flex-col items-start justify-between dark:text-white cursor-pointer transition-all duration-300">
                                             <h1 className="text-md font-semibold">{item.searchHeader}</h1>
                                             <p className="text-sm dark:text-gray-300">{item.searchSubHeader}</p>
                                         </div>
@@ -54,7 +54,7 @@ export default function Banner() {
                             </div>
                         )
                         : (
-                            <div className="flex gap-2 px-4 py-2 w-full">
+                            <div className="flex gap-2 px-4 py-4 w-full">
                                 <Input
                                     placeholder="Search"
                                     className="py-4 h-12 w-72"

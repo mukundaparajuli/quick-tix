@@ -8,7 +8,7 @@ declare module 'next-auth' {
             name?: string;
             role: string;
         };
-        accessToken?: string;
+        access_token?: string;
     }
 
     interface User {

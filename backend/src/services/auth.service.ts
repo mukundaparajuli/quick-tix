@@ -15,10 +15,10 @@ export default class AuthService {
         }
 
         //check if the email & username already exists or not
-        const usernameExists = await db.user.findFirst({ where: username });
+        const usernameExists = await db.user.findFirst({ where: { username } });
         if (usernameExists) throw new ApiError(400, "This username is already in use!")
 
-        const emailExists = await db.user.findFirst({ where: email });
+        const emailExists = await db.user.findFirst({ where: { email } });
         if (emailExists) throw new ApiError(400, "This email is already in use!");
 
         //initialize location id
@@ -102,6 +102,8 @@ export default class AuthService {
     async loginUser(req: Request) {
         const { email, password } = req.body;
 
+        console.log(email, password)
+
         if (!email || !password) {
             throw new ApiError(400, "Email and password are required field");
         }
@@ -150,7 +152,7 @@ export default class AuthService {
 
         // Generate tokens
         const jwtToken = jwt.sign({ user: userPayload }, secret, { expiresIn: '1d' });
-
+        console.log(user);
         return { jwtToken, user };
     }
 }
