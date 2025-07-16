@@ -188,6 +188,69 @@ export class BookingService {
             }
         })
     }
+
+    async getBookingsForAnEvent(req: Request) {
+        const { eventId } = req.params;
+
+        if (!eventId) {
+            throw new ApiError(400, "Please provide an event id");
+        }
+
+        const bookings = await db.booking.findMany({
+            where: {
+                eventId: +eventId
+            },
+            include: {
+                seats: true,
+            }
+        })
+        if (!bookings) {
+            throw new ApiError(404, "No bookings found for this event id.");
+        }
+
+        return bookings;
+    }
+    async getBookingsForAnUser(req: Request) {
+        const { userId } = req.params;
+
+        if (!userId) {
+            throw new ApiError(400, "Please provide an user id");
+        }
+
+        const bookings = await db.booking.findMany({
+            where: {
+                userId: +userId
+            },
+            include: {
+                seats: true,
+            }
+        })
+        if (!bookings) {
+            throw new ApiError(404, "No bookings found for this user id.");
+        }
+
+        return bookings;
+    }
+
+    async getBookingById(req: Request) {
+        const { bookingId } = req.params;
+
+        if (!bookingId) {
+            throw new ApiError(400, "Please provide a booking id");
+        }
+
+        const booking = await db.booking.findFirst({
+            where: {
+                id: +bookingId
+            }
+        })
+
+        if (!booking) {
+            throw new ApiError(404, "No bookings found for this booking id");
+        }
+
+        return booking;
+    }
 }
 
 export const bookingService = new BookingService();
