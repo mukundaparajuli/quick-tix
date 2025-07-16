@@ -72,7 +72,7 @@ const EventDetailsPage = ({ event }: { event: Event }) => {
                             </div>
                         </div>
                         <div>
-                            <Button onClick={() => router.replace('/booking/' + id)}>
+                            <Button onClick={() => router.push(`/dashboard/event/${id}/book`)}>
                                 Book Now
                             </Button>
                         </div>

@@ -73,7 +73,7 @@ export interface Event {
     date: string;
     agendasId: number | null;
     organizerProfileId: number | null;
-    venueId: number | null;
+    venueId: number;
     locationId: number | null;
     createdAt: string;
     updatedAt: string;
