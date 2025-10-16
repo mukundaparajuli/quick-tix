@@ -10,7 +10,7 @@ router.get('/search/', SearchEvent)
 router.post('/create-event', JwtValidation, upload.array('images'), CreateEvent)
 router.patch('update-event', JwtValidation, UpdateEvent);
 router.get('/all-events', GetAllEvents)
-router.get('/:eventId', GetEventById)
+router.get('/:eventId', JwtValidation, GetEventById)
 router.get('/:category', JwtValidation, GetEventsByCategory)
 router.get('/popular', JwtValidation, GetPopularEvents)
 router.delete('/:eventId', JwtValidation, DeleteEvent)

@@ -34,18 +34,20 @@ interface TicketType {
 }
 
 interface SeatLayoutProps {
-    eventId: number;
+    seat: any;
     venueId: number;
     ticketTypes: TicketType[];
     onProceedToPayment: () => void;
 }
 
-const SeatLayout: React.FC<SeatLayoutProps> = ({ eventId, venueId, ticketTypes, onProceedToPayment }) => {
-    const [seats] = useState<Seat[]>(dummySeats);
+const SeatLayout: React.FC<SeatLayoutProps> = ({ seat, venueId, ticketTypes, onProceedToPayment }) => {
+    const [seats] = useState<Seat[]>([]);
     const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
     const router = useRouter();
     const { theme } = useTheme();
 
+    // get all seats
+    console.log("seats", seat);
     // Group all seats by section and row (no ticket type filtering)
     const groupedSeats = useMemo(() => {
         return seats.reduce((acc, seat) => {
@@ -253,88 +255,88 @@ const SeatLayout: React.FC<SeatLayoutProps> = ({ eventId, venueId, ticketTypes, 
 };
 
 // Dummy data (could be moved to a separate file)
-const dummyTicketTypes: TicketType[] = [
-    {
-        id: 3,
-        eventId: 3,
-        name: "General Admission",
-        price: 15,
-        totalQuantity: 100,
-        availableQuantity: 90,
-        features: { description: "Standard seating in Main section" },
-        availability: "AVAILABLE",
-        createdAt: "2025-07-14T09:42:55.000Z",
-        updatedAt: "2025-07-14T09:42:55.000Z",
-        deletedAt: null,
-    },
-    {
-        id: 4,
-        eventId: 3,
-        name: "VIP",
-        price: 30,
-        totalQuantity: 50,
-        availableQuantity: 40,
-        features: { description: "Premium seating with better view", priorityEntry: true },
-        availability: "AVAILABLE",
-        createdAt: "2025-07-14T09:42:55.000Z",
-        updatedAt: "2025-07-14T09:42:55.000Z",
-        deletedAt: null,
-    },
-    {
-        id: 5,
-        eventId: 3,
-        name: "Economy",
-        price: 10,
-        totalQuantity: 80,
-        availableQuantity: 70,
-        features: { description: "Budget-friendly seating in Balcony" },
-        availability: "AVAILABLE",
-        createdAt: "2025-07-14T09:42:55.000Z",
-        updatedAt: "2025-07-14T09:42:55.000Z",
-        deletedAt: null,
-    },
-];
+// const dummyTicketTypes: TicketType[] = [
+//     {
+//         id: 3,
+//         eventId: 3,
+//         name: "General Admission",
+//         price: 15,
+//         totalQuantity: 100,
+//         availableQuantity: 90,
+//         features: { description: "Standard seating in Main section" },
+//         availability: "AVAILABLE",
+//         createdAt: "2025-07-14T09:42:55.000Z",
+//         updatedAt: "2025-07-14T09:42:55.000Z",
+//         deletedAt: null,
+//     },
+//     {
+//         id: 4,
+//         eventId: 3,
+//         name: "VIP",
+//         price: 30,
+//         totalQuantity: 50,
+//         availableQuantity: 40,
+//         features: { description: "Premium seating with better view", priorityEntry: true },
+//         availability: "AVAILABLE",
+//         createdAt: "2025-07-14T09:42:55.000Z",
+//         updatedAt: "2025-07-14T09:42:55.000Z",
+//         deletedAt: null,
+//     },
+//     {
+//         id: 5,
+//         eventId: 3,
+//         name: "Economy",
+//         price: 10,
+//         totalQuantity: 80,
+//         availableQuantity: 70,
+//         features: { description: "Budget-friendly seating in Balcony" },
+//         availability: "AVAILABLE",
+//         createdAt: "2025-07-14T09:42:55.000Z",
+//         updatedAt: "2025-07-14T09:42:55.000Z",
+//         deletedAt: null,
+//     },
+// ];
 
-const dummySeats: Seat[] = [
-    // Main Section (50 seats, Rows A-E, 10 seats per row)
-    ...Array.from({ length: 50 }, (_, i) => ({
-        id: i + 1,
-        venueId: 3,
-        ticketTypeId: 3,
-        seatNumber: `${(i % 10) + 1}`,
-        row: String.fromCharCode(65 + Math.floor(i / 10)),
-        section: "Main",
-        status: i % 10 < 6 ? "AVAILABLE" : i % 10 < 9 ? "BOOKED" : "LOCKED",
-        createdAt: "2025-07-14T09:42:56.000Z",
-        updatedAt: "2025-07-14T09:42:56.000Z",
-        deletedAt: null,
-    })),
-    // VIP Section (30 seats, Rows A-C, 10 seats per row)
-    ...Array.from({ length: 30 }, (_, i) => ({
-        id: i + 51,
-        venueId: 3,
-        ticketTypeId: 4,
-        seatNumber: `${(i % 10) + 1}`,
-        row: String.fromCharCode(65 + Math.floor(i / 10)),
-        section: "VIP",
-        status: i % 10 < 7 ? "AVAILABLE" : i % 10 < 9 ? "BOOKED" : "LOCKED",
-        createdAt: "2025-07-14T09:42:56.000Z",
-        updatedAt: "2025-07-14T09:42:56.000Z",
-        deletedAt: null,
-    })),
-    // Balcony Section (20 seats, Rows A-B, 10 seats per row)
-    ...Array.from({ length: 20 }, (_, i) => ({
-        id: i + 81,
-        venueId: 3,
-        ticketTypeId: 5,
-        seatNumber: `${(i % 10) + 1}`,
-        row: String.fromCharCode(65 + Math.floor(i / 10)),
-        section: "Balcony",
-        status: i % 10 < 5 ? "AVAILABLE" : i % 10 < 8 ? "BOOKED" : "LOCKED",
-        createdAt: "2025-07-14T09:42:56.000Z",
-        updatedAt: "2025-07-14T09:42:56.000Z",
-        deletedAt: null,
-    })),
-];
+// const dummySeats: Seat[] = [
+//     // Main Section (50 seats, Rows A-E, 10 seats per row)
+//     ...Array.from({ length: 50 }, (_, i) => ({
+//         id: i + 1,
+//         venueId: 3,
+//         ticketTypeId: 3,
+//         seatNumber: `${(i % 10) + 1}`,
+//         row: String.fromCharCode(65 + Math.floor(i / 10)),
+//         section: "Main",
+//         status: i % 10 < 6 ? "AVAILABLE" : i % 10 < 9 ? "BOOKED" : "LOCKED",
+//         createdAt: "2025-07-14T09:42:56.000Z",
+//         updatedAt: "2025-07-14T09:42:56.000Z",
+//         deletedAt: null,
+//     })),
+//     // VIP Section (30 seats, Rows A-C, 10 seats per row)
+//     ...Array.from({ length: 30 }, (_, i) => ({
+//         id: i + 51,
+//         venueId: 3,
+//         ticketTypeId: 4,
+//         seatNumber: `${(i % 10) + 1}`,
+//         row: String.fromCharCode(65 + Math.floor(i / 10)),
+//         section: "VIP",
+//         status: i % 10 < 7 ? "AVAILABLE" : i % 10 < 9 ? "BOOKED" : "LOCKED",
+//         createdAt: "2025-07-14T09:42:56.000Z",
+//         updatedAt: "2025-07-14T09:42:56.000Z",
+//         deletedAt: null,
+//     })),
+//     // Balcony Section (20 seats, Rows A-B, 10 seats per row)
+//     ...Array.from({ length: 20 }, (_, i) => ({
+//         id: i + 81,
+//         venueId: 3,
+//         ticketTypeId: 5,
+//         seatNumber: `${(i % 10) + 1}`,
+//         row: String.fromCharCode(65 + Math.floor(i / 10)),
+//         section: "Balcony",
+//         status: i % 10 < 5 ? "AVAILABLE" : i % 10 < 8 ? "BOOKED" : "LOCKED",
+//         createdAt: "2025-07-14T09:42:56.000Z",
+//         updatedAt: "2025-07-14T09:42:56.000Z",
+//         deletedAt: null,
+//     })),
+// ];
 
 export default SeatLayout;

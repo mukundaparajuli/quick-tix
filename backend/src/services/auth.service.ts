@@ -1,160 +1,100 @@
-import { Request } from "express";
-import ApiError from "../types/api-error";
+import { UserRole } from "@prisma/client";
 import db from "../config/db";
-import * as bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { sendVerificationEmail } from "../utils/send-verification-email";
-import { generateVerificationToken } from "../utils/generate-verification-code";
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { compare, hashPassword } from "../utils/hash-password";
 import { env } from "../config/env.config";
 
-export default class AuthService {
-    async registerUser(req: Request) {
-        const { fullName, username, email, password, address, city, state, country, latitude, longitude } = req.body;
-        if (!fullName || !username || !email || !password) {
-            throw new ApiError(400, "Fullname, username, email and password are required fields");
-        }
-
-        //check if the email & username already exists or not
-        const usernameExists = await db.user.findFirst({ where: { username } });
-        if (usernameExists) throw new ApiError(400, "This username is already in use!")
-
-        const emailExists = await db.user.findFirst({ where: { email } });
-        if (emailExists) throw new ApiError(400, "This email is already in use!");
-
-        //initialize location id
-        let locationId = null;
-
-        //check if location is provided in the request or not
-        if (address && city && state && country) {
-            //create the location through location. service
-            // return location id
-            // assign locationId variable with that id
-        }
-
-
-        //hash the password
-        const hashedPassword = bcrypt.hashSync(password, 10);
-
-        //create user
-        const registeredUser = await db.user.create({
-            data: {
-                fullName,
-                username,
-                email,
-                password: hashedPassword,
-                locationId
-            }
-        })
-        return registeredUser;
-    }
-
-    async registerOrganizer(req: Request) {
-        const { fullName, username, email, password, businessName, address, city, state, country, latitude, longitude } = req.body;
-        if (!fullName || !username || !email || !password || !businessName) {
-            throw new ApiError(400, "Fullname, username, businessName, email and password are required fields");
-        }
-
-        //check if the email & username already exists or not
-        const usernameExists = await db.user.findFirst({ where: username });
-        if (usernameExists) throw new ApiError(400, "This username is already in use!")
-
-        const emailExists = await db.user.findFirst({ where: email });
-        if (emailExists) throw new ApiError(400, "This email is already in use!");
-
-        //initialize location id
-        let locationId = null;
-
-        //check if location is provided in the request or not
-        if (address && city && state && country) {
-            //create the location through location. service
-            // return location id
-            // assign locationId variable with that id
-        }
-
-
-        //hash the password
-        const hashedPassword = bcrypt.hashSync(password, 10);
-
-        //create a transaction to create user and organizer profile
-        const registeredUser = await db.$transaction(async (tx) => {
-            //create user
-            const user = await tx.user.create({
-                data: {
-                    fullName,
-                    username,
-                    email,
-                    password: hashedPassword,
-                    locationId,
-                }
-            });
-            // create organizer
-            const organizerProfile = await tx.organizerProfile.create({
-                data: {
-                    businessName: businessName as string,
-                    userId: user.id
-                }
-            })
-            return { user, organizerProfile };
+class AuthService {
+    async getUserByEmail(email: string) {
+        const user = await db.user.findUnique({
+            where: { email },
         });
-        return registeredUser;
+        return user;
     }
 
-    async loginUser(req: Request) {
-        const { email, password } = req.body;
+    async createUser(data: {
+        name: string;
+        email: string;
+        password: string;
+        role: UserRole;
+    }) {
+        const hashedPassword = await hashPassword(data.password);
+        data.password = hashedPassword;
+        const user = await db.user.create({
+            data,
+        });
+        return user;
+    }
 
-        console.log(email, password)
+    async createAttendeeProfile(data: {
+        userId: number;
+        bio?: string;
+        phone?: string;
+    }) {
+        const profile = await db.attendeeProfile.create({
+            data,
+        });
+        return profile;
+    }
 
-        if (!email || !password) {
-            throw new ApiError(400, "Email and password are required field");
+    async createOrganizerProfile(data: {
+        userId: number;
+        organizationName: string;
+        contactEmail: string;
+    }) {
+        const profile = await db.organizerProfile.create({
+            data,
+        });
+        return profile;
+    }
+
+    async getUserById(id: number) {
+        const user = await db.user.findUnique({
+            where: { id },
+            include: { attendeeProfile: true, organizerProfile: true },
+        });
+        if (!user) return null;
+        const { password, ...safeUser } = user;
+        return safeUser;
+    }
+
+    async verifyPassword(plainTextPassword: string, hashedPassword: string) {
+        const isMatch = await compare(plainTextPassword, hashedPassword);
+        return isMatch;
+    }
+
+    async verifyEmailToken(token: string) {
+        let payload: any;
+        try {
+            payload = jwt.verify(token, env.EMAIL_SECRET_KEY as string) as { id: number; type: string };
+        } catch (err) {
+            throw new Error('Invalid or expired verification token');
         }
 
-        // find user
-        const user = await db.user.findFirst({
-            where: {
-                email,
-                deletedAt: null
-            }
-        })
-
-        if (!user) {
-            throw new ApiError(404, "User not found!");
+        if (payload.type !== 'email_verification') {
+            throw new Error('Invalid token type');
         }
 
-        // check validity of the password
-        const isPasswordValid = bcrypt.compare(password, user.password);
+        const user = await this.getUserById(payload.id);
+        if (!user) throw new Error('User not found');
 
-        if (!isPasswordValid) {
-            throw new ApiError(401, "Unauthorized Invalid Credentials")
+        if (!user.verified) {
+            await db.user.update({
+                where: { id: payload.id },
+                data: { verified: true },
+            });
         }
 
-        //check if the user is verfied or not
-        const isVerified = user.verified;
+        return user;
+    }
 
-        if (!isVerified) {
-            //first send the verification email
-            const verificationToken = generateVerificationToken(user);
-            await sendVerificationEmail(user.email, verificationToken);
-            throw new ApiError(401, "Please verify your email to login")
-        }
-        const userPayload = {
-            id: user.id,
-            fullName: user.fullName,
-            username: user.username,
-            email: user.email,
-            role: user.role,
-        }
-        // logger.info("user payload: ", userPayload)
-        const secret = env.JWT_SECRET_KEY;
-
-        if (!secret) {
-            throw new ApiError(404, "Jwt verfication not found")
-        }
-
-        // Generate tokens
-        const jwtToken = jwt.sign({ user: userPayload }, secret, { expiresIn: '1d' });
-        console.log(user);
-        return { jwtToken, user };
+    async markUserAsVerified(userId: number) {
+        return db.user.update({
+            where: { id: userId },
+            data: { verified: true },
+        });
     }
 }
+
 
 export const authService = new AuthService();

@@ -1,317 +1,274 @@
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "./erd.svg"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id                 Int               @id @default(autoincrement())
-  fullName           String
-  username           String            @unique
-  email              String            @unique
-  password           String
-  role               Role              @default(ATTENDEE)
-  image              String?
-  organizerProfileId Int?              @unique
-  organizerProfile   OrganizerProfile?
-  verified           Boolean           @default(false)
-  bookings           Booking[]
-  events             Event[]           @relation("EventAttendees")
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  deletedAt          DateTime?
-  createdBy          Int? // Track who created the user (admin or self)
-  updatedBy          Int? // Track who updated the user
-  Location           Location?         @relation(fields: [locationId], references: [id])
-  locationId         Int?
+// ------------------- USERS & PROFILES -------------------
 
-  @@map("users")
+enum UserRole {
+  ADMIN
+  ORGANIZER
+  ATTENDEE
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  verified  Boolean  @default(false)
+  password  String
+  role      UserRole @default(ATTENDEE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attendeeProfile  AttendeeProfile?
+  organizerProfile OrganizerProfile?
+  uploadedMedia    Media[]           @relation("UploadedByUser")
+}
+
+model AttendeeProfile {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  bio       String?
+  phone     String?
+  avatarId  Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatar   Media?    @relation("AttendeeAvatar", fields: [avatarId], references: [id])
+  bookings Booking[]
+
+  @@index([userId])
 }
 
 model OrganizerProfile {
-  id              Int       @id @default(autoincrement())
-  businessName    String
-  organizedEvents Event[]
-  isKycVerified   Boolean   @default(false)
-  userId          Int       @unique
-  user            User      @relation(fields: [userId], references: [id])
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique
+  organizationName String
+  bio              String?
+  phone            String?
+  website          String?
+  contactEmail     String
+  kycVerified      Boolean  @default(false)
+  avatarId         Int?
+  coverId          Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  @@map("organizer_profiles")
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatar          Media?  @relation("OrganizerAvatar", fields: [avatarId], references: [id])
+  cover           Media?  @relation("OrganizerCover", fields: [coverId], references: [id])
+  organizedEvents Event[]
+
+  @@index([userId])
 }
+
+// ------------------- EVENTS & VENUES -------------------
 
 model Event {
-  id                 Int               @id @default(autoincrement())
-  title              String
-  description        String
-  category           EventCategory     @default(OTHERS)
-  images             String[]
-  tags               String[]
-  date               DateTime
-  agendasId          Int?
-  agendas            Agendas?          @relation(fields: [agendasId], references: [id])
-  organizerProfileId Int?
-  organizerProfile   OrganizerProfile? @relation(fields: [organizerProfileId], references: [id], onDelete: Restrict)
-  venueId            Int?
-  venue              Venue?            @relation(fields: [venueId], references: [id], onDelete: SetNull)
-  locationId         Int?
-  location           Location?         @relation(fields: [locationId], references: [id], onDelete: SetNull)
-  ticketTypes        TicketType[]
-  sponsors           Sponsor[]
-  bookings           Booking[]
-  attendees          User[]            @relation("EventAttendees")
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  deletedAt          DateTime?
-  Promocode          Promocode[]
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  date        DateTime
+  location    String
+  capacity    Int?
+  organizerId Int
+  venueId     Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@index([date])
-  @@index([category])
-  @@index([organizerProfileId])
-  @@map("events")
-}
+  organizer   OrganizerProfile @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  venue       Venue?           @relation(fields: [venueId], references: [id])
+  bookings    Booking[]
+  ticketTypes TicketType[]
+  media       Media[]          @relation("EventMedia") // multiple images/videos per event
 
-model Agenda {
-  id        Int       @id @default(autoincrement())
-  time      String
-  activity  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-  Agendas   Agendas?  @relation(fields: [agendasId], references: [id])
-  agendasId Int?
-
-  @@map("agendas")
-}
-
-model Agendas {
-  id        Int      @id @default(autoincrement())
-  agendas   Agenda[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Event     Event[]
-}
-
-model Sponsor {
-  id        Int       @id @default(autoincrement())
-  name      String
-  website   String?
-  eventId   Int
-  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-
-  @@map("sponsors")
+  @@index([organizerId])
+  @@index([venueId])
 }
 
 model Venue {
-  id          Int       @id @default(autoincrement())
-  name        String
-  capacity    Int
-  amenities   String[]
-  description String?
-  locationId  Int
-  location    Location  @relation(fields: [locationId], references: [id], onDelete: Restrict)
-  events      Event[]
-  seats       Seat[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+  id        Int      @id @default(autoincrement())
+  name      String
+  location  String
+  capacity  Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("venues")
+  sections Section[]
+  events   Event[]
 }
 
-model Location {
-  id        Int       @id @default(autoincrement())
-  address   String
-  city      String
-  state     String
-  country   String
-  latitude  Float?
-  longitude Float?
-  venues    Venue[]
-  events    Event[]
-  users     User[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+model Section {
+  id        Int      @id @default(autoincrement())
+  name      String
+  capacity  Int?
+  venueId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("locations")
+  venue Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  seats Seat[]
+
+  @@unique([venueId, name])
+}
+
+// ------------------- SEATING & TICKETS -------------------
+
+model Seat {
+  id           Int      @id @default(autoincrement())
+  label        String
+  sectionId    Int
+  bookingId    Int?
+  ticketTypeId Int?
+  isBooked     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  section    Section     @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  booking    Booking?    @relation(fields: [bookingId], references: [id])
+  ticketType TicketType? @relation(fields: [ticketTypeId], references: [id])
+
+  @@unique([sectionId, label])
+  @@index([bookingId])
+  @@index([ticketTypeId])
 }
 
 model TicketType {
-  id                Int                @id @default(autoincrement())
-  eventId           Int
-  event             Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  name              String
-  price             Float
-  totalQuantity     Int
-  availableQuantity Int
-  features          Json?
-  bookings          Booking[]
-  seats             Seat[]
-  availability      TicketAvailability @default(AVAILABLE)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  deletedAt         DateTime?
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  capacity    Int?
+  sold        Int      @default(0)
+  eventId     Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
 
+  event      Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tickets    Ticket[]
+  seats      Seat[]
+  facilities Facility[]
+
+  @@unique([eventId, name])
   @@index([eventId])
-  @@map("ticket_types")
 }
 
-model Seat {
-  id           Int        @id @default(autoincrement())
-  venueId      Int
-  venue        Venue      @relation(fields: [venueId], references: [id], onDelete: Cascade)
+model Facility {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String?
   ticketTypeId Int
-  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
-  bookingId    Int?
-  booking      Booking?   @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  seatNumber   String
-  row          String?
-  section      String?
-  status       SeatStatus @default(AVAILABLE)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
 
-  @@unique([venueId, seatNumber, row, section])
-  @@index([venueId])
-  @@index([ticketTypeId])
+  ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
+
+  @@unique([ticketTypeId, name])
+}
+
+model Ticket {
+  id         Int      @id @default(autoincrement())
+  typeId     Int
+  quantity   Int
+  totalPrice Float
+  bookingId  Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+
+  ticketType TicketType @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  booking    Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([typeId])
   @@index([bookingId])
-  @@map("seats")
 }
 
-model Booking {
-  id           Int           @id @default(autoincrement())
-  eventId      Int
-  event        Event         @relation(fields: [eventId], references: [id], onDelete: Restrict)
-  userId       Int
-  user         User          @relation(fields: [userId], references: [id], onDelete: Restrict)
-  ticketTypeId Int
-  ticketType   TicketType    @relation(fields: [ticketTypeId], references: [id], onDelete: Restrict)
-  ticketCount  Int
-  totalPrice   Float
-  promocodeId  Int?
-  promocode    Promocode?    @relation(fields: [promocodeId], references: [id], onDelete: SetNull)
-  seats        Seat[]
-  status       BookingStatus @default(PENDING)
-  payment      Payment?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  deletedAt    DateTime?
-
-  @@index([eventId])
-  @@index([userId])
-  @@index([ticketTypeId])
-  @@map("bookings")
-}
-
-model Payment {
-  id              Int           @id @default(autoincrement())
-  bookingId       Int           @unique
-  booking         Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  amount          Float
-  paymentProvider PaymentMethod
-  paymentStatus   PaymentStatus @default(PENDING)
-  transactionId   String?       @unique
-  paymentResponse Json?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  deletedAt       DateTime?
-
-  @@map("payments")
-}
-
-model Promocode {
-  id           Int          @id @default(autoincrement())
-  code         String       @unique
-  discount     Float
-  discountType DiscountType
-  eventId      Int?
-  event        Event?       @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  maxUses      Int?
-  usedCount    Int          @default(0)
-  validFrom    DateTime
-  validUntil   DateTime
-  bookings     Booking[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  deletedAt    DateTime?
-
-  @@index([eventId])
-  @@map("promocodes")
-}
-
-enum Role {
-  ORGANIZER
-  ATTENDEE
-  ADMIN
-}
-
-enum TicketAvailability {
-  AVAILABLE
-  SOLD_OUT
-}
-
-enum EventCategory {
-  MUSIC_CONCERTS
-  STANDUP_COMEDY
-  IMPROV_COMEDY
-  THEATER_PERFORMANCES
-  MUSICALS
-  OPERA
-  DANCE_PERFORMANCES
-  MAGIC_SHOWS
-  FESTIVALS
-  SPORTS_EVENTS
-  TALENT_SHOWS
-  WORKSHOPS_CLASSES
-  CONFERENCES_TALKS
-  FAMILY_KIDS_EVENTS
-  VIRTUAL_EVENTS
-  OTHERS
-}
-
-enum PaymentStatus {
-  PENDING
-  SUCCESSFUL
-  FAILED
-  REFUNDED
-}
+// ------------------- BOOKINGS & PAYMENTS -------------------
 
 enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PAID
   FAILED
 }
 
-enum SeatStatus {
-  AVAILABLE
-  BOOKED
-  LOCKED
-}
-
 enum PaymentMethod {
+  CARD
   ESEWA
   KHALTI
-  CREDIT_CARD
-  PAYPAL
+  STRIPE
+  CASH
 }
 
-enum DiscountType {
-  PERCENTAGE
-  FIXED
+model Booking {
+  id            Int           @id @default(autoincrement())
+  eventId       Int
+  attendeeId    Int
+  status        BookingStatus @default(PENDING)
+  totalPrice    Float         @default(0)
+  paymentStatus PaymentStatus @default(UNPAID)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  event    Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  attendee AttendeeProfile @relation(fields: [attendeeId], references: [id], onDelete: Cascade)
+  tickets  Ticket[]
+  seats    Seat[]
+  payment  Payment?
+
+  @@unique([eventId, attendeeId])
+  @@index([eventId])
+  @@index([attendeeId])
+}
+
+model Payment {
+  id            Int           @id @default(autoincrement())
+  amount        Float
+  bookingId     Int           @unique
+  status        PaymentStatus @default(PENDING)
+  method        PaymentMethod
+  transactionId String?
+  provider      String?
+  currency      String        @default("NPR")
+  paidAt        DateTime?
+  refundReason  String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+// ------------------- MEDIA -------------------
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model Media {
+  id         Int       @id @default(autoincrement())
+  url        String
+  type       MediaType
+  size       Int?
+  altText    String?
+  uploadedBy Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  uploadedByUser   User?              @relation("UploadedByUser", fields: [uploadedBy], references: [id])
+  attendeeProfiles AttendeeProfile[]  @relation("AttendeeAvatar")
+  organizerAvatars OrganizerProfile[] @relation("OrganizerAvatar")
+  organizerCovers  OrganizerProfile[] @relation("OrganizerCover")
+  eventMedia       Event[]            @relation("EventMedia")
 }

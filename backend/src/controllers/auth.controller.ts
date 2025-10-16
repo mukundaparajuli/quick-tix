@@ -1,97 +1,95 @@
 import { Request, Response } from "express";
-import ApiResponse from "../types/api-response";
-import db from "../config/db";
 import asyncHandler from "../utils/async-handler";
-import jwt from 'jsonwebtoken'
-import { generateVerificationToken } from "../utils/generate-verification-code";
-import { sendVerificationEmail } from "../utils/send-verification-email";
+import ApiError from "../types/api-error";
+import { UserRole } from "@prisma/client";
 import { authService } from "../services/auth.service";
-import { env } from "../config/env.config";
+import { generateEmailVerificationToken, generateJwtToken } from "../utils/generate-verification-code";
+import { sendVerificationEmail } from "../utils/send-verification-email";
+import ApiResponse from "../types/api-response";
 
-
-
-// register a user
 export const RegisterUser = asyncHandler(async (req: Request, res: Response) => {
-    const user = await authService.registerUser(req);
+    const { name, email, password, role, bio, phone, organizationName } = req.body;
 
-    // send verification email
-    const verificationToken = generateVerificationToken(user);
-    const data = await sendVerificationEmail(user.email, verificationToken);
+    if (!name || !email || !password) {
+        throw new ApiError(400, "Name, email, and password are required");
+    }
 
-    console.log(data);
-    const { password, ...userWithoutPassword } = user;
-    return new ApiResponse(res, 200, 'Register Successful', userWithoutPassword, null);
-})
+    if (!Object.values(UserRole).includes(role)) {
+        throw new ApiError(400, "Invalid user role");
+    }
 
-// register an organizer
+    // check if user already exists
+    const emailExists = await authService.getUserByEmail(email);
+    if (emailExists) {
+        throw new ApiError(400, "Email already in use");
+    }
 
-export const RegisterOrganizer = asyncHandler(async (req: Request, res: Response) => {
-    const { user } = await authService.registerOrganizer(req);
+    // else create user
+    const createdUser = await authService.createUser({ name, email, password, role });
 
-    // send verification email
-    const verificationToken = generateVerificationToken(user);
-    const data = await sendVerificationEmail(user.email, verificationToken);
+    // create profile based on role
+    if (role === UserRole.ATTENDEE) {
+        await authService.createAttendeeProfile({
+            userId: createdUser.id,
+            bio,
+            phone,
+        });
+    } else if (role === UserRole.ORGANIZER) {
+        if (!organizationName) {
+            throw new ApiError(400, "Organization name is required for organizers");
+        }
 
-    console.log(data);
-    const { password, ...userWithoutPassword } = user;
-    return new ApiResponse(res, 200, 'Register Successful', userWithoutPassword, null);
-})
+        await authService.createOrganizerProfile({
+            userId: createdUser.id,
+            organizationName,
+            contactEmail: email,
+        });
+    }
 
+    const userWithProfile = await authService.getUserById(createdUser.id);
 
-// login a user
+    const verificationToken = generateEmailVerificationToken(userWithProfile);
+    await sendVerificationEmail(email, verificationToken);
 
-export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
-    const { jwtToken, user } = await authService.loginUser(req);
-
-    console.log(user);
-
-
-    // store the tokens in cookies 
-    res.cookie('jwtToken', jwtToken, {
-        httpOnly: false,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000,
-    });
-
-
-    return new ApiResponse(res, 200, "Login Successful", { user, jwtToken }, null);
-})
-
-
-// logout user
-export const LogOutUser = asyncHandler(async (req: Request, res: Response) => {
-    res.cookie('jwtToken', '', {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        expires: new Date(0),
-    });
-
-    return new ApiResponse(res, 200, "Logout successful", null, null);
+    return new ApiResponse(res, 201, "User registered successfully", userWithProfile);
 });
 
-export const VerifyEmail = asyncHandler(async (req: Request, res: Response) => {
-    const { verificationToken } = req.params;
-    const decoded = jwt.verify(verificationToken, env.JWT_SECRET_KEY as string);
-    if (!decoded || typeof decoded === 'string') {
-        return new ApiResponse(res, 400, "Invalid verification token", null, null);
+export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
+
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        throw new ApiError(400, "Email and password are required");
     }
 
-    const user = await db.user.findUnique({
-        where: {
-            id: decoded.user.id
-        }
-    })
-
+    const user = await authService.getUserByEmail(email);
     if (!user) {
-        return new ApiResponse(res, 404, "User not found", null, null);
+        throw new ApiError(401, "Invalid email or password");
     }
 
-    const updatedUser = await db.user.update({
-        where: { id: user.id },
-        data: { verified: true }
-    })
+    const isPasswordValid = await authService.verifyPassword(password, user.password);
+    if (!isPasswordValid) {
+        throw new ApiError(401, "Invalid email or password");
+    }
 
-    return new ApiResponse(res, 200, "Email verified successfully", updatedUser, null);
-})
+    const userWithProfile = await authService.getUserById(user.id);
+    const isVerified = userWithProfile?.verified;
+    if (!isVerified) {
+        const verificationToken = generateEmailVerificationToken(userWithProfile);
+        await sendVerificationEmail(email, verificationToken);
+        throw new ApiError(403, "Please verify your email before logging in");
+    }
+
+    const jwtToken = generateJwtToken(userWithProfile);
+    return new ApiResponse(res, 200, "Login successful", { token: jwtToken, user: userWithProfile });
+});
+
+
+export const VerifyEmail = asyncHandler(async (req: Request, res: Response) => {
+    const { token } = req.query;
+    if (!token || typeof token !== 'string') throw new ApiError(400, 'Verification token is required');
+
+    const user = await authService.verifyEmailToken(token);
+
+    return new ApiResponse(res, 200, 'Email verified successfully', { user });
+});

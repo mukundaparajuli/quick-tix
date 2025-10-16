@@ -27,7 +27,7 @@ export default function BookASeat() {
 
     return (
         <div>
-            <SeatLayout eventId={eventData.id} ticketTypes={eventData.ticketTypes} venueId={eventData.venueId} onProceedToPayment={onProceedToPayment} />
+            <SeatLayout seat={eventData.seats} ticketTypes={eventData.ticketTypes} venueId={eventData.venueId} onProceedToPayment={onProceedToPayment} />
         </div>
     )
 }
