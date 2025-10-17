@@ -44,6 +44,9 @@ export function RegisterForm({
             email: "",
             password: "",
             role: "ATTENDEE",
+            bio: "",
+            phone: "",
+            organizationName: "",
         },
     })
 
@@ -65,7 +68,6 @@ export function RegisterForm({
                 <CardContent>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-                            {/* Name */}
                             <FormField
                                 control={form.control}
                                 name="name"
@@ -79,7 +81,6 @@ export function RegisterForm({
                                 )}
                             />
 
-                            {/* Email */}
                             <FormField
                                 control={form.control}
                                 name="email"
@@ -93,7 +94,6 @@ export function RegisterForm({
                                 )}
                             />
 
-                            {/* Password */}
                             <FormField
                                 control={form.control}
                                 name="password"
@@ -107,7 +107,6 @@ export function RegisterForm({
                                 )}
                             />
 
-                            {/* Role */}
                             <FormField
                                 control={form.control}
                                 name="role"
@@ -129,7 +128,6 @@ export function RegisterForm({
                                 )}
                             />
 
-                            {/* Conditionally rendered fields for ORGANIZER */}
                             {selectedRole === "ORGANIZER" && (
                                 <>
                                     <FormField

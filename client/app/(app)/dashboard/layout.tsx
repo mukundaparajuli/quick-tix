@@ -8,7 +8,7 @@ export default function AppLayout({ children }: Props) {
     return (
         <>
             <main className="flex-1 flex flex-col items-center justify-center min-h-screen">
-                <ProtectedRoute>
+                <ProtectedRoute role="ATTENDEE">
                     {children}
                 </ProtectedRoute>
             </main>
