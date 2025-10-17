@@ -3,17 +3,18 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { FormField, FormItem, FormLabel, FormControl, Form } from "../ui/form"
+import { FormField, FormItem, FormLabel, FormControl, Form, FormMessage } from "../ui/form"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { cn } from "@/lib/utils"
+import useCreateEventInfo from "@/hooks/event-wizard/use-create-event-info"
 
 const eventInfoSchema = z.object({
     title: z.string().min(5).max(100),
     description: z.string().min(10).max(500).optional(),
     date: z.date(),
     location: z.string().min(2).max(100),
-    capacity: z.number().min(1).optional(),
+    capacity: z.number().optional(),
 })
 export type EventInfoForm = z.infer<typeof eventInfoSchema>;
 
@@ -21,6 +22,7 @@ export function EventInfoForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
+    const eventCreationMutation = useCreateEventInfo();
     const form = useForm<EventInfoForm>({
         resolver: zodResolver(eventInfoSchema),
         defaultValues: {
@@ -33,6 +35,7 @@ export function EventInfoForm({
     })
 
     function onSubmit(values: z.infer<typeof eventInfoSchema>) {
+        eventCreationMutation.mutate(values);
     }
 
     return (
@@ -104,8 +107,9 @@ export function EventInfoForm({
                             <FormItem>
                                 <FormLabel>Capacity</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="Event Capacity" {...field} />
+                                    <Input type="number" placeholder="Event Capacity" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
                                 </FormControl>
+                                <FormMessage className="text-start" />
                             </FormItem>
                         )}
                     />

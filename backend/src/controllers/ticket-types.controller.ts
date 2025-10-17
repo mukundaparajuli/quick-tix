@@ -4,11 +4,11 @@ import { ticketTypeService } from "../services/ticket-type.service";
 import ApiResponse from "../types/api-response";
 
 export const createTicketType = asyncHandler(async (req: Request, res: Response) => {
-    const { name, description, price, quantity, eventId, capacity } = req.body;
-
+    const { name, description, price, eventId, capacity } = req.body;
+    console.log(req.body);
     // Basic validation
-    if (!name || !price || !quantity || !eventId) {
-        return res.status(400).json({ message: "Name, price, quantity, and eventId are required" });
+    if (!name || !price || !eventId) {
+        return res.status(400).json({ message: "Name, price, and eventId are required" });
     }
 
     // Ensure the user is an organizer

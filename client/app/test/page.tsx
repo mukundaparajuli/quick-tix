@@ -1,9 +1,10 @@
 import { EventInfoForm } from "@/components/event-creation-wizard/event-info-form";
+import { MultiStepEventForm } from "@/components/event-creation-wizard/multi-step-form";
 
 export default function TestPage() {
     return (
         <div className="p-4 text-center">
-            <EventInfoForm />
+            <MultiStepEventForm />
         </div>
     )
 }

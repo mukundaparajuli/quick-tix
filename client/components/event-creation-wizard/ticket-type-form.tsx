@@ -7,6 +7,9 @@ import { FormField, FormItem, FormLabel, FormControl, Form } from "../ui/form"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { cn } from "@/lib/utils"
+import useEventStore from "@/stores/event-store"
+import useCreateTicketType from "@/hooks/event-wizard/use-create-ticket-type"
+import { useEffect } from "react"
 
 const ticketTypeSchema = z.object({
     name: z.string().min(5).max(100),
@@ -17,10 +20,16 @@ const ticketTypeSchema = z.object({
 })
 export type TicketTypeForm = z.infer<typeof ticketTypeSchema>;
 
+interface TicketTypeFormProps extends React.ComponentProps<"div"> {
+    onSuccess?: () => void
+}
+
 export function TicketTypeForm({
     className,
+    onSuccess,
     ...props
-}: React.ComponentProps<"div">) {
+}: TicketTypeFormProps) {
+    const createTicketTypeMutation = useCreateTicketType(onSuccess);
     const form = useForm<TicketTypeForm>({
         resolver: zodResolver(ticketTypeSchema),
         defaultValues: {
@@ -31,8 +40,25 @@ export function TicketTypeForm({
             sold: 0,
         },
     })
+    const currentEvent = useEventStore().event;
+    useEffect(() => {
+        console.log(currentEvent)
+    }, [currentEvent]);
 
-    function onSubmit(values: z.infer<typeof ticketTypeSchema>) {
+    if (!currentEvent) {
+        return (
+            <p className="text-sm text-muted-foreground">
+                Please create an event first to add ticket types.
+            </p>
+        )
+    }
+
+    function onSubmit(values: TicketTypeForm) {
+        if (!currentEvent) return;
+        createTicketTypeMutation.mutate({
+            eventId: +currentEvent.id,
+            data: values,
+        })
     }
 
     return (
@@ -77,6 +103,7 @@ export function TicketTypeForm({
                                         type="number"
                                         placeholder="Ticket Type Price"
                                         {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
                                     />
                                 </FormControl>
                             </FormItem>
@@ -91,7 +118,7 @@ export function TicketTypeForm({
                             <FormItem>
                                 <FormLabel>Capacity</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="Event Capacity" {...field} />
+                                    <Input type="number" placeholder="Event Capacity" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
                                 </FormControl>
                             </FormItem>
                         )}
@@ -104,7 +131,7 @@ export function TicketTypeForm({
                             <FormItem>
                                 <FormLabel>Sold</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="Tickets Sold" {...field} />
+                                    <Input type="number" placeholder="Tickets Sold" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
                                 </FormControl>
                             </FormItem>
                         )}

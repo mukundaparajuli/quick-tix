@@ -43,7 +43,7 @@ export function VenueForm({
                             <FormItem>
                                 <FormLabel>Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Ticket Type Name" {...field} />
+                                    <Input placeholder="Venue Name" {...field} />
                                 </FormControl>
                             </FormItem>
                         )}
@@ -56,7 +56,7 @@ export function VenueForm({
                             <FormItem>
                                 <FormLabel>Location</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Event Location" {...field} />
+                                    <Input placeholder="Venue Location" {...field} />
                                 </FormControl>
                             </FormItem>
                         )}
@@ -75,7 +75,7 @@ export function VenueForm({
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" variant="secondary" className="w-full">Create Ticket Type</Button>
+                    <Button type="submit" variant="secondary" className="w-full">Create Venue</Button>
                 </form>
             </Form>
         </div>
