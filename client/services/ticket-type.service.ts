@@ -1,4 +1,4 @@
-import { TicketTypeForm } from "@/components/event-creation-wizard/ticket-type-form"
+import { TicketTypeForm } from "@/components/event-creation-wizard/ticket-types/ticket-type-form";
 import { $axios } from "@/lib/axios";
 
 export const createTicketType = async ({ eventId, data }: { eventId: number, data: TicketTypeForm }) => {

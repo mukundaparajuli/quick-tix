@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { JwtValidation } from "../middlewares/jwt-validation";
-import { createVenue } from "../controllers/venue.controller";
+import { createSection } from "../controllers/section.controller";
 
 const router = Router();
 
-router.post('/create', JwtValidation, createVenue);
+router.post('/create', JwtValidation, createSection);
 
 
 export default router;

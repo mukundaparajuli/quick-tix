@@ -1,7 +1,7 @@
 import useEventStore from "@/stores/event-store"
 import { TicketType } from "@/types/ticket-type";
 import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { TicketTypeForm } from "./ticket-type-form";
 
 export default function TicketTypes() {

@@ -2,7 +2,7 @@ import useEventStore from "@/stores/event-store"
 import { Facility } from "@/types/facility";
 import { useState } from "react";
 import { FacilityForm } from "./facility-form";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 
 export default function Facilities() {
     const [addFacility, setAddFacility] = useState<boolean>(false);

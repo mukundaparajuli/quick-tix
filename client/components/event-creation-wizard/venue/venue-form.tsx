@@ -3,10 +3,12 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { FormField, FormItem, FormLabel, FormControl, Form } from "../ui/form"
-import { Input } from "../ui/input"
-import { Button } from "../ui/button"
+import { FormField, FormItem, FormLabel, FormControl, Form } from "../../ui/form"
+import { Input } from "../../ui/input"
+import { Button } from "../../ui/button"
 import { cn } from "@/lib/utils"
+import useCreateVenue from "@/hooks/event-wizard/use-create-venue"
+import useEventStore from "@/stores/event-store"
 
 const venueSchema = z.object({
     name: z.string().min(5).max(100),
@@ -19,6 +21,9 @@ export function VenueForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
+    const createVenueMutation = useCreateVenue();
+    const event = useEventStore((state) => state.event);
+
     const form = useForm<VenueForm>({
         resolver: zodResolver(venueSchema),
         defaultValues: {
@@ -29,6 +34,7 @@ export function VenueForm({
     })
 
     function onSubmit(values: z.infer<typeof venueSchema>) {
+        createVenueMutation.mutate({ data: values, eventId: +event?.id! });
     }
 
     return (
@@ -70,7 +76,12 @@ export function VenueForm({
                             <FormItem>
                                 <FormLabel>Capacity</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="Event Capacity" {...field} />
+                                    <Input
+                                        type="number"
+                                        placeholder="Venue Capacity"
+                                        {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                    />
                                 </FormControl>
                             </FormItem>
                         )}

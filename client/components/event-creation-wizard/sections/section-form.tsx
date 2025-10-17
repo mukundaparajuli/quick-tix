@@ -3,21 +3,28 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { FormField, FormItem, FormLabel, FormControl, Form } from "../ui/form"
-import { Input } from "../ui/input"
-import { Button } from "../ui/button"
+import { FormField, FormItem, FormLabel, FormControl, Form } from "../../ui/form"
+import { Input } from "../../ui/input"
+import { Button } from "../../ui/button"
 import { cn } from "@/lib/utils"
+import useCreateSection from "@/hooks/event-wizard/use-create-section"
+import useEventStore from "@/stores/event-store"
 
 const sectionSchema = z.object({
     name: z.string().min(5).max(100),
     capacity: z.number().min(1).optional(),
 })
 export type SectionForm = z.infer<typeof sectionSchema>;
+export interface SectionFormProps extends React.ComponentProps<"div"> {
+    onSuccess?: () => void
+}
 
 export function SectionForm({
     className,
+    onSuccess,
     ...props
-}: React.ComponentProps<"div">) {
+}: SectionFormProps) {
+    const createSectionMutation = useCreateSection(onSuccess);
     const form = useForm<SectionForm>({
         resolver: zodResolver(sectionSchema),
         defaultValues: {
@@ -26,7 +33,15 @@ export function SectionForm({
         },
     })
 
+    const venue = useEventStore((state) => state.venue);
+
+    if (!venue) {
+        return null;
+    }
+
     function onSubmit(values: z.infer<typeof sectionSchema>) {
+        createSectionMutation.mutate({ data: values, venueId: +venue?.id! });
+        form.reset();
     }
 
     return (
@@ -41,7 +56,7 @@ export function SectionForm({
                             <FormItem>
                                 <FormLabel>Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Ticket Type Name" {...field} />
+                                    <Input placeholder="Section Name" {...field} />
                                 </FormControl>
                             </FormItem>
                         )}
@@ -54,7 +69,7 @@ export function SectionForm({
                             <FormItem>
                                 <FormLabel>Capacity</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="Event Capacity" {...field} />
+                                    <Input type="number" placeholder="Section Capacity" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
                                 </FormControl>
                             </FormItem>
                         )}
