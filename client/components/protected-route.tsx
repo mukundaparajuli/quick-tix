@@ -1,30 +1,32 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/stores/auth-store'
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import useAuthStore from "@/stores/auth-store";
 
 interface ProtectedRouteProps {
-    children: React.ReactNode
-    fallback?: React.ReactNode
+    children: React.ReactNode;
+    fallback?: React.ReactNode;
 }
 
 export default function ProtectedRoute({
     children,
-    fallback = null
+    fallback = null,
 }: ProtectedRouteProps) {
-    const { isAuthenticated, isLoading } = useAuthStore()
-    const router = useRouter()
+    const router = useRouter();
+    const { accessToken } = useAuthStore();
+    const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
-        if (!isLoading && !isAuthenticated) {
-            router.push('/login')
+        setIsHydrated(true);
+    }, []);
+
+    useEffect(() => {
+        if (isHydrated && !accessToken) {
+            router.push("/login");
         }
-    }, [isAuthenticated, isLoading, router])
+    }, [accessToken, isHydrated, router]);
 
-    if (isLoading) {
-        return fallback || <div>Loading...</div>
-    }
-
-    return isAuthenticated ? <>{children}</> : fallback
+    if (!isHydrated) return <>Loading...</>;
+    return accessToken ? <>{children}</> : fallback;
 }

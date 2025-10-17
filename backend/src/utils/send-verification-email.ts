@@ -17,7 +17,7 @@ export const sendVerificationEmail = async (email: string, verificationToken: st
     });
 
     if (error) {
-        throw new ApiError(500, "Error occured while sending an email")
+        throw new ApiError(500, "Please provide a valid email address.");
     }
     return data;
 };

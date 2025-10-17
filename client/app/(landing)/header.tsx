@@ -1,6 +1,8 @@
 import { Ticket } from "lucide-react";
 import LoginDialog from "./login";
 import RegisterDialog from "./register";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Header() {
     return (
@@ -12,8 +14,8 @@ export default function Header() {
                 </div>
 
                 <div className="flex gap-3">
-                    <LoginDialog variant="primaryOutline" title="Login" />
-                    <RegisterDialog variant="primary" title="Register" />
+                    <Link href={"/login"}><Button variant="primaryOutline">Login</Button></Link>
+                    <Link href={"/register"}><Button variant="primary">Register</Button></Link>
                 </div>
             </div>
         </header >

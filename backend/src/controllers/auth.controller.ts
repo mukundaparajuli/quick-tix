@@ -86,10 +86,10 @@ export const LoginUser = asyncHandler(async (req: Request, res: Response) => {
 
 
 export const VerifyEmail = asyncHandler(async (req: Request, res: Response) => {
-    const { token } = req.query;
-    if (!token || typeof token !== 'string') throw new ApiError(400, 'Verification token is required');
+    const { verificationToken } = req.params;
+    if (!verificationToken || typeof verificationToken !== 'string') throw new ApiError(400, 'Verification token is required');
 
-    const user = await authService.verifyEmailToken(token);
+    const user = await authService.verifyEmailToken(verificationToken);
 
     return new ApiResponse(res, 200, 'Email verified successfully', { user });
 });

@@ -1,5 +1,5 @@
+import useAuthStore from '@/stores/auth-store';
 import axios from 'axios'
-import { useAuthStore } from '@/stores/auth-store'
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 const bypassUrls = ['/auth/login', '/auth/refresh-token', '/auth/register'];
@@ -13,11 +13,11 @@ export const $axios = axios.create({
 
 $axios.interceptors.request.use(
     (config) => {
-        const token = useAuthStore.getState().token
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`
+        const accessToken = useAuthStore.getState().accessToken;
+        if (accessToken) {
+            config.headers.Authorization = `Bearer ${accessToken}`;
         }
-        return config
+        return config;
     },
     (error) => Promise.reject(error)
 )
@@ -25,7 +25,7 @@ $axios.interceptors.request.use(
 $axios.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const accessToken = useAuthStore.getState().token;
+        const accessToken = useAuthStore.getState().accessToken;
 
         if (!error.config || !error.config.url) {
             throw error;

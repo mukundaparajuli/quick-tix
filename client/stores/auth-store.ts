@@ -1,97 +1,53 @@
-import { $axios } from '@/lib/axios'
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { User } from "@/types/user";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-interface User {
-    id: string
-    email: string
-    name: string
+interface AuthStoreInterface {
+    isAuthenticated: boolean;
+    user: User | null | undefined;
+    accessToken: string | null | undefined;
 }
 
-interface AuthState {
-    user: User | null
-    token: string | null
-    isAuthenticated: boolean
-    isLoading: boolean
-    login: (email: string, password: string) => Promise<void>
-    register: (userData: RegisterData) => Promise<void>
-    logout: () => void
-    clearAuth: () => void
+interface AuthStoreActionsInterface {
+    setAuth: ({ }: {
+        user: User | null | undefined;
+        accessToken: string | undefined;
+    }) => void;
+    setUser: ({ }: { user: User | null | undefined }) => void;
+    removeAuth: () => void;
+    resetAuth: () => void;
 }
 
-interface RegisterData {
-    name: string
-    email: string
-    password: string
-}
+const initialState: AuthStoreInterface = {
+    isAuthenticated: false,
+    user: null,
+    accessToken: null,
+};
 
-export const useAuthStore = create<AuthState>()(
-    persist(
+const useAuthStore = create(
+    persist<AuthStoreInterface & AuthStoreActionsInterface>(
         (set, get) => ({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-
-            login: async (email: string, password: string) => {
-                set({ isLoading: true })
-                try {
-                    const response = await $axios.post('/auth/login', { email, password })
-                    console.log(response)
-                    const { user, token } = response.data
-
-                    set({
-                        user,
-                        token,
-                        isAuthenticated: true,
-                        isLoading: false
-                    })
-                } catch (error) {
-                    set({ isLoading: false })
-                    throw error
-                }
-            },
-
-            register: async (userData: RegisterData) => {
-                set({ isLoading: true })
-                try {
-                    const response = await $axios.post('/auth/register', userData)
-                    const { user, token } = response.data
-
-                    set({
-                        user,
-                        token,
-                        isAuthenticated: true,
-                        isLoading: false
-                    })
-                } catch (error) {
-                    set({ isLoading: false })
-                    throw error
-                }
-            },
-
-            logout: () => {
-                // Call logout endpoint if needed
-                $axios.post('/auth/logout').catch(console.error)
-                get().clearAuth()
-            },
-
-            clearAuth: () => {
-                set({
-                    user: null,
-                    token: null,
+            ...initialState,
+            setAuth: ({ accessToken, user }) =>
+                set(() => ({
+                    accessToken,
+                    user,
+                    isAuthenticated: true,
+                })),
+            setUser: ({ user }) =>
+                set(() => ({
+                    user,
+                })),
+            removeAuth: () =>
+                set(() => ({
+                    accessToken: null,
                     isAuthenticated: false,
-                    isLoading: false
-                })
-            }
+                    user: null,
+                })),
+            resetAuth: () => set(() => ({ ...initialState })),
         }),
-        {
-            name: 'auth-storage',
-            partialize: (state) => ({
-                user: state.user,
-                token: state.token,
-                isAuthenticated: state.isAuthenticated
-            })
-        }
+        { name: "auth-storage" }
     )
-)
+);
+
+export default useAuthStore;

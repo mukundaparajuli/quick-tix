@@ -6,11 +6,13 @@ import { z } from "zod"
 import { FormField, FormItem, FormLabel, FormControl, Form } from "../ui/form"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card"
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+import useRegister from "@/hooks/auth/use-register"
+import Link from "next/dist/client/link"
 
 const registerFormSchema = z
     .object({
@@ -28,12 +30,14 @@ const registerFormSchema = z
                 ctx.addIssue({ path: ["organizationName"], message: "Organization Name is required", code: z.ZodIssueCode.custom })
         }
     })
+export type RegisterForm = z.infer<typeof registerFormSchema>;
 
 export function RegisterForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
-    const form = useForm<z.infer<typeof registerFormSchema>>({
+    const registerMutation = useRegister();
+    const form = useForm<RegisterForm>({
         resolver: zodResolver(registerFormSchema),
         defaultValues: {
             name: "",
@@ -46,12 +50,12 @@ export function RegisterForm({
     const selectedRole = form.watch("role")
 
     function onSubmit(values: z.infer<typeof registerFormSchema>) {
-        console.log(values)
+        registerMutation.mutate(values);
     }
 
     return (
         <div className={cn("", className)} {...props}>
-            <Card className="border-none shadow-none p-0">
+            <Card className="w-full max-w-md min-w-md md:max-w-xl">
                 <CardHeader className="text-center">
                     <CardTitle className="text-xl">Create new account</CardTitle>
                     <CardDescription>
@@ -173,6 +177,11 @@ export function RegisterForm({
                         </form>
                     </Form>
                 </CardContent>
+                <CardFooter className="flex items-center justify-center">
+                    <p className="text-sm text-center text-gray-600">
+                        Already have an account? <Link href="/login" className="text-blue-600 hover:underline">Login.</Link>
+                    </p>
+                </CardFooter>
             </Card>
         </div>
     )
