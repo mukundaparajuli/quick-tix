@@ -1,4 +1,5 @@
 import db from "../config/db";
+import ApiError from "../types/api-error";
 
 class EventService {
     async createEvent(data: {
@@ -14,6 +15,30 @@ class EventService {
         });
         return event;
     }
+
+    async markEventAsPublished(eventId: number) {
+        const event = await db.event.findFirst({
+            where: {
+                id: eventId
+            }
+        })
+
+        if (!event) {
+            throw new ApiError(404, "No event found for this event id.")
+        }
+
+        const publishedEvent = await db.event.update({
+            where: {
+                id: eventId
+            },
+            data: {
+                isPublished: true
+            }
+        })
+
+        return publishedEvent;
+    }
 }
 
 export const eventService = new EventService();
+

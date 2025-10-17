@@ -5,3 +5,8 @@ export const createEvent = async (eventData: EventInfoForm) => {
     const response = await $axios.post("/events/create", eventData)
     return response.data
 }
+
+export const markAsPublished = async (eventId: number) => {
+    const response = await $axios.post(`/events/${eventId}/publish`)
+    return response.data
+}

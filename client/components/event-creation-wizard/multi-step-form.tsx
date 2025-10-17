@@ -1,14 +1,13 @@
 "use client"
 
 import { useWizardStore } from "@/stores/wizard-store";
-import { SectionForm } from "./sections/section-form";
-import { VenueForm } from "./venue/venue-form";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Button } from "../ui/button";
 import EventInfo from "./eventinfo/event-info";
 import TicketTypes from "./ticket-types/ticket-types";
 import Facilities from "./facilities/facilities";
 import VenueStep from "./venue/venue";
+import Sections from "./sections/sections";
 
 export function MultiStepEventForm() {
     const { currentStep, nextStep, prevStep } = useWizardStore();
@@ -18,7 +17,7 @@ export function MultiStepEventForm() {
         <TicketTypes key="step-1" />,
         <Facilities key="step-2" />,
         <VenueStep key="step-3" />,
-        <SectionForm key="step-4" />,
+        <Sections key="step-4" />,
     ];
 
     return (

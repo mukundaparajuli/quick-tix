@@ -16,8 +16,10 @@ const useCreateSection = (
         onSuccess: (response) => {
             handleApiSuccessResponse(response);
             successCallbackFn?.();
-
-            setSections(sections ? [...sections, response.data] : [response.data]);
+            console.log("Created section:", response.data);
+            console.log(sections);
+            setSections([...(sections || []), response.data]);
+            console.log("Updated sections:", sections);
         },
         onError: (error: any) => {
             handleApiErrorResponse(error);

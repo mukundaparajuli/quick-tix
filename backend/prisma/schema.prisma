@@ -79,6 +79,7 @@ model Event {
   capacity    Int?
   organizerId Int
   venueId     Int?
+  isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
