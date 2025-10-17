@@ -21,7 +21,7 @@ export function MultiStepEventForm() {
     ];
 
     return (
-        <div className="max-w-xl mx-auto min-h-screen flex flex-col justify-center">
+        <div className="max-w-xl mx-auto min-h-screen flex flex-col justify-center min-w-lg">
 
             <Card>
                 <CardHeader>

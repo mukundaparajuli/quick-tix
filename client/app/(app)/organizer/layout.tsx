@@ -1,4 +1,5 @@
 import ProtectedRoute from "@/components/protected-route";
+import Sidebar from "./sidebar";
 
 type Props = {
     children: React.ReactNode;
@@ -6,12 +7,13 @@ type Props = {
 
 export default function OrganizerLayout({ children }: Props) {
     return (
-        <>
-            <main className="flex-1 flex flex-col items-center justify-center min-h-screen">
-                <ProtectedRoute role="ORGANIZER">
+        <ProtectedRoute role="ORGANIZER">
+            <Sidebar className="hidden lg:flex w-full" />
+            <main className=" lg:pl-[256px] h-full pt-[50px] lg:pt-0 ">
+                <div className="h-full w-full max-w-screen">
                     {children}
-                </ProtectedRoute>
+                </div>
             </main>
-        </>
+        </ProtectedRoute>
     )
 }
