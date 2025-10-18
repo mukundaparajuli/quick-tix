@@ -6,6 +6,7 @@ export type Event = {
     location: string;
     capacity?: number;
     venueId?: string;
+    isPublished: boolean;
     organizerId: string;
     createdAt: string;
     updatedAt: string;

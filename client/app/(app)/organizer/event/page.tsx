@@ -1,9 +1,7 @@
-import { MultiStepEventForm } from "@/components/event-creation-wizard/multi-step-form";
+import { AllEvents } from "./my-events-page";
 
 export default function EventPage() {
     return (
-        <div>
-            Events Page
-        </div>
+        <AllEvents />
     )
 }

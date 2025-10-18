@@ -43,3 +43,8 @@ export const markAsPublished = asyncHandler(async (req: Request, res: Response) 
 
     return new ApiResponse(res, 200, "Event published successfully", publishedEvent);
 })
+
+export const getAllEvents = asyncHandler(async (req: Request, res: Response) => {
+    const events = await eventService.getAllEvents();
+    return new ApiResponse(res, 200, "Events retrieved successfully", events);
+});

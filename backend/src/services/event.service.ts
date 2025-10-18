@@ -38,6 +38,15 @@ class EventService {
 
         return publishedEvent;
     }
+
+    async getAllEvents() {
+        const events = await db.event.findMany({
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+        return events;
+    }
 }
 
 export const eventService = new EventService();
