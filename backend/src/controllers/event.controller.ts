@@ -48,3 +48,14 @@ export const getAllEvents = asyncHandler(async (req: Request, res: Response) => 
     const events = await eventService.getAllEvents();
     return new ApiResponse(res, 200, "Events retrieved successfully", events);
 });
+
+export const getEventDetails = asyncHandler(async (req: Request, res: Response) => {
+    const { eventId } = req.params;
+    if (!eventId) {
+        throw new ApiError(400, "Event id is required");
+    }
+
+    const eventDetails = await eventService.getEventDetails(parseInt(eventId));
+
+    return new ApiResponse(res, 200, "Event details retrieved successfully", eventDetails);
+});

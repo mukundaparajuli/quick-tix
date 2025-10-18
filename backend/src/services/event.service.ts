@@ -47,6 +47,33 @@ class EventService {
         });
         return events;
     }
+
+    async getEventDetails(eventId: number) {
+        const eventDetails = await db.event.findUnique({
+            where: {
+                id: eventId
+            },
+            include: {
+                organizer: true,
+                venue: {
+                    include: {
+                        sections: {
+                            include: {
+                                seats: true
+                            }
+                        }
+                    }
+                },
+                ticketTypes: {
+                    include: {
+                        facilities: true
+                    }
+                }
+            }
+
+        });
+        return eventDetails;
+    }
 }
 
 export const eventService = new EventService();

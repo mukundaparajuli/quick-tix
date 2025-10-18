@@ -4,6 +4,8 @@ import useGetAllEvents from "@/hooks/events/use-get-all-events";
 import { Event } from "@/types/event";
 import EventCard from "./event-card";
 import { Button } from "@/components/ui/button";
+import { redirect } from "next/navigation";
+import Link from "next/dist/client/link";
 
 export const AllEvents = () => {
     const { data, isFetching, isError } = useGetAllEvents();
@@ -32,9 +34,9 @@ export const AllEvents = () => {
                 </p>
             </div>
 
-            <div className="absolute top-10 right-8">
+            <Link href="/organizer/event/create" className="absolute top-10 right-8">
                 <Button>+ Create Event</Button>
-            </div>
+            </Link>
 
             <div className="flex flex-col gap-y-6 w-full">
                 {events.length > 0 ? (

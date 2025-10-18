@@ -15,3 +15,8 @@ export const getAllEvents = async () => {
     const response = await $axios.get("/events")
     return response.data
 }
+
+export const getEventDetails = async (eventId: number) => {
+    const response = await $axios.get(`/events/${eventId}`)
+    return response.data
+}

@@ -7,5 +7,6 @@ const router = Router();
 router.post("/create", JwtValidation, createEvent);
 router.post("/:eventId/publish", JwtValidation, markAsPublished);
 router.get("/", JwtValidation, getAllEvents);
+router.get("/:eventId", JwtValidation, getAllEvents);
 
 export default router;
