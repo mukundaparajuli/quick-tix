@@ -56,6 +56,6 @@ export const getEventDetails = asyncHandler(async (req: Request, res: Response) 
     }
 
     const eventDetails = await eventService.getEventDetails(parseInt(eventId));
-
+    console.log(eventDetails);
     return new ApiResponse(res, 200, "Event details retrieved successfully", eventDetails);
 });
