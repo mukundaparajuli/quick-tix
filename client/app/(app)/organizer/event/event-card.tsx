@@ -12,12 +12,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/utils/format-date";
+import Link from "next/link";
 
 export default function EventCard({ event }: { event: Event }) {
 
 
     return (
-        <div className="w-3xl h-56 border-b-4 border-slate-400 active:border-b-0 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 mt-4 bg-white">
+        <div className="w-full h-56 border-b-4 border-slate-400 active:border-b-0 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 mt-4 bg-white">
             <div className="flex flex-col md:flex-row h-full">
                 <div className="relative w-full md:w-1/3 h-44 md:h-auto">
                     <Image
@@ -48,19 +49,24 @@ export default function EventCard({ event }: { event: Event }) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
                                 {event.isPublished ? (
+
                                     <DropdownMenuItem onClick={() => console.log("Edit event")}>
                                         Edit Event
                                     </DropdownMenuItem>
                                 ) : (
-                                    <DropdownMenuItem
-                                        onClick={() => console.log("Complete event creation")}
-                                    >
-                                        Complete Event Creation
-                                    </DropdownMenuItem>
+                                    <Link href={"/organizer/event/create/" + event.id}>
+                                        <DropdownMenuItem
+                                            onClick={() => console.log("Complete event creation")}
+                                        >
+                                            Complete Event Creation
+                                        </DropdownMenuItem>
+                                    </Link>
                                 )}
-                                <DropdownMenuItem onClick={() => console.log("View details")}>
-                                    View Details
-                                </DropdownMenuItem>
+                                <Link href={"/organizer/event/" + event.id}>
+                                    <DropdownMenuItem onClick={() => console.log("View details")}>
+                                        View Details
+                                    </DropdownMenuItem>
+                                </Link>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>

@@ -20,7 +20,7 @@ export const normalizeEvent = (eventDetails: any) => {
     };
 
     // Flatten ticket types
-    const ticketTypes: TicketType[] = eventDetails?.ticketTypes.map((tt: any) => ({
+    const ticketTypes: TicketType[] = eventDetails.ticketTypes && eventDetails.ticketTypes.map((tt: any) => ({
         id: tt.id,
         name: tt.name,
         price: tt.price,
@@ -55,7 +55,7 @@ export const normalizeEvent = (eventDetails: any) => {
     }));
 
     // Venue
-    const venue: Venue = {
+    const venue: Venue = eventDetails?.venue && {
         id: eventDetails?.venue?.id,
         name: eventDetails?.venue?.name,
         location: eventDetails?.venue?.location,

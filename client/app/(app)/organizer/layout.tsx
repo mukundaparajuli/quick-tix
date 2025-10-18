@@ -7,13 +7,15 @@ type Props = {
 
 export default function OrganizerLayout({ children }: Props) {
     return (
-        <ProtectedRoute role="ORGANIZER">
-            <Sidebar className="hidden lg:flex w-full" />
-            <main className=" lg:pl-[256px] h-full pt-[50px] lg:pt-0 ">
-                <div className="h-full w-full max-w-screen">
-                    {children}
-                </div>
-            </main>
-        </ProtectedRoute>
+        <div className="flex h-full w-full">
+            <ProtectedRoute role="ORGANIZER">
+                <Sidebar className="hidden lg:flex w-full" />
+                <main className=" lg:pl-[256px] h-full pt-[50px] w-full lg:pt-0 ">
+                    <div className="h-full w-full max-w-screen">
+                        {children}
+                    </div>
+                </main>
+            </ProtectedRoute>
+        </div>
     )
 }

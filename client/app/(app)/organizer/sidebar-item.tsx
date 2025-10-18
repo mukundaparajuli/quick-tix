@@ -13,7 +13,7 @@ type Props = {
 
 export default function SidebarItem({ label, iconName, href }: Props) {
     const pathName = usePathname()
-    const isActive = pathName === href
+    const isActive = pathName.startsWith(href)
     const IconComponent = iconMap[iconName]
 
     if (!IconComponent) {
