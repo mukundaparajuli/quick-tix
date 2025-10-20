@@ -1,10 +1,4 @@
-export enum PaymentMethod {
-    CARD = 'CARD',
-    ESEWA = 'ESEWA',
-    KHALTI = 'KHALTI',
-    STRIPE = 'STRIPE',
-    CASH = 'CASH'
-}
+
 
 export enum PaymentStatus {
     UNPAID = 'UNPAID',

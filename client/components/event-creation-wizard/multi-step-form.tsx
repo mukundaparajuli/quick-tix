@@ -9,6 +9,7 @@ import TicketTypes from "./ticket-types/ticket-types"
 import Facilities from "./facilities/facilities"
 import VenueStep from "./venue/venue"
 import Sections from "./sections/sections"
+import { Seats } from "./seats/seats"
 
 export function MultiStepEventForm() {
     const { currentStep, nextStep, prevStep } = useWizardStore()
@@ -19,6 +20,7 @@ export function MultiStepEventForm() {
         <Facilities key="step-2" />,
         <VenueStep key="step-3" />,
         <Sections key="step-4" />,
+        <Seats key="step-5" />
     ]
 
     const progressValue = ((currentStep + 1) / steps.length) * 100

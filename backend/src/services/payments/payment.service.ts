@@ -1,5 +1,6 @@
+import { PaymentMethod } from '@prisma/client';
 import { IPaymentGateway } from '../../../interfaces/IPaymentGateway';
-import { InitiatePaymentData, PaymentMethod } from '../../types/payment';
+import { InitiatePaymentData } from '../../types/payment';
 import esewaService from './esewa.service';
 import khaltiService from './khalti.service';
 
