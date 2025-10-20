@@ -15,6 +15,7 @@ export default function CreateEventPage() {
     }, [pathname]);
 
     useEffect(() => {
+        resetEvent();
         return () => {
             if (prevPathRef.current !== pathname) {
                 resetEvent();

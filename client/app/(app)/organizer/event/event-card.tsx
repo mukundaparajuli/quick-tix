@@ -18,7 +18,7 @@ export default function EventCard({ event }: { event: Event }) {
 
 
     return (
-        <div className="w-full h-56 border-b-4 border-slate-400 active:border-b-0 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 mt-4 bg-white">
+        <div className="w-full h-64 border-b-4 border-slate-400 active:border-b-0 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 mt-4 bg-white">
             <div className="flex flex-col md:flex-row h-full">
                 <div className="relative w-full md:w-1/3 h-44 md:h-auto">
                     <Image
