@@ -1,6 +1,8 @@
+import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import useCreateSeats from "@/hooks/event-wizard/use-create-seats";
 import useEventStore from "@/stores/event-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -12,10 +14,21 @@ const seatsSchema = z.object({
     column: z.number().min(1),
 });
 export type SeatsFormType = z.infer<typeof seatsSchema>;
+export type SeatsConfig = {
+    row: number,
+    column: number,
+}
+export type SeatInfo = {
+    sectionId: number,
+    row: number,
+    column: number
+}
 
 export default function SeatsForm() {
     const sections = useEventStore().sections;
     const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+    const [seatInfos, setSeatInfos] = useState<SeatInfo[]>([]);
+    const createSeatsMutation = useCreateSeats();
 
     const form = useForm<SeatsFormType>({
         resolver: zodResolver(seatsSchema),
@@ -23,9 +36,13 @@ export default function SeatsForm() {
     });
 
     const onSubmit = (values: SeatsFormType) => {
-        console.log("Submitted values:", { ...values, sectionId: selectedSectionId });
+        if (!selectedSectionId) return;
+        const { row, column } = values;
+        createSeatsMutation.mutate([
+            { sectionId: Number(selectedSectionId), row, column }
+        ]);
         form.reset();
-    };
+    }
 
     return (
         <div className="flex flex-col space-y-3">
@@ -46,19 +63,42 @@ export default function SeatsForm() {
             </Select>
             <div>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className=" flex justify-between">
                         <FormField
                             control={form.control}
                             name="row"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Row</FormLabel>
+                                    <FormLabel className="sr-only">Row</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Row" {...field} />
+                                        <Input
+                                            type="number"
+                                            placeholder="Row"
+                                            {...field}
+                                            onChange={(e) => field.onChange(Number(e.target.value))}
+                                        />
                                     </FormControl>
                                 </FormItem>
                             )}
                         />
+                        <FormField
+                            control={form.control}
+                            name="column"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="sr-only">Column</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            placeholder="Column"
+                                            {...field}
+                                            onChange={(e) => field.onChange(Number(e.target.value))}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <Button type="submit">Add Seats</Button>
                     </form>
                 </Form>
             </div>

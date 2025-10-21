@@ -5,6 +5,7 @@ import { Facility } from "@/types/facility";
 import { Section } from "@/types/section";
 import { TicketType } from "@/types/ticket-type";
 import { Venue } from "@/types/venue";
+import { Seats } from "@/types/seat";
 
 interface EventStoreState {
     event: Event | null;
@@ -12,6 +13,7 @@ interface EventStoreState {
     venue: Venue | null;
     sections: Section[] | null;
     facilities: Facility[] | null;
+    seats: Seats[] | null;
 }
 
 interface EventStoreActions {
@@ -22,6 +24,7 @@ interface EventStoreActions {
     setVenue: (venue: Venue | null) => void;
     setSections: (sections: Section[] | null) => void;
     setFacilities: (facilities: Facility[] | null) => void;
+    setSeats: (seats: Seats[] | null) => void;
     resetEvent: () => void;
 }
 
@@ -31,6 +34,7 @@ const initialState: EventStoreState = {
     venue: null,
     sections: null,
     facilities: null,
+    seats: null
 };
 
 const useEventStore = create<EventStoreState & EventStoreActions>()(
@@ -51,6 +55,7 @@ const useEventStore = create<EventStoreState & EventStoreActions>()(
             setVenue: (venue) => set({ venue }),
             setSections: (sections) => set({ sections }),
             setFacilities: (facilities) => set({ facilities }),
+            setSeats: (seats) => set({ seats }),
 
             resetEvent: () => set(initialState),
         }),

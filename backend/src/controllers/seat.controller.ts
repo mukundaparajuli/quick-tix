@@ -3,9 +3,10 @@ import asyncHandler from "../utils/async-handler";
 import ApiError from "../types/api-error";
 import { seatService } from "../services/seat.service";
 import ApiResponse from "../types/api-response";
+import db from "../config/db";
 
 export const createSeat = asyncHandler(async (req: Request, res: Response) => {
-    const { label, sectionId, isBooked } = req.body;
+    const { label, sectionId, isBooked = false } = req.body;
 
     if (!label || !sectionId) {
         throw new ApiError(400, "Label and sectionId are required");
@@ -16,13 +17,48 @@ export const createSeat = asyncHandler(async (req: Request, res: Response) => {
 });
 
 
+
 export const createSeats = asyncHandler(async (req: Request, res: Response) => {
     const seats = req.body;
+    const allSeatsToCreate: { label: string; sectionId: number }[] = [];
 
-    if (!Array.isArray(seats) || seats.length === 0) {
-        throw new ApiError(400, "Seats data is required");
+    for (const { sectionId, row, column } of seats) {
+        const existingSeats = await db.seat.findMany({
+            where: { sectionId },
+            orderBy: { label: "asc" },
+        });
+
+        let lastRowIndex = -1;
+        if (existingSeats.length > 0) {
+            const lastSeat = existingSeats[existingSeats.length - 1];
+            const lastRowChar = lastSeat.label[0];
+            lastRowIndex = lastRowChar.charCodeAt(0) - 65;
+        }
+
+        const newSeats = await seatService.generateSeats(
+            sectionId,
+            lastRowIndex + 1,
+            row,
+            column
+        );
+
+        allSeatsToCreate.push(...newSeats);
     }
 
-    const createdSeats = await seatService.createSeats(seats);
-    return new ApiResponse(res, 201, "Seats created successfully", createdSeats);
-}); 
+    const createdSeats = await db.seat.createMany({
+        data: allSeatsToCreate,
+        skipDuplicates: true,
+    });
+
+    const allSeats = await db.seat.findMany({
+        where: {
+            sectionId: {
+                in: allSeatsToCreate.map(s => s.sectionId),
+            },
+        },
+        orderBy: { id: "asc" },
+    });
+
+    return new ApiResponse(res, 201, "Seats created successfully", allSeats);
+});
+

@@ -1,14 +1,18 @@
+import { Seats } from "@/types/seat";
 import SeatComponent from "./seat-component";
 
-export default function DisplaySeats() {
+type Props = {
+    seats: Seats[] | null;
+}
+
+export default function DisplaySeats({ seats }: Props) {
     return (
         <div>
             <h2>Available Seats</h2>
             <div className="flex space-x-2">
-                <SeatComponent label="A1" />
-                <SeatComponent label="A2" />
-                <SeatComponent label="A3" />
-                <SeatComponent label="A4" />
+                {seats?.map((seat) => (
+                    <SeatComponent key={seat.id} label={seat.label} />
+                ))}
             </div>
         </div>
     )
