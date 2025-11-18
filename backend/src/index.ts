@@ -17,7 +17,7 @@ const server = createServer(app);
 export const io = new Server(server, {
     cors: {
         origin: env.FRONTEND_URL || "http://localhost:3000",
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         credentials: true
     }
 });
@@ -29,13 +29,8 @@ app.use(express.static("public"));
 
 
 // CORS configuration
-app.use(cors({
-    origin: env.FRONTEND_URL || "http://localhost:3000",
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+app.use(cors());
 
-}));
 
 // Socket.IO initialization
 initializeSocket(io);

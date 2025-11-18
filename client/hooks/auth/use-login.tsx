@@ -37,6 +37,7 @@ const useLogin = (
             }
         },
         onError: (error: AxiosError<ApiErrorInterface>) => {
+            console.log(error)
             handleApiErrorResponse(error);
             errorCallbackFn?.();
         },

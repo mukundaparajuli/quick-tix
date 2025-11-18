@@ -41,6 +41,11 @@ class EventService {
 
     async getAllEvents() {
         const events = await db.event.findMany({
+            include: {
+                media: {
+                    take: 1
+                }
+            },
             orderBy: {
                 createdAt: "desc"
             }
