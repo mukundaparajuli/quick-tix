@@ -6,9 +6,7 @@ import jwt from "jsonwebtoken"
 import db from "../config/db";
 
 export const JwtValidation = asyncHandler(async (req: Request, res: Response, next) => {
-    console.log(req.headers)
     let token = req.headers.authorization?.split(" ")[1] || req.cookies.jwtToken;
-    console.log("token=", token)
     if (!token) {
         return new ApiResponse(res, 404, "Token not found");
     }
@@ -20,7 +18,6 @@ export const JwtValidation = asyncHandler(async (req: Request, res: Response, ne
         }
         decodedUser = decoded;
     });
-    console.log("Decoded JWT:", decodedUser);
     const user = await db.user.findUnique({
         where: { id: decodedUser.id },
         include: {

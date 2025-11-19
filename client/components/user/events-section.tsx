@@ -1,3 +1,5 @@
+"use client";
+
 import useGetAllEvents from "@/hooks/events/use-get-all-events";
 import EventSection from "./event-cat";
 import ExploreCTA from "./explore-cta";

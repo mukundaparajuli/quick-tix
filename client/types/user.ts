@@ -19,6 +19,7 @@ type attendeeProfile = {
     eventId: string;
     createdAt: string;
     updatedAt: string;
+    avatar?: string;
 }
 
 type organizerProfile = {
@@ -34,4 +35,5 @@ type organizerProfile = {
     coverId?: number;
     createdAt: string;
     updatedAt: string;
+    avatar?: string;
 }

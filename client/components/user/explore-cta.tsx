@@ -13,7 +13,7 @@ export default function ExploreCTA() {
     const goToExplore = () => {
         query === "" ?
             router.push("/dashboard/explore") :
-            router.push(`/dashboard/explore?search=${encodeURIComponent(query)}`);
+            router.push(`/dashboard/explore?q=${encodeURIComponent(query)}`);
     };
 
     return (

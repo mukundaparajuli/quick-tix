@@ -1,8 +1,16 @@
-export default function DashboardPage() {
+"use client"
+
+import CategoriesDisplay from "@/components/user/categories-display";
+import EventsSection from "@/components/user/events-section";
+import HeroSection from "@/components/user/hero-section";
+import { useEffect } from "react";
+
+export default function TestPage() {
     return (
         <div className="p-4 text-center">
-            <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-            <p>Welcome to your dashboard!</p>
+            <HeroSection />
+            <CategoriesDisplay />
+            <EventsSection />
         </div>
-    );
+    )
 }

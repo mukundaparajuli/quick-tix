@@ -20,3 +20,9 @@ export const getEventDetails = async (eventId: number) => {
     const response = await $axios.get(`/events/${eventId}`)
     return response.data
 }
+
+export const searchAndFilterEvents = async (queryParams: any) => {
+    const response = await $axios.get("/events/search", { params: queryParams })
+    console.log("searchAndFilterEvents response data:", response.data);
+    return response.data
+}

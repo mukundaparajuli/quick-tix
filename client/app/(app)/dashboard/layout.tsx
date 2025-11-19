@@ -1,4 +1,5 @@
 import ProtectedRoute from "@/components/protected-route";
+import Header from "./header";
 
 type Props = {
     children: React.ReactNode;
@@ -6,12 +7,13 @@ type Props = {
 
 export default function AppLayout({ children }: Props) {
     return (
-        <>
-            <main className="flex-1 flex flex-col items-center justify-center min-h-screen">
+        <div className="max-w-screen mx-auto">
+            <Header />
+            <main >
                 <ProtectedRoute role="ATTENDEE">
                     {children}
                 </ProtectedRoute>
             </main>
-        </>
+        </div>
     )
 }

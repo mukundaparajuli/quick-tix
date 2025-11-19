@@ -59,3 +59,31 @@ export const getEventDetails = asyncHandler(async (req: Request, res: Response) 
     console.log(eventDetails);
     return new ApiResponse(res, 200, "Event details retrieved successfully", eventDetails);
 });
+
+export const searchAndFilterEvents = asyncHandler(async (req: Request, res: Response) => {
+    console.log("Search request received:", req.query);
+
+    const { q, date, category } = req.query;
+
+    const filters: {
+        q?: string;
+        date?: string;
+        category?: string;
+    } = {};
+
+    if (q && typeof q === "string") {
+        filters.q = q.trim();
+    }
+
+    if (date && typeof date === "string" && !isNaN(Date.parse(date))) {
+        filters.date = date;
+    }
+
+    if (category && typeof category === "string") {
+        filters.category = category.toLowerCase();
+    }
+
+    const events = await eventService.searchAndFilterEvents(filters);
+
+    return new ApiResponse(res, 200, "Events retrieved successfully", events);
+});

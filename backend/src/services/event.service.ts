@@ -54,7 +54,7 @@ class EventService {
     }
 
     async getEventDetails(eventId: number) {
-        const eventDetails = await db.event.findUnique({
+        const eventDetails = await db.event.findFirst({
             where: {
                 id: eventId
             },
@@ -78,6 +78,46 @@ class EventService {
 
         });
         return eventDetails;
+    }
+    async searchAndFilterEvents(filters: {
+        q?: string;
+        date?: string;
+        category?: string;
+    }) {
+        const whereClause: any = {
+            isPublished: false
+        };
+
+        if (filters.q) {
+            whereClause.OR = [
+                { title: { contains: filters.q, mode: "insensitive" } },
+                { description: { contains: filters.q, mode: "insensitive" } },
+                { location: { contains: filters.q, mode: "insensitive" } },
+            ];
+        }
+
+        if (filters.date) {
+            const filterDate = new Date(filters.date);
+            whereClause.date = filterDate;
+        }
+
+        // if (filters.category) {
+        //     whereClause.category = filters.category;
+        // }
+
+        const events = await db.event.findMany({
+            where: whereClause,
+            include: {
+                media: {
+                    take: 1
+                }
+            },
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+
+        return events;
     }
 }
 

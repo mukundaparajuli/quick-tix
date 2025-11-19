@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function HeroSection() {
     return (
-        <div className="relative w-full h-128 md:h-150 mb-6 rounded-lg overflow-hidden">
+        <div className="relative p-2 h-128 md:h-150 mb-6 rounded-lg overflow-hidden">
             {/* Image */}
             <Image
                 src="/banner.jpg"
