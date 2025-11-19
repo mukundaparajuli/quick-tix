@@ -13,7 +13,7 @@ export default function EventCard({
     const imageUrl = media?.[0]?.url || "/banner.jpg";
 
     return (
-        <div className="w-1/3 md:w-1/3 rounded-lg border flex flex-col overflow-hidden">
+        <div className="w-52 md:w-52 rounded-lg border flex flex-col overflow-hidden">
             <Image
                 src={imageUrl}
                 alt={title}
