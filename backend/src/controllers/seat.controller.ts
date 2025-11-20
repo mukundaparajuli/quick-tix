@@ -25,12 +25,14 @@ export const createSeats = asyncHandler(async (req: Request, res: Response) => {
     for (const { sectionId, row, column } of seats) {
         const availableSeats = await seatService.checkSeatAvailability(sectionId);
         const seatsToCreate = row * column;
+
         if (availableSeats < seatsToCreate) {
             throw new ApiError(
                 400,
                 `Not enough available seats in section ${sectionId}. Available: ${availableSeats}, Requested: ${seatsToCreate}`
             );
         }
+
         const existingSeats = await db.seat.findMany({
             where: { sectionId },
             orderBy: { label: "asc" },
@@ -53,16 +55,53 @@ export const createSeats = asyncHandler(async (req: Request, res: Response) => {
         allSeatsToCreate.push(...newSeats);
     }
 
-    const createdSeats = await db.seat.createMany({
+    await db.seat.createMany({
         data: allSeatsToCreate,
         skipDuplicates: true,
     });
 
+    // -----------------------------------------
+    // 🔥 Fetch the eventId from the first section
+    // -----------------------------------------
+    const section = await db.section.findUnique({
+        where: { id: seats[0].sectionId },
+        select: {
+            venueId: true,
+            venue: {
+                select: {
+                    events: {
+                        select: { id: true }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!section) {
+        throw new ApiError(404, "Section not found");
+    }
+
+    const eventId = section.venue.events[0]?.id;
+
+    if (!eventId) {
+        throw new ApiError(404, "Event not found for this section");
+    }
+
+    // -----------------------------------------
+    // 🔥 Get ALL seats for the entire event
+    // seat.section.venue.events.some(eventId)
+    // -----------------------------------------
     const allSeats = await db.seat.findMany({
         where: {
-            sectionId: {
-                in: allSeatsToCreate.map(s => s.sectionId),
-            },
+            section: {
+                venue: {
+                    events: {
+                        some: {
+                            id: eventId
+                        }
+                    }
+                }
+            }
         },
         orderBy: { id: "asc" },
     });

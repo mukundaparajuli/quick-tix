@@ -33,7 +33,7 @@ export default function EventDetailsPage() {
             <FacilitiesList facilities={facilities} />
             <VenueDetails venue={venue} />
             <SectionsList sections={sections} />
-            <DisplaySeats seats={seats} />
+            <DisplaySeats seats={seats} sections={sections} />
         </div>
     );
 }

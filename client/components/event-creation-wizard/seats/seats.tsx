@@ -7,6 +7,7 @@ import useEventStore from "@/stores/event-store"
 export const Seats = () => {
     const [addSeats, setAddSeats] = useState(false);
     const seats = useEventStore((state) => state.seats);
+    const sections = useEventStore((state) => state.sections);
 
     useEffect(() => {
         if (!addSeats) return;
@@ -14,7 +15,7 @@ export const Seats = () => {
     }, [seats]);
     return (
         <>
-            <DisplaySeats seats={seats} />
+            <DisplaySeats seats={seats} sections={sections} />
             <Button onClick={() => setAddSeats(true)}>Add Seats</Button>
             {addSeats && <SeatsForm />}
         </>
