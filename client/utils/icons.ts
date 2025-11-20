@@ -5,7 +5,9 @@ import {
     ShoppingCart,
     Theater,
     LucideIcon,
-    CalendarDays
+    CalendarDays,
+    User,
+    BookIcon
 } from "lucide-react"
 
 export const iconMap: Record<string, LucideIcon> = {
@@ -14,5 +16,7 @@ export const iconMap: Record<string, LucideIcon> = {
     target: Target,
     shoppingCart: ShoppingCart,
     theater: Theater,
-    calendarDays: CalendarDays
+    calendarDays: CalendarDays,
+    user: User,
+    bookedTicket: BookIcon
 }

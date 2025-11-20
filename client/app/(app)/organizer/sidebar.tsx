@@ -8,9 +8,9 @@ type Props = {
 }
 export default function Sidebar({ className }: Props) {
     return (
-        <div className={cn("flex lg:fixed h-full  lg:w-[256px] border-r-2 px-4 top-0 left-0 flex-col", className)}>
+        <div className={cn("flex lg:fixed h-full  lg:w-[256px] border-r-2 px-1 top-0 left-0 flex-col", className)}>
             <Link href="/organizer">
-                <div className="pt-8 pl-4 pb-7 flex items-center gap-x-3 cursor-pointer">
+                <div className="pt-4 pl-4 pb-4 flex items-center gap-x-3 cursor-pointer">
                     <Ticket size={40} className="text-gray-600" />
                     <h1 className="font-extrabold text-2xl text-gray-600 tracking-wide">Quick Tix</h1>
                 </div>
@@ -22,14 +22,14 @@ export default function Sidebar({ className }: Props) {
                     label="Events"
                 />
                 <SidebarItem
-                    href="/organizer/old"
-                    iconName="calendarDays"
-                    label="old"
+                    href="/organizer/bookings"
+                    iconName="bookedTicket"
+                    label="Bookings"
                 />
                 <SidebarItem
-                    href="/organizer/hello"
-                    iconName="calendarDays"
-                    label="hello"
+                    href="/organizer/profile"
+                    iconName="user"
+                    label="Profile"
                 />
             </div>
         </div>

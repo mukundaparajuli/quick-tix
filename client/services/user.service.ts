@@ -16,10 +16,7 @@ export const getUserDetails = async () => {
 }
 
 export const updateProfile = async (data: UpdateProfileData) => {
-    const response = await $axios.put(`/users/profile`, data, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    });
+    console.log("Update Profile Data in Service:", data);
+    const response = await $axios.put(`/users/profile`, data);
     return response.data;
 }

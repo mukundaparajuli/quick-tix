@@ -24,7 +24,7 @@ export default function SidebarItem({ label, iconName, href }: Props) {
     return (
         <Button
             variant={isActive ? "sidebarOutline" : "sidebar"}
-            className="justify-start h-[52px]"
+            className="justify-start h-[46px]"
             asChild
         >
             <Link href={href}>
