@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import useEventStore from "@/stores/event-store";
 import { EventInfoForm } from "./event-info-form";
+import { DisplayEvent } from "./display-event";
 
 export default function EventInfo() {
     const event = useEventStore((state) => state.event);
@@ -15,9 +16,5 @@ export default function EventInfo() {
         return <EventInfoForm />;
     }
 
-    return (
-        <div>
-            {JSON.stringify(event)}
-        </div>
-    );
+    return <DisplayEvent event={event} />;
 }

@@ -29,10 +29,8 @@ export function MultiStepEventForm() {
         <div className="max-w-xl mx-auto min-h-screen flex flex-col justify-center">
             <Card>
                 <CardHeader className="space-y-3">
-                    {/* ✅ Progress bar */}
                     <Progress value={progressValue} className="h-2 transition-all duration-300" />
 
-                    {/* Step info */}
                     <div className="text-sm text-muted-foreground text-center">
                         Step {currentStep + 1} of {steps.length}
                     </div>
@@ -41,7 +39,6 @@ export function MultiStepEventForm() {
                 <CardContent>{steps[currentStep]}</CardContent>
             </Card>
 
-            {/* Navigation buttons */}
             <div className="flex justify-between mt-4">
                 {currentStep > 0 ? (
                     <Button variant="primary" onClick={prevStep}>

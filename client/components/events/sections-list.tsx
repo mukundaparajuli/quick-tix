@@ -13,7 +13,6 @@ export default function SectionsList({ sections }: { sections: Section[] }) {
                     </CardHeader>
                     <CardContent className="text-gray-400 space-y-1">
                         <p>Capacity: {sec.capacity}</p>
-                        {/* <p>Seats: {sec.seats?.length ?? 0}</p> */}
                     </CardContent>
                 </Card>
             ))}

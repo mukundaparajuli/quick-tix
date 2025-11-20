@@ -3,6 +3,7 @@ import { Facility } from "@/types/facility";
 import { useState } from "react";
 import { FacilityForm } from "./facility-form";
 import { Button } from "../../ui/button";
+import DisplayFacilities from "./display-facilities";
 
 export default function Facilities() {
     const [addFacility, setAddFacility] = useState<boolean>(false);
@@ -14,26 +15,11 @@ export default function Facilities() {
     }
 
     return (
-        <div>
-            {!addFacility && ticketTypes.length > 0 &&
-                <>
-                    {ticketTypes.map((ticketType) => (
-                        <div key={ticketType.id} className="text-left">
-                            <h3 className="font-bold text-lg">{ticketType.name}</h3>
-                            <ul>
-                                {facilities && facilities.filter((facility: Facility) => facility.ticketTypeId === +ticketType.id).map((facility) => (
-                                    <li key={facility.id}> - {facility.name}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
-                    <Button onClick={() => setAddFacility(true)} >Add new facility</Button>
-                </>
-            }
-            {
-                addFacility && <FacilityForm onSuccess={() => setAddFacility(false)} />
-            }
-
-        </div >
+        <DisplayFacilities
+            addFacility={addFacility}
+            setAddFacility={setAddFacility}
+            ticketTypes={ticketTypes}
+            facilities={facilities}
+        />
     )
 }
