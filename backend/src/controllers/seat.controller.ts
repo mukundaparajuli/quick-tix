@@ -23,6 +23,14 @@ export const createSeats = asyncHandler(async (req: Request, res: Response) => {
     const allSeatsToCreate: { label: string; sectionId: number }[] = [];
 
     for (const { sectionId, row, column } of seats) {
+        const availableSeats = await seatService.checkSeatAvailability(sectionId);
+        const seatsToCreate = row * column;
+        if (availableSeats < seatsToCreate) {
+            throw new ApiError(
+                400,
+                `Not enough available seats in section ${sectionId}. Available: ${availableSeats}, Requested: ${seatsToCreate}`
+            );
+        }
         const existingSeats = await db.seat.findMany({
             where: { sectionId },
             orderBy: { label: "asc" },

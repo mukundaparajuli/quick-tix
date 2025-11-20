@@ -56,7 +56,6 @@ const useEventStore = create<EventStoreState & EventStoreActions>()(
             setSections: (sections) => set({ sections }),
             setFacilities: (facilities) => set({ facilities }),
             setSeats: (seats) => set({ seats }),
-
             resetEvent: () => set(initialState),
         }),
         {
@@ -67,6 +66,7 @@ const useEventStore = create<EventStoreState & EventStoreActions>()(
                 venue: state.venue,
                 sections: state.sections,
                 facilities: state.facilities,
+                seats: state.seats,
             }),
         }
     )

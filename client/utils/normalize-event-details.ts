@@ -3,6 +3,7 @@ import { TicketType } from "@/types/ticket-type";
 import { Venue } from "@/types/venue";
 import { Section } from "@/types/section";
 import { Facility } from "@/types/facility";
+import { Seats } from "@/types/seat";
 
 export const normalizeEvent = (eventDetails: any) => {
     console.log(eventDetails)
@@ -64,5 +65,14 @@ export const normalizeEvent = (eventDetails: any) => {
         updatedAt: eventDetails?.venue?.updated_at,
     };
 
-    return { event, ticketTypes, facilities, venue, sections };
+    const seat: Seats[] = eventDetails?.venue?.sections.flatMap((sec: any) =>
+        sec.seats.map((seat: any) => ({
+            id: seat.id,
+            label: seat.label,
+            sectionId: sec.id,
+            isAvailable: seat.is_available,
+        }))
+    );
+
+    return { event, ticketTypes, facilities, venue, sections, seats: seat };
 };

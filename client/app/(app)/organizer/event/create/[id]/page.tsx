@@ -14,7 +14,7 @@ export default function CreateEventPage() {
     if (isFetching) {
         return <div>Loading event details...</div>;
     }
-    console.log(eventDetails.data);
+    console.log(eventDetails);
     const { event, ticketTypes, facilities, venue, sections } = normalizeEvent(eventDetails.data);
     console.log(eventDetails.data);
     const store = useEventStore.getState();

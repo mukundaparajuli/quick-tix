@@ -9,6 +9,8 @@ import TicketTypesList from "@/components/events/ticket-types-list";
 import FacilitiesList from "@/components/events/facilities-list";
 import VenueDetails from "@/components/events/venue-details";
 import SectionsList from "@/components/events/sections-list";
+import { Seats } from "@/components/event-creation-wizard/seats/seats";
+import DisplaySeats from "@/components/seats/display-seats";
 
 export default function EventDetailsPage() {
     const { id } = useParams();
@@ -20,7 +22,7 @@ export default function EventDetailsPage() {
         return <div className="text-slate-500 text-center mt-10">Loading event details...</div>;
     }
 
-    const { event, ticketTypes, facilities, venue, sections } = normalizeEvent(eventDetails?.data);
+    const { event, ticketTypes, facilities, venue, sections, seats } = normalizeEvent(eventDetails?.data);
 
     return (
         <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
@@ -31,6 +33,7 @@ export default function EventDetailsPage() {
             <FacilitiesList facilities={facilities} />
             <VenueDetails venue={venue} />
             <SectionsList sections={sections} />
+            <DisplaySeats seats={seats} />
         </div>
     );
 }

@@ -16,8 +16,8 @@ const useCreateSeats = (
         onSuccess: (response) => {
             handleApiSuccessResponse(response);
             successCallbackFn?.();
-
-            setSeats([...(seats || []), response.data]);
+            console.log("Newly created seat:", response.data);
+            setSeats(response.data);
         },
         onError: (error: any) => {
             handleApiErrorResponse(error);
