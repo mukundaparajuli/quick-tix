@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import asyncHandler from "../utils/async-handler";
 import ApiError from "../types/api-error";
 import ApiResponse from "../types/api-response";
-import { PrismaClient, PaymentMethod, BookingStatus, PaymentStatus } from "@prisma/client";
+import { PaymentMethod, BookingStatus, PaymentStatus } from "@prisma/client";
 import paymentService from "../services/payments/payment.service";
 import { InitiatePaymentData } from "../types/payment";
 import db from "../config/db";

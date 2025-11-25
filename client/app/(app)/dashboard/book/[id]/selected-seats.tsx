@@ -1,5 +1,6 @@
-import { X, MapPin, DollarSign, Ticket, ShoppingCart } from "lucide-react";
+import { X, MapPin, Ticket, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePaymentModal } from "@/stores/payment-store";
 
 interface SelectedSeat {
     id: string;
@@ -28,6 +29,9 @@ const groupSeatsBySection = (seats: SelectedSeat[]) => {
     }, {} as Record<string, SelectedSeat[]>);
 };
 
+
+
+
 export default function FloatingSelectedSeats({
     selectedSeats,
     onRemove,
@@ -35,8 +39,13 @@ export default function FloatingSelectedSeats({
     maxSeats
 }: FloatingSelectedSeatsProps) {
     if (!selectedSeats.length) return null;
+    const { isOpen, open, close } = usePaymentModal();
 
     const groupedBySection = groupSeatsBySection(selectedSeats);
+    const handleBooking = (selectedSeats: SelectedSeat[]) => {
+        open();
+        console.log("Booking seats:", selectedSeats);
+    }
 
     return (
         <div className="fixed bottom-4 right-4 z-50 w-80 bg-white shadow-xl rounded-lg border border-gray-200 overflow-hidden">
@@ -78,7 +87,6 @@ export default function FloatingSelectedSeats({
                                         <div className="flex items-center gap-2 ml-2">
                                             <div className="text-right">
                                                 <div className="flex items-center gap-1">
-                                                    <DollarSign className="h-3 w-3 text-gray-600" />
                                                     <span className="font-medium text-sm">${seat.price.toFixed(2)}</span>
                                                 </div>
                                             </div>
@@ -121,7 +129,7 @@ export default function FloatingSelectedSeats({
                         variant="primary"
                         size="sm"
                         className="flex-1"
-                        onClick={() => console.log("Proceeding to checkout:", selectedSeats)}
+                        onClick={() => handleBooking(selectedSeats)}
                     >
                         Proceed
                     </Button>

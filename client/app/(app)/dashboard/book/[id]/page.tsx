@@ -4,7 +4,6 @@ import useGetEventDetails from "@/hooks/events/use-get-event-details";
 import { normalizeEvent } from "@/utils/normalize-event-details";
 import { useParams } from "next/navigation";
 import DisplaySeats from "./display-seats";
-import { TicketTypeModal } from "./ticket-type-modal";
 
 export default function BookEventPage() {
     const { id } = useParams();
@@ -19,10 +18,8 @@ export default function BookEventPage() {
     const { sections, seats, ticketTypes } = normalizeEvent(eventDetails?.data);
 
     return (
-        <div className="text-slate-500 text-center mt-10">
-            Booking page is under construction.
+        <div className="text-slate-500 text-center mt-10" p-2>
             <DisplaySeats seats={seats} sections={sections} ticketTypes={ticketTypes} />
-
         </div>
     );
 }

@@ -4,12 +4,14 @@ import { Section } from "@/types/section";
 import { TicketType } from "@/types/ticket-type";
 import { toast } from "sonner";
 import { useTicketTypeModal } from "@/stores/select-tickettype-store";
+import { usePaymentModal } from "@/stores/payment-store";
 import { useSeatSelection, type SelectedSeat, type PendingSeat } from "@/hooks/use-seat-selection";
 import { TicketTypeModal } from "./ticket-type-modal";
 import FloatingSelectedSeats from "./selected-seats";
 import SeatSection from "./components/seat-section";
 import SeatMapLegend from "./components/seat-map-legend";
 import SeatMapHeader from "./components/seat-map-header";
+import { PaymentMethodModal } from "./payment-modal";
 
 export type { SelectedSeat } from "@/hooks/use-seat-selection";
 
@@ -58,6 +60,7 @@ export default function DisplaySeats({
     onSelectionChange
 }: DisplaySeatsProps) {
     const { isOpen, open, close } = useTicketTypeModal();
+    const paymentModal = usePaymentModal();
     const seatSelection = useSeatSelection({ maxSeatsPerBooking, onSelectionChange });
     const { availableSeats, sectionNameMap, groupedSeats } = useSeatData(seats, sections ?? null);
     const sectionKeys = useMemo(() => Object.keys(groupedSeats).sort(), [groupedSeats]);
@@ -120,7 +123,17 @@ export default function DisplaySeats({
     const handleModalClose = useCallback(() => {
         seatSelection.cancelSeatSelection();
         close();
-    }, [seatSelection, close]); const renderSeatSections = () => {
+    }, [seatSelection, close]);
+
+    const handlePaymentSelect = useCallback((method: 'khalti' | 'esewa') => {
+        // Handle payment method selection
+        console.log('Payment method selected:', method, 'for seats:', seatSelection.selectedSeats);
+        toast.success(`Redirecting to ${method} payment...`);
+        paymentModal.close();
+        // Here you would typically redirect to the payment gateway
+    }, [seatSelection.selectedSeats, paymentModal]);
+
+    const renderSeatSections = () => {
         if (!sectionKeys.length) {
             return (
                 <div className="text-center py-8">
@@ -164,6 +177,12 @@ export default function DisplaySeats({
                 onRemove={seatSelection.removeSeat}
                 totalCost={seatSelection.totalPrice}
                 maxSeats={maxSeatsPerBooking}
+            />
+
+            <PaymentMethodModal
+                open={paymentModal.isOpen}
+                onOpenChange={paymentModal.close}
+                onPaymentSelect={handlePaymentSelect}
             />
         </div>
     );
