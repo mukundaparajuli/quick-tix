@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import useGetEventDetails from "@/hooks/events/use-get-event-details";
 import { normalizeEvent } from "@/utils/normalize-event-details";
 
@@ -10,6 +10,7 @@ import FacilitiesList from "@/components/events/facilities-list";
 import VenueDetails from "@/components/events/venue-details";
 import SectionsList from "@/components/events/sections-list";
 import DisplaySeats from "@/components/seats/display-seats";
+import { Button } from "@/components/ui/button";
 
 export default function EventDetailsPage() {
     const { id } = useParams();
@@ -28,6 +29,7 @@ export default function EventDetailsPage() {
             <h1 className="text-3xl font-semibold text-slate-800 mb-6">Event Details</h1>
 
             <EventInfo event={event} />
+            <Button variant={"primary"} onClick={() => redirect("/dashboard/book/" + event.id)}>Buy Tickets</Button>
             <TicketTypesList ticketTypes={ticketTypes} />
             <FacilitiesList facilities={facilities} />
             <VenueDetails venue={venue} />

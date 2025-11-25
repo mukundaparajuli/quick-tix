@@ -1,16 +1,34 @@
+import { useState } from "react";
 import { Seats } from "@/types/seat";
 import { Section } from "@/types/section";
-import SeatComponent from "./seat-component";
+import BookableSeatComponent from "./bookable-seat-component";
+import { TicketType } from "@/types/ticket-type";
+import { useTicketTypeModal } from "@/stores/select-tickettype-store";
+import { TicketTypeModal } from "./ticket-type-modal";
+import FloatingSelectedSeats from "./selected-seats";
 
 type Props = {
     seats: Seats[] | null;
     sections?: Section[] | null;
+    ticketTypes: TicketType[] | null;
 };
 
-export default function DisplaySeats({ seats, sections }: Props) {
-    console.log("DisplaySeats Rendered", seats);
+type SelectedSeat = {
+    id: number;
+    label: string;
+    ticketTypeId: number;
+    ticketTypeName: string;
+};
+
+export default function DisplaySeats({ seats, sections, ticketTypes }: Props) {
+    const { isOpen, open, close } = useTicketTypeModal();
     const availableSeats: Seats[] = seats ?? [];
-    console.log("Available Seats:", availableSeats);
+
+    // State for selected seats
+    const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
+
+    // Temporarily store the seat being selected while waiting for ticket type
+    const [currentSeat, setCurrentSeat] = useState<{ id: number; label: string } | null>(null);
 
     const sectionNameMap: Record<string, string> = {};
     (sections ?? []).forEach((sec) => {
@@ -18,10 +36,8 @@ export default function DisplaySeats({ seats, sections }: Props) {
         sectionNameMap[String(sec.id)] = sec.name || `Section ${sec.id}`;
     });
 
-    // Group seats by section name (fallback to sectionId or "Unassigned").
     const groupedSeats: Record<string, Seats[]> = {};
     availableSeats.forEach((seat) => {
-        console.log("Processing seat:", seat);
         const secKey = String(seat.sectionId ?? "unknown");
         const sectionName = sectionNameMap[secKey] ?? `Section ${secKey}`;
         if (!groupedSeats[sectionName]) groupedSeats[sectionName] = [];
@@ -29,6 +45,34 @@ export default function DisplaySeats({ seats, sections }: Props) {
     });
 
     const sectionKeys = Object.keys(groupedSeats).sort();
+
+    // When a seat is clicked, open modal and store the seat temporarily
+    const handleSelect = (seatId: number, seatLabel: string) => {
+        setCurrentSeat({ id: seatId, label: seatLabel });
+        open();
+    };
+
+    // When ticket type is selected, finalize seat selection
+    const handleTicketTypeSelect = (ticketTypeId: number, ticketTypeName: string) => {
+        if (!currentSeat) return;
+
+        setSelectedSeats((prev) => [
+            ...prev,
+            {
+                id: currentSeat.id,
+                label: currentSeat.label,
+                ticketTypeId,
+                ticketTypeName,
+            },
+        ]);
+
+        setCurrentSeat(null);
+        close();
+    };
+
+    const handleRemoveSeat = (seatId: number) => {
+        setSelectedSeats((prev) => prev.filter((seat) => seat.id !== seatId));
+    };
 
     return (
         <div>
@@ -64,7 +108,11 @@ export default function DisplaySeats({ seats, sections }: Props) {
                                             })
                                         )
                                         .map((seat) => (
-                                            <SeatComponent key={seat.id} label={seat.label} />
+                                            <BookableSeatComponent
+                                                key={seat.id}
+                                                label={seat.label}
+                                                onSelect={() => handleSelect(+seat.id, seat.label)}
+                                            />
                                         ))}
                                 </div>
                             </div>
@@ -72,6 +120,11 @@ export default function DisplaySeats({ seats, sections }: Props) {
                     </div>
                 );
             })}
+
+            {/* Ticket Type Modal */}
+            <TicketTypeModal ticketTypes={ticketTypes} onSelect={handleTicketTypeSelect} />
+
+            <FloatingSelectedSeats selectedSeats={selectedSeats} onRemove={handleRemoveSeat} />
         </div>
     );
 }
