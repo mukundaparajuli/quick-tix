@@ -1,130 +1,170 @@
-import { useState } from "react";
+import { useMemo, useCallback } from "react";
 import { Seats } from "@/types/seat";
 import { Section } from "@/types/section";
-import BookableSeatComponent from "./bookable-seat-component";
 import { TicketType } from "@/types/ticket-type";
+import { toast } from "sonner";
 import { useTicketTypeModal } from "@/stores/select-tickettype-store";
+import { useSeatSelection, type SelectedSeat, type PendingSeat } from "@/hooks/use-seat-selection";
 import { TicketTypeModal } from "./ticket-type-modal";
 import FloatingSelectedSeats from "./selected-seats";
+import SeatSection from "./components/seat-section";
+import SeatMapLegend from "./components/seat-map-legend";
+import SeatMapHeader from "./components/seat-map-header";
 
-type Props = {
+export type { SelectedSeat } from "@/hooks/use-seat-selection";
+
+interface DisplaySeatsProps {
     seats: Seats[] | null;
     sections?: Section[] | null;
     ticketTypes: TicketType[] | null;
+    maxSeatsPerBooking?: number;
+    onSelectionChange?: (selectedSeats: SelectedSeat[]) => void;
+}
+
+const useSeatData = (seats: Seats[] | null, sections: Section[] | null) => {
+    const availableSeats = useMemo(() =>
+        seats?.filter(seat => !seat.isBooked) ?? [], [seats]
+    );
+
+    const sectionNameMap = useMemo(() => {
+        const map: Record<string, string> = {};
+        (sections ?? []).forEach((sec) => {
+            if (sec) {
+                map[String(sec.id)] = sec.name || `Section ${sec.id}`;
+            }
+        });
+        return map;
+    }, [sections]);
+
+    const groupedSeats = useMemo(() => {
+        const grouped: Record<string, Seats[]> = {};
+        availableSeats.forEach((seat) => {
+            const secKey = String(seat.sectionId ?? "unknown");
+            const sectionName = sectionNameMap[secKey] ?? `Section ${secKey}`;
+            if (!grouped[sectionName]) grouped[sectionName] = [];
+            grouped[sectionName].push(seat);
+        });
+        return grouped;
+    }, [availableSeats, sectionNameMap]);
+
+    return { availableSeats, sectionNameMap, groupedSeats };
 };
 
-type SelectedSeat = {
-    id: number;
-    label: string;
-    ticketTypeId: number;
-    ticketTypeName: string;
-};
-
-export default function DisplaySeats({ seats, sections, ticketTypes }: Props) {
+export default function DisplaySeats({
+    seats,
+    sections,
+    ticketTypes,
+    maxSeatsPerBooking = 10,
+    onSelectionChange
+}: DisplaySeatsProps) {
     const { isOpen, open, close } = useTicketTypeModal();
-    const availableSeats: Seats[] = seats ?? [];
+    const seatSelection = useSeatSelection({ maxSeatsPerBooking, onSelectionChange });
+    const { availableSeats, sectionNameMap, groupedSeats } = useSeatData(seats, sections ?? null);
+    const sectionKeys = useMemo(() => Object.keys(groupedSeats).sort(), [groupedSeats]);
 
-    // State for selected seats
-    const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([]);
+    const createPendingSeat = useCallback((seatId: string, seatLabel: string): PendingSeat | null => {
+        const seat = availableSeats.find(s => s.id === seatId);
+        if (!seat) return null;
 
-    // Temporarily store the seat being selected while waiting for ticket type
-    const [currentSeat, setCurrentSeat] = useState<{ id: number; label: string } | null>(null);
+        return {
+            id: seatId,
+            label: seatLabel,
+            sectionId: seat.sectionId,
+            sectionName: sectionNameMap[String(seat.sectionId)] || `Section ${seat.sectionId}`
+        };
+    }, [availableSeats, sectionNameMap]);
 
-    const sectionNameMap: Record<string, string> = {};
-    (sections ?? []).forEach((sec) => {
-        if (!sec) return;
-        sectionNameMap[String(sec.id)] = sec.name || `Section ${sec.id}`;
-    });
+    const handleSelect = useCallback((seatId: string, seatLabel: string) => {
+        if (!ticketTypes?.length) {
+            toast.error("No ticket types available");
+            return;
+        }
 
-    const groupedSeats: Record<string, Seats[]> = {};
-    availableSeats.forEach((seat) => {
-        const secKey = String(seat.sectionId ?? "unknown");
-        const sectionName = sectionNameMap[secKey] ?? `Section ${secKey}`;
-        if (!groupedSeats[sectionName]) groupedSeats[sectionName] = [];
-        groupedSeats[sectionName].push(seat);
-    });
+        const pendingSeat = createPendingSeat(seatId, seatLabel);
+        if (!pendingSeat) {
+            toast.error("Seat not found");
+            return;
+        }
 
-    const sectionKeys = Object.keys(groupedSeats).sort();
+        if (seatSelection.startSeatSelection(pendingSeat)) {
+            open();
+        }
+    }, [ticketTypes, createPendingSeat, seatSelection, open]);
 
-    // When a seat is clicked, open modal and store the seat temporarily
-    const handleSelect = (seatId: number, seatLabel: string) => {
-        setCurrentSeat({ id: seatId, label: seatLabel });
-        open();
-    };
+    const handleTicketTypeSelect = useCallback((ticketTypeId: string, ticketTypeName: string) => {
+        if (!seatSelection.pendingSeat) {
+            toast.error("No seat selected");
+            return;
+        }
 
-    // When ticket type is selected, finalize seat selection
-    const handleTicketTypeSelect = (ticketTypeId: number, ticketTypeName: string) => {
-        if (!currentSeat) return;
+        const ticketType = ticketTypes?.find(type => type.id === ticketTypeId);
+        if (!ticketType) {
+            toast.error("Ticket type not found");
+            seatSelection.cancelSeatSelection();
+            close();
+            return;
+        }
 
-        setSelectedSeats((prev) => [
-            ...prev,
-            {
-                id: currentSeat.id,
-                label: currentSeat.label,
-                ticketTypeId,
-                ticketTypeName,
-            },
-        ]);
+        if (ticketType.capacity && ticketType.sold >= ticketType.capacity) {
+            toast.error("This ticket type is sold out");
+            seatSelection.cancelSeatSelection();
+            close();
+            return;
+        }
 
-        setCurrentSeat(null);
+        if (seatSelection.completeSeatSelection(ticketTypeId, ticketTypeName, ticketType.price)) {
+            close();
+        }
+    }, [seatSelection, ticketTypes, close]);
+
+    const handleModalClose = useCallback(() => {
+        seatSelection.cancelSeatSelection();
         close();
-    };
+    }, [seatSelection, close]); const renderSeatSections = () => {
+        if (!sectionKeys.length) {
+            return (
+                <div className="text-center py-8">
+                    <div className="text-sm text-gray-500">No seats available for this event</div>
+                </div>
+            );
+        }
 
-    const handleRemoveSeat = (seatId: number) => {
-        setSelectedSeats((prev) => prev.filter((seat) => seat.id !== seatId));
+        return sectionKeys.map(sectionName => (
+            <SeatSection
+                key={sectionName}
+                sectionName={sectionName}
+                seats={groupedSeats[sectionName]}
+                seatSelection={seatSelection}
+                onSeatSelect={handleSelect}
+            />
+        ));
     };
 
     return (
-        <div>
-            <h2 className="text-lg font-medium mb-3">Available Seats</h2>
-            {sectionKeys.length === 0 && (
-                <div className="text-sm text-slate-500">No seats available</div>
-            )}
+        <div className="relative">
+            <SeatMapHeader
+                seatCount={seatSelection.totalSeats}
+                maxSeats={maxSeatsPerBooking}
+                totalCost={seatSelection.totalPrice}
+            />
 
-            {sectionKeys.map((sectionName) => {
-                const letterGroups: Record<string, Seats[]> = {};
-                groupedSeats[sectionName].forEach((seat) => {
-                    const rawLabel = seat.label ?? "";
-                    const first = String(rawLabel).trim().charAt(0).toUpperCase() || "#";
-                    const letter = /[A-Z]/.test(first) ? first : "#";
-                    if (!letterGroups[letter]) letterGroups[letter] = [];
-                    letterGroups[letter].push(seat);
-                });
+            {renderSeatSections()}
 
-                const letters = Object.keys(letterGroups).sort();
+            <SeatMapLegend visible={sectionKeys.length > 0} />
 
-                return (
-                    <div key={sectionName} className="mb-6">
-                        <h3 className="text-sm font-semibold text-slate-700 mb-2">{sectionName}</h3>
+            <TicketTypeModal
+                ticketTypes={ticketTypes}
+                onSelect={handleTicketTypeSelect}
+                onClose={handleModalClose}
+                pendingSeat={seatSelection.pendingSeat}
+            />
 
-                        {letters.map((letter) => (
-                            <div key={letter} className="mb-3">
-                                <div className="flex gap-2 mb-2 flex-nowrap overflow-x-auto">
-                                    {letterGroups[letter]
-                                        .sort((a, b) =>
-                                            String(a.label).localeCompare(String(b.label), undefined, {
-                                                numeric: true,
-                                                sensitivity: "base",
-                                            })
-                                        )
-                                        .map((seat) => (
-                                            <BookableSeatComponent
-                                                key={seat.id}
-                                                label={seat.label}
-                                                onSelect={() => handleSelect(+seat.id, seat.label)}
-                                            />
-                                        ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                );
-            })}
-
-            {/* Ticket Type Modal */}
-            <TicketTypeModal ticketTypes={ticketTypes} onSelect={handleTicketTypeSelect} />
-
-            <FloatingSelectedSeats selectedSeats={selectedSeats} onRemove={handleRemoveSeat} />
+            <FloatingSelectedSeats
+                selectedSeats={seatSelection.selectedSeats}
+                onRemove={seatSelection.removeSeat}
+                totalCost={seatSelection.totalPrice}
+                maxSeats={maxSeatsPerBooking}
+            />
         </div>
     );
 }
