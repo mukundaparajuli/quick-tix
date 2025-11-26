@@ -58,7 +58,7 @@ export interface EsewaPayload {
 
 export interface EsewaVerificationData {
     data: any;
-    bookingId: number;
+    bookingId?: number;
 }
 
 export interface PaymentGateway {

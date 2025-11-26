@@ -5,7 +5,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 const bypassUrls = ['/auth/login', '/auth/refresh-token', '/auth/register'];
 
 export const $axios = axios.create({
-    baseURL: ` ${baseURL}/api`,
+    baseURL: `${baseURL}/api`,
     headers: {
         'Content-Type': 'application/json',
     },

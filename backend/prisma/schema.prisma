@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ------------------- USERS & PROFILES -------------------
@@ -233,20 +234,27 @@ model Booking {
 }
 
 model Payment {
-  id            Int           @id @default(autoincrement())
-  amount        Float
-  bookingId     Int           @unique
-  status        PaymentStatus @default(PENDING)
-  method        PaymentMethod
-  transactionId String?
-  provider      String?
-  currency      String        @default("NPR")
-  paidAt        DateTime?
-  refundReason  String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id              Int           @id @default(autoincrement())
+  amount          Float
+  bookingId       Int           @unique
+  status          PaymentStatus @default(PENDING)
+  method          PaymentMethod
+  transactionId   String?
+  provider        String?
+  currency        String        @default("NPR")
+  paidAt          DateTime?
+  refundReason    String?
+  gatewayResponse Json? // Store gateway-specific response data
+  expiresAt       DateTime? // Payment link expiration
+  paymentUrl      String? // Payment gateway URL
+  pidx            String? // Khalti payment index
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([transactionId])
+  @@index([pidx])
 }
 
 // ------------------- MEDIA -------------------

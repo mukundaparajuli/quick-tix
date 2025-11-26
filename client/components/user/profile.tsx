@@ -50,7 +50,7 @@ export default function Profile() {
 
                     <div className="grid gap-2">
                         <Link
-                            href="/dashboard/bprofile"
+                            href="/dashboard/profile"
                             className="text-sm text-gray-700 hover:text-blue-600 transition-colors"
                         >
                             Edit Profile

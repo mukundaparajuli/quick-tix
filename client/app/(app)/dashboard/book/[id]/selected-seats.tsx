@@ -38,8 +38,9 @@ export default function FloatingSelectedSeats({
     totalCost,
     maxSeats
 }: FloatingSelectedSeatsProps) {
+    const { open } = usePaymentModal();
+
     if (!selectedSeats.length) return null;
-    const { isOpen, open, close } = usePaymentModal();
 
     const groupedBySection = groupSeatsBySection(selectedSeats);
     const handleBooking = (selectedSeats: SelectedSeat[]) => {

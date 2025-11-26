@@ -13,6 +13,13 @@ class TicketTypeService {
         });
         return ticketType;
     }
+
+    async getTicketTypeById(ticketTypeId: number) {
+        const ticketType = await db.ticketType.findUnique({
+            where: { id: ticketTypeId },
+        });
+        return ticketType;
+    }
 }
 
 export const ticketTypeService = new TicketTypeService();

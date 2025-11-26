@@ -8,6 +8,8 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { initializeSocket } from "./sockets";
 import { env } from "./config/env.config";
+import cron from 'node-cron';
+import { bookingService } from "./services/booking.service";
 
 dotenv.config();
 
@@ -43,7 +45,18 @@ app.get("/", (req: Request, res: Response) => {
     res.send("Server is running");
 });
 
+// Setup cron job to clean up expired bookings every 5 minutes
+cron.schedule('*/5 * * * *', async () => {
+    console.log('Running booking cleanup...');
+    try {
+        await bookingService.cleanupExpiredBookings();
+    } catch (error) {
+        console.error('Error during booking cleanup:', error);
+    }
+});
+
 server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
+    console.log('Booking cleanup cron job scheduled to run every 5 minutes');
 });
 

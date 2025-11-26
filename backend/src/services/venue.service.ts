@@ -20,6 +20,13 @@ class VenueService {
         });
         return event;
     }
+
+    async getVenueByEventId(eventId: number) {
+        const venue = await db.venue.findFirst({
+            where: { events: { some: { id: eventId } } },
+        });
+        return venue;
+    }
 }
 
 export const venueService = new VenueService();

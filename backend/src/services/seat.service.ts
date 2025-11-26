@@ -60,6 +60,11 @@ class SeatService {
         const availableSeats = (totalSeats || 0) - createdSeats;
         return availableSeats;
     }
+
+    async getSeatById(seatId: number) {
+        const seat = await db.seat.findUnique({ where: { id: seatId } });
+        return seat;
+    }
 }
 
 export const seatService = new SeatService();

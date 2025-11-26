@@ -7,6 +7,8 @@ import VenueRoutes from "./venue.route";
 import SectionRoutes from "./section.route";
 import SeatRoutes from "./seat.route";
 import UserRoutes from "./user.route";
+import BookingRoutes from "./booking.route";
+import PaymentRoutes from "./payment.route";
 
 const router = Router();
 
@@ -18,5 +20,7 @@ router.use('/venue', VenueRoutes);
 router.use('/section', SectionRoutes);
 router.use('/seats', SeatRoutes);
 router.use('/users', UserRoutes);
+router.use('/bookings', BookingRoutes);
+router.use('/payments', PaymentRoutes);
 
 export default router;

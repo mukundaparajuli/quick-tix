@@ -33,6 +33,10 @@ const envSchema = z.object({
         .string()
         .url()
         .default('https://rc-epay.esewa.com.np/api/epay/main/v2/form'),
+    ESEWA_VERIFICATION_URL: z
+        .string()
+        .url()
+        .default('https://uat.esewa.com.np/api/epay/transaction/status/'),
 
     // payments success and failure url
     SUCCESS_URL: z
