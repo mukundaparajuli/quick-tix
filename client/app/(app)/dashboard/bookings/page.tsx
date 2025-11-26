@@ -4,7 +4,9 @@ import React from 'react';
 import { useGetUserBookings } from '@/hooks/booking/use-booking';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, MapPin, CreditCard, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CalendarDays, MapPin, CreditCard, Users, Download } from 'lucide-react';
+import { generateBookingTicketPDF } from '@/utils/pdf-generator';
 
 export default function BookingsPage() {
     const { data: bookings, isFetching, error } = useGetUserBookings();
@@ -71,18 +73,31 @@ export default function BookingsPage() {
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end space-y-2">
-                                            <Badge
-                                                variant={booking.status === 'CONFIRMED' ? 'default' : booking.status === 'PENDING' ? 'secondary' : 'destructive'}
-                                                className="text-xs"
-                                            >
-                                                {booking.status}
-                                            </Badge>
-                                            <Badge
-                                                variant={booking.paymentStatus === 'PAID' ? 'default' : booking.paymentStatus === 'PENDING' ? 'secondary' : 'destructive'}
-                                                className="text-xs"
-                                            >
-                                                {booking.paymentStatus}
-                                            </Badge>
+                                            <div className="flex space-x-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => generateBookingTicketPDF(booking)}
+                                                    className="flex items-center space-x-1"
+                                                >
+                                                    <Download className="h-4 w-4" />
+                                                    <span>Download Ticket</span>
+                                                </Button>
+                                            </div>
+                                            <div className="flex space-x-2">
+                                                <Badge
+                                                    variant={booking.status === 'CONFIRMED' ? 'default' : booking.status === 'PENDING' ? 'secondary' : 'destructive'}
+                                                    className="text-xs"
+                                                >
+                                                    {booking.status}
+                                                </Badge>
+                                                <Badge
+                                                    variant={booking.paymentStatus === 'PAID' ? 'default' : booking.paymentStatus === 'PENDING' ? 'secondary' : 'destructive'}
+                                                    className="text-xs"
+                                                >
+                                                    {booking.paymentStatus}
+                                                </Badge>
+                                            </div>
                                         </div>
                                     </div>
                                 </CardHeader>
