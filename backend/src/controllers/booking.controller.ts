@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PaymentMethod } from "@prisma/client";
 import ApiError from "../types/api-error";
+import ApiResponse from "../types/api-response";
 import asyncHandler from "../utils/async-handler";
 import { eventService } from "../services/event.service";
 import { ticketTypeService } from "../services/ticket-type.service";
@@ -159,4 +160,24 @@ export const initializeBooking = asyncHandler(async (req: Request, res: Response
         console.error('Booking initialization error:', error);
         throw new ApiError(500, error.message || "Failed to initialize booking");
     }
+});
+
+export const getUserBookings = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user.id;
+
+    if (!userId) {
+        throw new ApiError(400, "User ID is required");
+    }
+
+    const attendeeProfile = await db.attendeeProfile.findUnique({
+        where: { userId },
+    });
+
+    if (!attendeeProfile) {
+        throw new ApiError(404, "Attendee profile not found");
+    }
+
+    const bookings = await bookingService.getUserBookings(attendeeProfile.id);
+
+    return new ApiResponse(res, 200, "User bookings fetched successfully", bookings);
 });

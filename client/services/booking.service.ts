@@ -56,11 +56,13 @@ export interface BookingStatus {
         id: number;
         title: string;
         date: string;
+        location: string;
     };
     seats: Array<{
         id: number;
         label: string;
         sectionId: number;
+        sectionName: string;
     }>;
     payment: {
         id: number;
@@ -117,4 +119,10 @@ export const submitToEsewa = (response: EsewaPaymentResponse) => {
     document.body.appendChild(form);
     form.submit();
     document.body.removeChild(form);
+};
+
+// Get user bookings
+export const getUserBookings = async (): Promise<BookingStatus[]> => {
+    const response = await $axios.get('/bookings/user');
+    return response.data.data;
 };

@@ -3,8 +3,10 @@ import {
     initializeBooking,
     getBookingStatus,
     cancelBooking,
+    getUserBookings,
     BookingRequest,
-    PaymentResponse
+    PaymentResponse,
+    BookingStatus
 } from '@/services/booking.service';
 import { handleApiErrorResponse, handleApiSuccessResponse } from '@/utils/handle-api-response';
 import { toast } from 'sonner';
@@ -63,5 +65,12 @@ export const useCancelBooking = (
             toast.error(error.response?.data?.message || 'Failed to cancel booking');
             onError?.(error);
         }
+    });
+};
+
+export const useGetUserBookings = () => {
+    return useQuery({
+        queryKey: ['user-bookings'],
+        queryFn: getUserBookings,
     });
 };

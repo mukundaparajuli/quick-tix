@@ -274,6 +274,71 @@ class BookingService {
         }
     }
 
+    async getUserBookings(attendeeId: number) {
+        try {
+            const bookings = await prisma.booking.findMany({
+                where: {
+                    attendeeId: attendeeId
+                },
+                include: {
+                    event: {
+                        select: {
+                            id: true,
+                            title: true,
+                            date: true,
+                            location: true
+                        }
+                    },
+                    seats: {
+                        select: {
+                            id: true,
+                            label: true,
+                            sectionId: true,
+                            section: {
+                                select: {
+                                    name: true
+                                }
+                            }
+                        }
+                    },
+                    payment: {
+                        select: {
+                            id: true,
+                            amount: true,
+                            method: true,
+                            status: true,
+                            transactionId: true,
+                            paidAt: true
+                        }
+                    }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            });
+
+            return bookings.map(booking => ({
+                bookingId: booking.id,
+                status: booking.status,
+                paymentStatus: booking.paymentStatus,
+                totalPrice: booking.totalPrice,
+                event: booking.event,
+                seats: booking.seats.map(seat => ({
+                    id: seat.id,
+                    label: seat.label,
+                    sectionId: seat.sectionId,
+                    sectionName: seat.section.name
+                })),
+                payment: booking.payment,
+                createdAt: booking.createdAt,
+                updatedAt: booking.updatedAt
+            }));
+        } catch (error: any) {
+            console.error('Error fetching user bookings:', error);
+            throw new ApiError(500, 'Failed to fetch user bookings');
+        }
+    }
+
     async cleanupExpiredBookings(): Promise<void> {
         try {
             const expiredTime = new Date(Date.now() - 15 * 60 * 1000); // 15 minutes ago

@@ -55,6 +55,12 @@ export default function Profile() {
                         >
                             Edit Profile
                         </Link>
+                        <Link
+                            href="/dashboard/bookings"
+                            className="text-sm text-gray-700 hover:text-blue-600 transition-colors"
+                        >
+                            View Bookings
+                        </Link>
                         <Button
                             variant="ghost"
                             className="w-full text-left text-sm text-gray-700 bg-gray-100 hover:text-red-600 hover:bg-gray-200"

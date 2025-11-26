@@ -4,7 +4,7 @@ import CategoriesDisplay from "@/components/user/categories-display";
 import EventsSection from "@/components/user/events-section";
 import HeroSection from "@/components/user/hero-section";
 import { useEffect, useState } from "react";
-import { PaymentMethodModal } from "../(app)/dashboard/book/[id]/payment-modal";
+import { PaymentMethodModal } from "../(app)/dashboard/event/[id]/payment-modal";
 
 export default function TestPage() {
     const [isOpen, setIsOpen] = useState(true);
