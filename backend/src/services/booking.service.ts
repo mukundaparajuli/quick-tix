@@ -286,7 +286,18 @@ class BookingService {
                             id: true,
                             title: true,
                             date: true,
-                            location: true
+                            location: true,
+                            organizer: {
+                                select: {
+                                    organizationName: true,
+                                    contactEmail: true,
+                                    user: {
+                                        select: {
+                                            name: true
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
                     seats: {
@@ -322,7 +333,10 @@ class BookingService {
                 status: booking.status,
                 paymentStatus: booking.paymentStatus,
                 totalPrice: booking.totalPrice,
-                event: booking.event,
+                event: {
+                    ...booking.event,
+                    organizer: booking.event.organizer
+                },
                 seats: booking.seats.map(seat => ({
                     id: seat.id,
                     label: seat.label,

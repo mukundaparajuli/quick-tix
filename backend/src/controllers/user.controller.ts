@@ -28,8 +28,12 @@ export const UpdateProfile = asyncHandler(async (req: Request, res: Response) =>
 
     const updateData = req.body;
     console.log("Update Data in Controller:", updateData);
+
+    // Handle photo upload if file is provided
     if (req.file) {
-        updateData.photo = req.file.path;
+        const { UploadService } = await import("../services/upload.service");
+        const result = await UploadService.uploadImage(req.file);
+        updateData.photo = result.secure_url;
     }
 
     const updatedProfile = await userService.updateUserProfile(userId, updateData);

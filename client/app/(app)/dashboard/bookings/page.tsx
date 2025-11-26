@@ -1,11 +1,12 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { useGetUserBookings } from '@/hooks/booking/use-booking';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, MapPin, CreditCard, Users, Download } from 'lucide-react';
+import { CalendarDays, MapPin, CreditCard, Users, Download, Eye } from 'lucide-react';
 import { generateBookingTicketPDF } from '@/utils/pdf-generator';
 
 export default function BookingsPage() {
@@ -74,8 +75,18 @@ export default function BookingsPage() {
                                         </div>
                                         <div className="flex flex-col items-end space-y-2">
                                             <div className="flex space-x-2">
+                                                <Link href={`/dashboard/bookings/${booking.bookingId}`}>
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        className="flex items-center space-x-1"
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                        <span>View Details</span>
+                                                    </Button>
+                                                </Link>
                                                 <Button
-                                                    variant="outline"
+                                                    variant="ghost"
                                                     size="sm"
                                                     onClick={() => generateBookingTicketPDF(booking)}
                                                     className="flex items-center space-x-1"
@@ -84,21 +95,22 @@ export default function BookingsPage() {
                                                     <span>Download Ticket</span>
                                                 </Button>
                                             </div>
-                                            <div className="flex space-x-2">
-                                                <Badge
-                                                    variant={booking.status === 'CONFIRMED' ? 'default' : booking.status === 'PENDING' ? 'secondary' : 'destructive'}
-                                                    className="text-xs"
-                                                >
-                                                    {booking.status}
-                                                </Badge>
-                                                <Badge
-                                                    variant={booking.paymentStatus === 'PAID' ? 'default' : booking.paymentStatus === 'PENDING' ? 'secondary' : 'destructive'}
-                                                    className="text-xs"
-                                                >
-                                                    {booking.paymentStatus}
-                                                </Badge>
-                                            </div>
+
                                         </div>
+                                    </div>
+                                    <div className="flex space-x-2">
+                                        <Badge
+                                            variant={booking.status === 'CONFIRMED' ? 'default' : booking.status === 'PENDING' ? 'secondary' : 'destructive'}
+                                            className="text-xs"
+                                        >
+                                            {booking.status}
+                                        </Badge>
+                                        <Badge
+                                            variant={booking.paymentStatus === 'PAID' ? 'default' : booking.paymentStatus === 'PENDING' ? 'secondary' : 'destructive'}
+                                            className="text-xs"
+                                        >
+                                            {booking.paymentStatus}
+                                        </Badge>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="pt-6">

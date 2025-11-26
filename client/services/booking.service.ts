@@ -57,6 +57,13 @@ export interface BookingStatus {
         title: string;
         date: string;
         location: string;
+        organizer?: {
+            organizationName: string;
+            contactEmail: string;
+            user: {
+                name: string;
+            };
+        };
     };
     seats: Array<{
         id: number;
@@ -74,6 +81,17 @@ export interface BookingStatus {
     } | null;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface BookingDetails extends BookingStatus {
+    attendee: {
+        id: number;
+        user: {
+            id: number;
+            email: string;
+            name: string;
+        };
+    };
 }
 
 // Initialize booking and get payment details
@@ -124,5 +142,11 @@ export const submitToEsewa = (response: EsewaPaymentResponse) => {
 // Get user bookings
 export const getUserBookings = async (): Promise<BookingStatus[]> => {
     const response = await $axios.get('/bookings/user');
+    return response.data.data;
+};
+
+// Get booking by ID
+export const getBookingById = async (bookingId: number): Promise<BookingDetails> => {
+    const response = await $axios.get(`/bookings/${bookingId}`);
     return response.data.data;
 };

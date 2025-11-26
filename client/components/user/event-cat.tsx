@@ -17,31 +17,6 @@ export default function EventSection({ title, events }: EventSectionProps) {
                 {events.map((event) => (
                     <div key={event.id} className="flex gap-4">
                         <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
-                        <EventCard event={event} />
                     </div>
                 ))}
             </div>

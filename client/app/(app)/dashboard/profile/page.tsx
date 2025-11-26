@@ -28,7 +28,7 @@ export default function ProfilePage() {
 
     const updateUserMutation = useUpdateProfile();
 
-    const handleChange = (key: string, value: any) => {
+    const handleChange = (key: keyof typeof data, value: string | File | null) => {
         setData((prev) => ({ ...prev, [key]: value }));
     };
 

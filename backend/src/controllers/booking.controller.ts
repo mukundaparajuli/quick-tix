@@ -181,3 +181,33 @@ export const getUserBookings = asyncHandler(async (req: Request, res: Response) 
 
     return new ApiResponse(res, 200, "User bookings fetched successfully", bookings);
 });
+
+export const getBookingById = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user.id;
+    const bookingId = parseInt(req.params.id);
+
+    if (!userId) {
+        throw new ApiError(400, "User ID is required");
+    }
+
+    if (!bookingId || isNaN(bookingId)) {
+        throw new ApiError(400, "Valid booking ID is required");
+    }
+
+    const attendeeProfile = await db.attendeeProfile.findUnique({
+        where: { userId },
+    });
+
+    if (!attendeeProfile) {
+        throw new ApiError(404, "Attendee profile not found");
+    }
+
+    const booking = await bookingService.getBookingWithPayment(bookingId);
+
+    // Ensure the booking belongs to the authenticated user
+    if (booking.attendee.id !== attendeeProfile.id) {
+        throw new ApiError(403, "Access denied. You can only view your own bookings");
+    }
+
+    return new ApiResponse(res, 200, "Booking details fetched successfully", booking);
+});

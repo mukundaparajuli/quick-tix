@@ -4,14 +4,15 @@ import {
     getBookingStatus,
     cancelBooking,
     getUserBookings,
+    getBookingById,
     BookingRequest,
     PaymentResponse,
-    BookingStatus
+    BookingStatus,
+    BookingDetails
 } from '@/services/booking.service';
 import { handleApiErrorResponse, handleApiSuccessResponse } from '@/utils/handle-api-response';
 import { toast } from 'sonner';
 
-// Hook for initializing booking
 export const useInitializeBooking = (
     onSuccess?: (data: PaymentResponse) => void,
     onError?: (error: any) => void
@@ -31,7 +32,6 @@ export const useInitializeBooking = (
     });
 };
 
-// Hook for getting booking status
 export const useBookingStatus = (
     bookingId: number | null,
     options?: {
@@ -72,5 +72,13 @@ export const useGetUserBookings = () => {
     return useQuery({
         queryKey: ['user-bookings'],
         queryFn: getUserBookings,
+    });
+};
+
+export const useGetBookingById = (bookingId: number | null) => {
+    return useQuery({
+        queryKey: ['booking', bookingId],
+        queryFn: () => getBookingById(bookingId!),
+        enabled: !!bookingId,
     });
 };

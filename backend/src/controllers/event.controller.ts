@@ -5,7 +5,7 @@ import { eventService } from "../services/event.service";
 import ApiResponse from "../types/api-response";
 
 export const createEvent = asyncHandler(async (req: Request, res: Response) => {
-    const { title, description, date, location, capacity } = req.body;
+    const { title, description, date, location, capacity, images } = req.body;
 
     if (!title || !date || !location || !capacity) {
         throw new ApiError(400, "Title, date, location and capacity are required");
@@ -27,6 +27,7 @@ export const createEvent = asyncHandler(async (req: Request, res: Response) => {
         location,
         capacity,
         organizerId,
+        images,
     });
 
     return new ApiResponse(res, 201, "Event created successfully", event);

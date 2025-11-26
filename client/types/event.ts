@@ -10,4 +10,16 @@ export type Event = {
     organizerId: string;
     createdAt: string;
     updatedAt: string;
+    media?: Media[];
+}
+
+export type Media = {
+    id: string;
+    url: string;
+    type: 'IMAGE' | 'VIDEO';
+    size?: number;
+    altText?: string;
+    uploadedBy: string;
+    createdAt: string;
+    updatedAt: string;
 }

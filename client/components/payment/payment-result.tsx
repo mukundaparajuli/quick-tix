@@ -48,7 +48,7 @@ const PaymentResult: React.FC<PaymentResultProps> = ({ type }) => {
 
     const handleViewBooking = () => {
         if (bookingId) {
-            router.push(`/bookings/${bookingId}`);
+            router.push(`/dashboard/bookings/${bookingId}`);
         }
     };
 
@@ -130,8 +130,8 @@ const PaymentResult: React.FC<PaymentResultProps> = ({ type }) => {
                                 <div className="flex justify-between">
                                     <span className="text-sm font-medium">Status:</span>
                                     <span className={`text-sm font-medium ${isPaymentSuccessful ? 'text-green-600' :
-                                            isPaymentPending ? 'text-blue-600' :
-                                                'text-yellow-600'
+                                        isPaymentPending ? 'text-blue-600' :
+                                            'text-yellow-600'
                                         }`}>
                                         {bookingStatus.paymentStatus}
                                     </span>

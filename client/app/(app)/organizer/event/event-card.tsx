@@ -15,12 +15,14 @@ import { formatDate } from "@/utils/format-date";
 import Link from "next/link";
 
 export default function EventCard({ event }: { event: Event }) {
+    const imageUrl = event.media?.[0]?.url || "/banner.jpg";
+
     return (
         <div className="w-full h-64 border-b-4 border-slate-400 active:border-b-0 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 mt-4 bg-white">
             <div className="flex flex-col md:flex-row h-full">
                 <div className="relative w-full md:w-1/3 h-44 md:h-auto">
                     <Image
-                        src={"/banner.jpg"}
+                        src={imageUrl}
                         alt={event.title}
                         fill
                         className="object-cover"

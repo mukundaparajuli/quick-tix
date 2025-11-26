@@ -9,11 +9,33 @@ class EventService {
         location: string;
         capacity: number;
         organizerId: number;
+        images?: string[];
     }) {
+        const { images, ...eventData } = data;
+
         const event = await db.event.create({
-            data,
+            data: eventData,
         });
-        return event;
+
+        // Create media records if images are provided
+        if (images && images.length > 0) {
+            await db.media.createMany({
+                data: images.map(url => ({
+                    url,
+                    type: 'IMAGE' as const,
+                    uploadedBy: eventData.organizerId,
+                    eventMedia: {
+                        connect: { id: event.id }
+                    }
+                }))
+            });
+        }
+
+        // Return event with media
+        return db.event.findUnique({
+            where: { id: event.id },
+            include: { media: true }
+        });
     }
 
     async markEventAsPublished(eventId: number) {
@@ -73,7 +95,8 @@ class EventService {
                     include: {
                         facilities: true
                     }
-                }
+                },
+                media: true
             }
 
         });

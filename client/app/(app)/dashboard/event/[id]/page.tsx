@@ -10,6 +10,7 @@ import { CalendarDays, MapPin, Users } from 'lucide-react';
 import DisplaySeats from "./display-seats";
 import PaymentModal from '@/components/payment/payment-modal';
 import { SelectedSeat } from '@/hooks/use-seat-selection';
+import Image from 'next/image';
 
 export default function BookEventPage() {
     const { id } = useParams();
@@ -70,6 +71,32 @@ export default function BookEventPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Event Images */}
+            {event?.media && event.media.length > 0 && (
+                <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Event Images</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {event.media.map((image, index) => (
+                                    <div key={image.id} className="relative">
+                                        <Image
+                                            src={image.url}
+                                            alt={image.altText || `Event image ${index + 1}`}
+                                            width={400}
+                                            height={300}
+                                            className="w-full h-48 object-cover rounded-lg"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
 
             {/* Event Description */}
             {event?.description && (

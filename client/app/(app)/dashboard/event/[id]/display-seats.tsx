@@ -25,8 +25,8 @@ interface DisplaySeatsProps {
 }
 
 const useSeatData = (seats: Seats[] | null, sections: Section[] | null) => {
-    const availableSeats = useMemo(() =>
-        seats?.filter(seat => !seat.isBooked) ?? [], [seats]
+    const allSeats = useMemo(() =>
+        seats ?? [], [seats]
     );
 
     const sectionNameMap = useMemo(() => {
@@ -41,16 +41,16 @@ const useSeatData = (seats: Seats[] | null, sections: Section[] | null) => {
 
     const groupedSeats = useMemo(() => {
         const grouped: Record<string, Seats[]> = {};
-        availableSeats.forEach((seat) => {
+        allSeats.forEach((seat) => {
             const secKey = String(seat.sectionId ?? "unknown");
             const sectionName = sectionNameMap[secKey] ?? `Section ${secKey}`;
             if (!grouped[sectionName]) grouped[sectionName] = [];
             grouped[sectionName].push(seat);
         });
         return grouped;
-    }, [availableSeats, sectionNameMap]);
+    }, [allSeats, sectionNameMap]);
 
-    return { availableSeats, sectionNameMap, groupedSeats };
+    return { allSeats, sectionNameMap, groupedSeats };
 };
 
 export default function DisplaySeats({
@@ -63,11 +63,11 @@ export default function DisplaySeats({
     const { id } = useParams();
     const { open, close } = useTicketTypeModal();
     const seatSelection = useSeatSelection({ maxSeatsPerBooking, onSelectionChange });
-    const { availableSeats, sectionNameMap, groupedSeats } = useSeatData(seats, sections ?? null);
+    const { allSeats, sectionNameMap, groupedSeats } = useSeatData(seats, sections ?? null);
     const sectionKeys = useMemo(() => Object.keys(groupedSeats).sort(), [groupedSeats]);
 
     const createPendingSeat = useCallback((seatId: string, seatLabel: string): PendingSeat | null => {
-        const seat = availableSeats.find(s => s.id === seatId);
+        const seat = allSeats.find((s: Seats) => s.id === seatId);
         if (!seat) return null;
 
         return {
@@ -76,7 +76,7 @@ export default function DisplaySeats({
             sectionId: seat.sectionId,
             sectionName: sectionNameMap[String(seat.sectionId)] || `Section ${seat.sectionId}`
         };
-    }, [availableSeats, sectionNameMap]);
+    }, [allSeats, sectionNameMap]);
 
     const handleSelect = useCallback((seatId: string, seatLabel: string) => {
         if (!ticketTypes?.length) {
