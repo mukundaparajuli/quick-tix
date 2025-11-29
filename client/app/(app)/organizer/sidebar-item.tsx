@@ -13,7 +13,10 @@ type Props = {
 
 export default function SidebarItem({ label, iconName, href }: Props) {
     const pathName = usePathname()
-    const isActive = pathName.startsWith(href)
+    // For dashboard (/organizer), use exact match; for others, use startsWith
+    const isActive = href === "/organizer"
+        ? pathName === href
+        : pathName.startsWith(href)
     const IconComponent = iconMap[iconName]
 
     if (!IconComponent) {

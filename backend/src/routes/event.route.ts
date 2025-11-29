@@ -1,11 +1,12 @@
 import { Router } from "express";
-import { createEvent, getAllEvents, getEventDetails, markAsPublished, searchAndFilterEvents } from "../controllers/event.controller";
+import { createEvent, deleteEvent, getAllEvents, getEventDetails, markAsPublished, searchAndFilterEvents } from "../controllers/event.controller";
 import { JwtValidation } from "../middlewares/jwt-validation";
 
 const router = Router();
 
 router.post("/create", JwtValidation, createEvent);
 router.post("/:eventId/publish", JwtValidation, markAsPublished);
+router.delete("/:eventId", JwtValidation, deleteEvent);
 router.get("/", JwtValidation, getAllEvents);
 router.get("/search", JwtValidation, searchAndFilterEvents);
 router.get("/:eventId", JwtValidation, getEventDetails);

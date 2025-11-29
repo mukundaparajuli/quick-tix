@@ -10,6 +10,7 @@ import UserRoutes from "./user.route";
 import BookingRoutes from "./booking.route";
 import PaymentRoutes from "./payment.route";
 import UploadRoutes from "./upload.route";
+import OrganizerRoutes from "./organizer.route";
 
 const router = Router();
 
@@ -24,5 +25,6 @@ router.use('/users', UserRoutes);
 router.use('/bookings', BookingRoutes);
 router.use('/payments', PaymentRoutes);
 router.use('/upload', UploadRoutes);
+router.use('/organizer', OrganizerRoutes);
 
 export default router;

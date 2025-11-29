@@ -13,29 +13,35 @@ class EventService {
     }) {
         const { images, ...eventData } = data;
 
-        const event = await db.event.create({
-            data: eventData,
-        });
-
-        // Create media records if images are provided
+        // Create media records first if images are provided
+        let mediaIds: number[] = [];
         if (images && images.length > 0) {
-            await db.media.createMany({
-                data: images.map(url => ({
-                    url,
-                    type: 'IMAGE' as const,
-                    uploadedBy: eventData.organizerId,
-                    eventMedia: {
-                        connect: { id: event.id }
-                    }
-                }))
-            });
+            const mediaRecords = await Promise.all(
+                images.map(url =>
+                    db.media.create({
+                        data: {
+                            url,
+                            type: 'IMAGE',
+                            uploadedBy: eventData.organizerId,
+                        }
+                    })
+                )
+            );
+            mediaIds = mediaRecords.map(m => m.id);
         }
 
-        // Return event with media
-        return db.event.findUnique({
-            where: { id: event.id },
+        // Create event and connect media
+        const event = await db.event.create({
+            data: {
+                ...eventData,
+                media: mediaIds.length > 0 ? {
+                    connect: mediaIds.map(id => ({ id }))
+                } : undefined
+            },
             include: { media: true }
         });
+
+        return event;
     }
 
     async markEventAsPublished(eventId: number) {
@@ -141,6 +147,39 @@ class EventService {
         });
 
         return events;
+    }
+
+    async deleteEvent(eventId: number, organizerId: number) {
+        const event = await db.event.findFirst({
+            where: {
+                id: eventId,
+                organizerId: organizerId
+            }
+        });
+
+        if (!event) {
+            throw new ApiError(404, "Event not found or you don't have permission to delete it.");
+        }
+
+        // Check if there are any bookings for this event
+        const bookingsCount = await db.booking.count({
+            where: {
+                eventId: eventId
+            }
+        });
+
+        if (bookingsCount > 0) {
+            throw new ApiError(400, "Cannot delete event with existing bookings. Please cancel all bookings first.");
+        }
+
+        // Delete the event (cascades will handle related records based on schema)
+        await db.event.delete({
+            where: {
+                id: eventId
+            }
+        });
+
+        return { message: "Event deleted successfully" };
     }
 }
 

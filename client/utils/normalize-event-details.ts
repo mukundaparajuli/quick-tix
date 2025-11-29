@@ -1,4 +1,4 @@
-import { Event } from "@/types/event";
+import { Event, Media } from "@/types/event";
 import { TicketType } from "@/types/ticket-type";
 import { Venue } from "@/types/venue";
 import { Section } from "@/types/section";
@@ -7,6 +7,19 @@ import { Seats } from "@/types/seat";
 
 export const normalizeEvent = (eventDetails: any) => {
     console.log(eventDetails)
+
+    // Normalize media
+    const media: Media[] = eventDetails?.media?.map((m: any) => ({
+        id: m.id,
+        url: m.url,
+        type: m.type,
+        size: m.size,
+        altText: m.altText,
+        uploadedBy: m.uploadedBy,
+        createdAt: m.createdAt,
+        updatedAt: m.updatedAt,
+    })) || [];
+
     const event: Event = {
         id: eventDetails.id,
         title: eventDetails.title,
@@ -18,6 +31,8 @@ export const normalizeEvent = (eventDetails: any) => {
         venueId: eventDetails.venue_id,
         createdAt: eventDetails.created_at,
         updatedAt: eventDetails.updated_at,
+        capacity: eventDetails.capacity,
+        media: media,
     };
 
     // Flatten ticket types

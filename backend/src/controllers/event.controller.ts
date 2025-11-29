@@ -88,3 +88,25 @@ export const searchAndFilterEvents = asyncHandler(async (req: Request, res: Resp
 
     return new ApiResponse(res, 200, "Events retrieved successfully", events);
 });
+
+export const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
+    const { eventId } = req.params;
+
+    if (!eventId) {
+        throw new ApiError(400, "Event id is required");
+    }
+
+    const user = req.user;
+    if (!user) {
+        throw new ApiError(401, "Unauthorized");
+    }
+
+    const organizerId = user.organizerProfile?.id;
+    if (!organizerId) {
+        throw new ApiError(403, "Only organizers can delete events");
+    }
+
+    const result = await eventService.deleteEvent(parseInt(eventId), organizerId);
+
+    return new ApiResponse(res, 200, result.message);
+});

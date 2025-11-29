@@ -10,9 +10,17 @@ import Facilities from "./facilities/facilities"
 import VenueStep from "./venue/venue"
 import Sections from "./sections/sections"
 import { Seats } from "./seats/seats"
+import useEventStore from "@/stores/event-store"
+import { markAsPublished } from "@/services/event.service"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from "sonner"
 
 export function MultiStepEventForm() {
-    const { currentStep, nextStep, prevStep } = useWizardStore()
+    const { currentStep, nextStep, prevStep, resetWizard } = useWizardStore()
+    const { event, resetEvent } = useEventStore()
+    const router = useRouter()
+    const [isFinishing, setIsFinishing] = useState(false)
 
     const steps = [
         <EventInfo key="step-0" />,
@@ -24,6 +32,32 @@ export function MultiStepEventForm() {
     ]
 
     const progressValue = ((currentStep + 1) / steps.length) * 100
+
+    const handleFinish = async () => {
+        if (!event?.id) {
+            toast.error("No event found. Please create an event first.")
+            return
+        }
+
+        setIsFinishing(true)
+        try {
+            const eventId = typeof event.id === 'string' ? parseInt(event.id) : event.id
+            await markAsPublished(eventId)
+            toast.success("Event published successfully!")
+
+            // Reset stores
+            resetWizard()
+            resetEvent()
+
+            // Redirect to event page
+            router.push(`/organizer/event/${event.id}`)
+        } catch (error) {
+            console.error("Failed to publish event:", error)
+            toast.error("Failed to publish event. Please try again.")
+        } finally {
+            setIsFinishing(false)
+        }
+    }
 
     return (
         <div className="max-w-xl mx-auto min-h-screen flex flex-col justify-center">
@@ -51,7 +85,9 @@ export function MultiStepEventForm() {
                 {currentStep < steps.length - 1 ? (
                     <Button onClick={nextStep}>Next</Button>
                 ) : (
-                    <Button onClick={() => console.log("Submit all steps")}>Finish</Button>
+                    <Button onClick={handleFinish} disabled={isFinishing}>
+                        {isFinishing ? "Publishing..." : "Finish"}
+                    </Button>
                 )}
             </div>
         </div>

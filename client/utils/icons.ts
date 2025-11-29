@@ -7,7 +7,10 @@ import {
     LucideIcon,
     CalendarDays,
     User,
-    BookIcon
+    BookIcon,
+    Wallet,
+    LayoutDashboard,
+    Ticket
 } from "lucide-react"
 
 export const iconMap: Record<string, LucideIcon> = {
@@ -18,5 +21,8 @@ export const iconMap: Record<string, LucideIcon> = {
     theater: Theater,
     calendarDays: CalendarDays,
     user: User,
-    bookedTicket: BookIcon
+    bookedTicket: BookIcon,
+    wallet: Wallet,
+    dashboard: LayoutDashboard,
+    ticket: Ticket
 }

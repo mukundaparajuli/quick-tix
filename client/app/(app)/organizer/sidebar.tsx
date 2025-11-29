@@ -17,14 +17,24 @@ export default function Sidebar({ className }: Props) {
             </Link>
             <div className="flex flex-col flex-1 gap-y-2">
                 <SidebarItem
+                    href="/organizer"
+                    iconName="dashboard"
+                    label="Dashboard"
+                />
+                <SidebarItem
                     href="/organizer/event"
                     iconName="calendarDays"
                     label="Events"
                 />
                 <SidebarItem
                     href="/organizer/bookings"
-                    iconName="bookedTicket"
+                    iconName="ticket"
                     label="Bookings"
+                />
+                <SidebarItem
+                    href="/organizer/wallet"
+                    iconName="wallet"
+                    label="Wallet"
                 />
                 <SidebarItem
                     href="/organizer/profile"
