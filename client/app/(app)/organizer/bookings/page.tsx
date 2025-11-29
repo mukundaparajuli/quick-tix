@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useOrganizerBookings } from "@/hooks/organizer";
+import { useOrganizerBookings, useOrganizerEvents } from "@/hooks/organizer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,23 +30,39 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { formatDate } from "@/utils/format-date";
-import { Search, CheckCircle, Clock, XCircle, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, CheckCircle, Clock, XCircle, Eye, ChevronLeft, ChevronRight, Calendar, Filter } from "lucide-react";
 import { OrganizerBooking } from "@/services/organizer.service";
 
 export default function OrganizerBookingsPage() {
     const [page, setPage] = useState(1);
     const [status, setStatus] = useState<string>("");
+    const [selectedEventId, setSelectedEventId] = useState<string>("");
     const [selectedBooking, setSelectedBooking] = useState<OrganizerBooking | null>(null);
     const limit = 10;
+
+    // Fetch organizer's events for the filter dropdown
+    const { data: eventsData } = useOrganizerEvents();
 
     const { data, isLoading, isError } = useOrganizerBookings({
         page,
         limit,
         status: status || undefined,
+        eventId: selectedEventId ? parseInt(selectedEventId) : undefined,
     });
 
     const handleStatusChange = (value: string) => {
         setStatus(value === "all" ? "" : value);
+        setPage(1);
+    };
+
+    const handleEventChange = (value: string) => {
+        setSelectedEventId(value === "all" ? "" : value);
+        setPage(1);
+    };
+
+    const clearFilters = () => {
+        setStatus("");
+        setSelectedEventId("");
         setPage(1);
     };
 
@@ -63,6 +79,10 @@ export default function OrganizerBookingsPage() {
     }
 
     const { bookings, pagination } = data;
+    const hasActiveFilters = status || selectedEventId;
+
+    // Get selected event name for display
+    const selectedEvent = eventsData?.find((e: any) => e.id.toString() === selectedEventId);
 
     return (
         <div className="p-6 space-y-6">
@@ -74,27 +94,75 @@ export default function OrganizerBookingsPage() {
             {/* Filters */}
             <Card>
                 <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="flex-1">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                <Input
-                                    placeholder="Search bookings..."
-                                    className="pl-10"
-                                />
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex-1">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                    <Input
+                                        placeholder="Search bookings..."
+                                        className="pl-10"
+                                    />
+                                </div>
                             </div>
+
+                            {/* Event Filter */}
+                            <Select value={selectedEventId || "all"} onValueChange={handleEventChange}>
+                                <SelectTrigger className="w-full sm:w-64">
+                                    <Calendar className="h-4 w-4 mr-2 text-slate-400" />
+                                    <SelectValue placeholder="Filter by event" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Events</SelectItem>
+                                    {eventsData?.map((event: any) => (
+                                        <SelectItem key={event.id} value={event.id.toString()}>
+                                            {event.title}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {/* Status Filter */}
+                            <Select value={status || "all"} onValueChange={handleStatusChange}>
+                                <SelectTrigger className="w-full sm:w-48">
+                                    <SelectValue placeholder="Filter by status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                                    <SelectItem value="PENDING">Pending</SelectItem>
+                                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <Select value={status || "all"} onValueChange={handleStatusChange}>
-                            <SelectTrigger className="w-full sm:w-48">
-                                <SelectValue placeholder="Filter by status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Status</SelectItem>
-                                <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-                                <SelectItem value="PENDING">Pending</SelectItem>
-                                <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                            </SelectContent>
-                        </Select>
+
+                        {/* Active Filters Display */}
+                        {hasActiveFilters && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm text-slate-500 flex items-center gap-1">
+                                    <Filter className="h-3 w-3" />
+                                    Active filters:
+                                </span>
+                                {selectedEvent && (
+                                    <Badge variant="secondary" className="text-xs">
+                                        Event: {selectedEvent.title}
+                                    </Badge>
+                                )}
+                                {status && (
+                                    <Badge variant="secondary" className="text-xs">
+                                        Status: {status}
+                                    </Badge>
+                                )}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearFilters}
+                                    className="text-xs h-6 px-2"
+                                >
+                                    Clear all
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>

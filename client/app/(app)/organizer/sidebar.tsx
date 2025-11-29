@@ -1,12 +1,23 @@
+"use client";
+
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import SidebarItem from "./sidebar-item"
-import { Ticket } from "lucide-react"
+import { LogOut, Ticket } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import useAuthStore from "@/stores/auth-store"
 
 type Props = {
     className?: string
 }
 export default function Sidebar({ className }: Props) {
+    const removeAuth = useAuthStore((state) => state.removeAuth);
+
+    const handleLogout = () => {
+        removeAuth();
+        window.location.href = "/login";
+    };
+
     return (
         <div className={cn("flex lg:fixed h-full  lg:w-[256px] border-r-2 px-1 top-0 left-0 flex-col", className)}>
             <Link href="/organizer">
@@ -41,6 +52,18 @@ export default function Sidebar({ className }: Props) {
                     iconName="user"
                     label="Profile"
                 />
+            </div>
+
+            {/* Logout Button */}
+            <div className="p-4 border-t">
+                <Button
+                    variant="ghost"
+                    className="w-full justify-start text-slate-600 hover:text-red-600 hover:bg-red-50"
+                    onClick={handleLogout}
+                >
+                    <LogOut className="h-5 w-5 mr-3" />
+                    Logout
+                </Button>
             </div>
         </div>
     )

@@ -109,3 +109,25 @@ export const createSeats = asyncHandler(async (req: Request, res: Response) => {
     return new ApiResponse(res, 201, "Seats created successfully", allSeats);
 });
 
+export const getCapacitySummary = asyncHandler(async (req: Request, res: Response) => {
+    const { venueId } = req.params;
+
+    if (!venueId) {
+        throw new ApiError(400, "Venue ID is required");
+    }
+
+    const summary = await seatService.getCapacitySummary(parseInt(venueId));
+    return new ApiResponse(res, 200, "Capacity summary retrieved", summary);
+});
+
+export const checkSeatAvailability = asyncHandler(async (req: Request, res: Response) => {
+    const { sectionId } = req.params;
+
+    if (!sectionId) {
+        throw new ApiError(400, "Section ID is required");
+    }
+
+    const availability = await seatService.checkSeatAvailability(parseInt(sectionId));
+    return new ApiResponse(res, 200, "Seat availability retrieved", availability);
+});
+
