@@ -16,10 +16,10 @@ interface BookableSeatProps {
 }
 
 const getSeatStyles = (seat: SeatData) => {
-    if (seat.isBooked) return "bg-gray-400 text-white cursor-not-allowed";
-    if (seat.isSelected) return "bg-gray-700 text-white ring-2 ring-gray-500";
-    if (seat.isProcessing) return "bg-gray-500 text-white animate-pulse";
-    return "bg-gray-200 hover:bg-gray-300 hover:shadow-sm transition-all duration-200 cursor-pointer text-gray-800";
+    if (seat.isBooked) return "bg-red-500 text-white cursor-not-allowed border border-red-600";
+    if (seat.isSelected) return "bg-indigo-600 text-white ring-2 ring-indigo-700";
+    if (seat.isProcessing) return "bg-amber-400 text-slate-800 animate-pulse border border-amber-500";
+    return "bg-emerald-400 text-slate-900 hover:bg-emerald-500 hover:shadow-sm transition-all duration-200 cursor-pointer border border-emerald-500";
 };
 
 const getAriaLabel = (label: string, seat: SeatData) => {
@@ -42,7 +42,7 @@ export default function BookableSeatComponent({ seat, onSelect, disabled }: Book
         <div
             className={cn(
                 "h-12 w-12 flex items-center justify-center rounded-sm relative",
-                "focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1",
+                "focus:outline-none focus:ring-2 focus:ring-offset-1",
                 getSeatStyles(seat),
                 !canSelect && "opacity-60"
             )}
@@ -55,13 +55,15 @@ export default function BookableSeatComponent({ seat, onSelect, disabled }: Book
             aria-disabled={disabled || isBooked}
         >
             {isProcessing ? (
-                <Loader2 className="h-4 w-4 animate-spin text-white" />
+                // For processing state, use a darker icon so it shows on amber background
+                <Loader2 className={`h-4 w-4 animate-spin ${seat.isProcessing ? 'text-slate-800' : 'text-white'}`} />
             ) : (
                 <span className="text-xs font-medium truncate px-1">{label}</span>
             )}
 
             {isSelected && (
-                <div className="absolute -top-1 -right-1 h-3 w-3 bg-gray-800 rounded-full border-2 border-white" />
+                // Small indicator for selection; use a white dot with indigo border so it contrasts on indigo background
+                <div className="absolute -top-1 -right-1 h-3 w-3 bg-white rounded-full border-2 border-indigo-700" />
             )}
         </div>
     );

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PaymentMethod } from "@prisma/client";
+import { PaymentMethod } from "../../generated/prisma";
 import ApiError from "../types/api-error";
 import ApiResponse from "../types/api-response";
 import asyncHandler from "../utils/async-handler";

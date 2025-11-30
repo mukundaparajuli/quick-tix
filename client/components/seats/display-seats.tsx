@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { Seats } from "@/types/seat";
 import { Section } from "@/types/section";
 import { TicketType } from "@/types/ticket-type";
@@ -25,6 +25,50 @@ export default function DisplaySeats({
     ticketTypes,
     onSelectionChange
 }: DisplaySeatsProps) {
+    // local copy of seats so we can update real-time state (reserved/booked/available)
+    const [localSeats, setLocalSeats] = useState<Seats[]>(seats ?? []);
+    // join socket room if event id present in route
+    try {
+        // lazy import socket to avoid SSR issues
+    } catch (err) {
+        // ignore
+    }
+
+    useEffect(() => {
+        setLocalSeats(seats ?? []);
+    }, [seats]);
+
+    // Subscribe to socket updates if running in browser and route param present
+    // We attempt to import getSocket dynamically to avoid SSR import errors
+    useEffect(() => {
+        let socket: any;
+        try {
+            const { useParams } = require('next/navigation');
+            const params = useParams();
+            const eventId = params?.id ? Number(params.id) : null;
+            if (!eventId) return;
+            const { getSocket } = require('@/lib/socket');
+            socket = getSocket(eventId);
+            const handler = (payload: any) => {
+                const { seatIds, status } = payload || {};
+                if (!seatIds || !Array.isArray(seatIds)) return;
+                setLocalSeats((prev) => prev.map(s => {
+                    if (seatIds.includes(Number(s.id))) {
+                        if (status === 'RESERVED') return { ...s, isProcessing: true } as Seats;
+                        if (status === 'BOOKED') return { ...s, isBooked: true, isProcessing: false } as Seats;
+                        if (status === 'AVAILABLE') return { ...s, isBooked: false, isProcessing: false } as Seats;
+                    }
+                    return s;
+                }));
+            };
+            socket.on('seatStatusUpdate', handler);
+            return () => {
+                socket.off('seatStatusUpdate', handler);
+            };
+        } catch (err) {
+            // ignore in non-browser/SSR
+        }
+    }, []);
     const seatSelection = useSeatSelection({
         maxSeatsPerBooking: 8,
         onSelectionChange
@@ -45,7 +89,7 @@ export default function DisplaySeats({
     } = seatSelection;
 
     const { processedData } = useMemo(() => {
-        const availableSeats: Seats[] = seats ?? [];
+        const availableSeats: Seats[] = localSeats ?? [];
 
         const sectionNameMap: Record<string, string> = {};
         (sections ?? []).forEach((sec) => {
@@ -68,7 +112,7 @@ export default function DisplaySeats({
                 availableSeats
             }
         };
-    }, [seats, sections]);
+    }, [localSeats, sections]);
 
     if (!processedData.availableSeats.length) {
         return (

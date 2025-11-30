@@ -1,6 +1,6 @@
 import db from "../config/db";
 import ApiError from "../types/api-error";
-import { BookingStatus, PaymentStatus } from "@prisma/client";
+import { BookingStatus, PaymentStatus } from "../../generated/prisma";
 
 interface GetBookingsParams {
     organizerId: number;

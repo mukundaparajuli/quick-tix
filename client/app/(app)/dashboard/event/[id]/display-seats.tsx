@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useEffect, useState } from "react";
 import { Seats } from "@/types/seat";
 import { Section } from "@/types/section";
 import { TicketType } from "@/types/ticket-type";
@@ -63,7 +63,42 @@ export default function DisplaySeats({
     const { id } = useParams();
     const { open, close } = useTicketTypeModal();
     const seatSelection = useSeatSelection({ maxSeatsPerBooking, onSelectionChange });
-    const { allSeats, sectionNameMap, groupedSeats } = useSeatData(seats, sections ?? null);
+    // local copy of seats so we can update real-time state (reserved/booked/available)
+    const [localSeats, setLocalSeats] = useState(seats ?? []);
+
+    useEffect(() => {
+        setLocalSeats(seats ?? []);
+    }, [seats]);
+
+    // Subscribe to socket updates if running in browser and route param present
+    useEffect(() => {
+        try {
+            const { useParams } = require('next/navigation');
+            const params = useParams();
+            const eventId = params?.id ? Number(params.id) : null;
+            if (!eventId) return;
+            const { getSocket } = require('@/lib/socket');
+            const socket = getSocket(eventId);
+            const handler = (payload: any) => {
+                const { seatIds, status } = payload || {};
+                if (!seatIds || !Array.isArray(seatIds)) return;
+                setLocalSeats((prev) => prev.map(s => {
+                    if (seatIds.includes(Number(s.id))) {
+                        if (status === 'RESERVED') return { ...s, isProcessing: true } as any;
+                        if (status === 'BOOKED') return { ...s, isBooked: true, isProcessing: false } as any;
+                        if (status === 'AVAILABLE') return { ...s, isBooked: false, isProcessing: false } as any;
+                    }
+                    return s;
+                }));
+            };
+            socket.on('seatStatusUpdate', handler);
+            return () => socket.off('seatStatusUpdate', handler);
+        } catch (err) {
+            // ignore in SSR / non-browser
+        }
+    }, []);
+
+    const { allSeats, sectionNameMap, groupedSeats } = useSeatData(localSeats, sections ?? null);
     const sectionKeys = useMemo(() => Object.keys(groupedSeats).sort(), [groupedSeats]);
 
     const createPendingSeat = useCallback((seatId: string, seatLabel: string): PendingSeat | null => {

@@ -1,7 +1,6 @@
-import { PrismaClient, Booking, Payment, Seat, BookingStatus, PaymentStatus, PaymentMethod } from '@prisma/client';
+import { Booking, Payment, Seat, BookingStatus, PaymentStatus, PaymentMethod } from '../../generated/prisma';
 import ApiError from '../types/api-error';
-
-const prisma = new PrismaClient();
+import db from '../config/db';
 
 export interface CreateBookingData {
     eventId: number;
@@ -23,7 +22,7 @@ export interface UpdatePaymentData {
 class BookingService {
     async createBooking(data: CreateBookingData): Promise<Booking> {
         try {
-            return await prisma.$transaction(async (tx) => {
+            return await db.$transaction(async (tx) => {
                 // Check if booking already exists for this event and attendee
                 // const existingBooking = await tx.booking.findFirst({
                 //     where: {
@@ -115,7 +114,7 @@ class BookingService {
             if (data.expiresAt !== undefined) updateData.expiresAt = data.expiresAt;
             if (data.gatewayResponse !== undefined) updateData.gatewayResponse = data.gatewayResponse;
 
-            const payment = await prisma.payment.update({
+            const payment = await db.payment.update({
                 where: { bookingId: data.bookingId },
                 data: updateData
             });
@@ -129,7 +128,7 @@ class BookingService {
 
     async confirmPayment(bookingId: number, verificationResponse: any): Promise<Booking> {
         try {
-            return await prisma.$transaction(async (tx) => {
+            return await db.$transaction(async (tx) => {
                 // Update payment status
                 await tx.payment.update({
                     where: { bookingId },
@@ -165,7 +164,7 @@ class BookingService {
 
     async failPayment(bookingId: number, reason?: string): Promise<void> {
         try {
-            await prisma.$transaction(async (tx) => {
+            await db.$transaction(async (tx) => {
                 // Update payment status
                 await tx.payment.update({
                     where: { bookingId },
@@ -201,7 +200,7 @@ class BookingService {
 
     async getBookingWithPayment(bookingId: number): Promise<any> {
         try {
-            const booking = await prisma.booking.findUnique({
+            const booking = await db.booking.findUnique({
                 where: { id: bookingId },
                 include: {
                     payment: true,
@@ -237,7 +236,7 @@ class BookingService {
 
     async getBookingByPidx(pidx: string): Promise<any> {
         try {
-            const payment = await prisma.payment.findFirst({
+            const payment = await db.payment.findFirst({
                 where: { pidx: pidx },
                 include: {
                     booking: {
@@ -276,7 +275,7 @@ class BookingService {
 
     async getUserBookings(attendeeId: number) {
         try {
-            const bookings = await prisma.booking.findMany({
+            const bookings = await db.booking.findMany({
                 where: {
                     attendeeId: attendeeId
                 },
@@ -357,7 +356,7 @@ class BookingService {
         try {
             const expiredTime = new Date(Date.now() - 15 * 60 * 1000); // 15 minutes ago
 
-            await prisma.$transaction(async (tx) => {
+            await db.$transaction(async (tx) => {
                 // Find expired bookings
                 const expiredBookings = await tx.booking.findMany({
                     where: {

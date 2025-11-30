@@ -1,4 +1,4 @@
-import { UserRole } from "@prisma/client";
+import { UserRole } from "../../generated/prisma";
 import db from "../config/db";
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { compare, hashPassword } from "../utils/hash-password";

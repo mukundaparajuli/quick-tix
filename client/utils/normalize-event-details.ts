@@ -67,6 +67,8 @@ export const normalizeEvent = (eventDetails: any) => {
             number: seat.number,
             status: seat.status,
             sectionId: sec.id,
+            // Normalize booking state: prefer camelCase `isBooked`, then snake_case `is_booked`, then availability/status
+            isBooked: (seat.isBooked ?? seat.is_booked) ?? (seat.is_available === undefined ? (seat.status === 'BOOKED') : !seat.is_available),
         })),
     }));
 
@@ -85,7 +87,8 @@ export const normalizeEvent = (eventDetails: any) => {
             id: seat.id,
             label: seat.label,
             sectionId: sec.id,
-            isAvailable: seat.is_available,
+            // Provide a boolean that the UI components expect (isBooked)
+            isBooked: (seat.isBooked ?? seat.is_booked) ?? (seat.is_available === undefined ? (seat.status === 'BOOKED') : !seat.is_available),
         }))
     );
 

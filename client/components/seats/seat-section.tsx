@@ -16,10 +16,11 @@ const SeatButton = ({ seat, isSelected, isProcessing, onClick }: {
     const isDisabled = isBooked || isProcessing;
 
     const getStyles = () => {
-        if (isBooked) return "bg-gray-400 border-gray-500 cursor-not-allowed opacity-50";
-        if (isSelected) return "bg-gray-700 border-gray-800 text-white";
-        if (isProcessing) return "bg-gray-300 border-gray-400 animate-pulse cursor-wait";
-        return "bg-gray-200 border-gray-300 hover:bg-gray-300 cursor-pointer";
+        // Match legend colors: available=emerald, selected=indigo, processing=amber, booked=red
+        if (isBooked) return "bg-red-500 border-red-600 text-white cursor-not-allowed opacity-90";
+        if (isSelected) return "bg-indigo-600 border-indigo-700 text-white";
+        if (isProcessing) return "bg-amber-400 border-amber-500 animate-pulse cursor-wait";
+        return "bg-emerald-400 border-emerald-500 hover:bg-emerald-500 cursor-pointer text-slate-800";
     };
 
     return (

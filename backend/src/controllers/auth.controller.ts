@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import asyncHandler from "../utils/async-handler";
 import ApiError from "../types/api-error";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "../../generated/prisma";
 import { authService } from "../services/auth.service";
 import { generateEmailVerificationToken, generateJwtToken } from "../utils/generate-verification-code";
 import { sendVerificationEmail } from "../utils/send-verification-email";

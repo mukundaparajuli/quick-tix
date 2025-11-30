@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, BookingStatus, PaymentStatus, PaymentMethod, MediaType } from '@prisma/client';
+import { PrismaClient, UserRole, BookingStatus, PaymentStatus, PaymentMethod, MediaType } from '../generated/prisma';
 import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
