@@ -142,11 +142,29 @@ export const submitToEsewa = (response: EsewaPaymentResponse) => {
 // Get user bookings
 export const getUserBookings = async (): Promise<BookingStatus[]> => {
     const response = await $axios.get('/bookings/user');
-    return response.data.data;
+    const bookings = response.data.data;
+    // Transform 'id' to 'bookingId' for consistency
+    return bookings.map((booking: any) => ({
+        ...booking,
+        bookingId: booking.id || booking.bookingId,
+        seats: booking.seats?.map((seat: any) => ({
+            ...seat,
+            sectionName: seat.sectionName || seat.section?.name || `Section ${seat.sectionId}`
+        })) || []
+    }));
 };
 
 // Get booking by ID
 export const getBookingById = async (bookingId: number): Promise<BookingDetails> => {
     const response = await $axios.get(`/bookings/${bookingId}`);
-    return response.data.data;
+    const booking = response.data.data;
+    // Transform 'id' to 'bookingId' and ensure all fields match BookingDetails interface
+    return {
+        ...booking,
+        bookingId: booking.id || booking.bookingId,
+        seats: booking.seats?.map((seat: any) => ({
+            ...seat,
+            sectionName: seat.sectionName || seat.section?.name || `Section ${seat.sectionId}`
+        })) || []
+    };
 };

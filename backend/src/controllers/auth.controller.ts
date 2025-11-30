@@ -90,6 +90,5 @@ export const VerifyEmail = asyncHandler(async (req: Request, res: Response) => {
     if (!verificationToken || typeof verificationToken !== 'string') throw new ApiError(400, 'Verification token is required');
 
     const user = await authService.verifyEmailToken(verificationToken);
-
-    return new ApiResponse(res, 200, 'Email verified successfully', { user });
+    return res.redirect(`${process.env.FRONTEND_URL}/login`);
 });

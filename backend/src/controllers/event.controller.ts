@@ -34,13 +34,13 @@ export const createEvent = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const markAsPublished = asyncHandler(async (req: Request, res: Response) => {
-    const { eventId } = req.body;
+    const { eventId } = req.params;
 
     if (!eventId) {
         throw new ApiError(400, "Event id not found")
     }
 
-    const publishedEvent = eventService.markEventAsPublished(eventId);
+    const publishedEvent = await eventService.markEventAsPublished(parseInt(eventId));
 
     return new ApiResponse(res, 200, "Event published successfully", publishedEvent);
 })

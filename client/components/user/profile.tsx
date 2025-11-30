@@ -16,7 +16,10 @@ export default function Profile() {
     const user: UserType = data?.data;
     console.log("User Data:", user);
     if (isFetching) return <div>Loading profile...</div>;
-    if (isError) return <div>Error loading profile</div>;
+    if (isError) {
+        window.location.href = "/login";
+        return null;
+    }
     const handleLogout = () => {
         window.location.href = "/login";
     };

@@ -31,7 +31,6 @@ export interface BookingTicketData {
 }
 
 export const generateBookingTicketPDF = (booking: BookingTicketData) => {
-    // Create A4 size PDF (210 x 297 mm)
     const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',

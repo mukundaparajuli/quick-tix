@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Calendar, MapPin, User, CreditCard, Download, Ticket } from 'lucide-react';
 import { formatDate } from '@/utils/format-date';
 import { generateBookingTicketPDF } from '@/utils/pdf-generator';
+
 import { toast } from 'sonner';
 
 interface BookingDetailsPageProps {
@@ -43,15 +44,7 @@ function BookingDetailsContent({ bookingId }: { bookingId: number }) {
         );
     }
 
-    const handleDownloadTicket = async () => {
-        try {
-            await generateBookingTicketPDF(booking);
-            toast.success('Ticket downloaded successfully!');
-        } catch (error) {
-            console.error('Error generating ticket:', error);
-            toast.error('Failed to download ticket. Please try again.');
-        }
-    };
+
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -81,6 +74,16 @@ function BookingDetailsContent({ bookingId }: { bookingId: number }) {
         }
     };
 
+    const handleDownloadTicket = () => {
+        try {
+            generateBookingTicketPDF(booking);
+            toast.success('Ticket downloaded successfully');
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            toast.error('Failed to download ticket. Please try again.');
+        }
+    };
+
     return (
         <div className="max-w-4xl mx-auto p-6 space-y-6">
             {/* Header */}
@@ -89,9 +92,14 @@ function BookingDetailsContent({ bookingId }: { bookingId: number }) {
                     <h1 className="text-3xl font-bold">Booking Details</h1>
                     <p className="text-muted-foreground">Booking ID: #{booking.bookingId}</p>
                 </div>
-                <Button onClick={handleDownloadTicket} className="flex items-center gap-2">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDownloadTicket}
+                    className="flex items-center space-x-1"
+                >
                     <Download className="h-4 w-4" />
-                    Download Ticket
+                    <span>Download Ticket</span>
                 </Button>
             </div>
 
