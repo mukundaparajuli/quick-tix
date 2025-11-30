@@ -13,8 +13,9 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "typeRoots": ["./node_modules/@types", "./types"]
   },
-  "include": ["src/**/*", "generated/**/*", "prisma.config.ts"],
+  "include": ["src/**/*", "generated/**/*", "prisma.config.ts", "types/**/*"],
   "exclude": ["node_modules", "dist"]
 }

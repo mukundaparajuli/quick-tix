@@ -77,10 +77,11 @@ export default function EventDetailsPage() {
         capacity: 0,
     });
 
-    if (!id) return <div className="text-slate-500 text-center mt-10">No event ID provided</div>;
-
-    const { data: eventDetails, isFetching, refetch } = useGetEventDetails({ eventId: +id });
+    const eventId = id ? +id : 0;
+    const { data: eventDetails, isFetching, refetch } = useGetEventDetails({ eventId });
     const updateEventMutation = useUpdateEvent();
+
+    if (!id) return <div className="text-slate-500 text-center mt-10">No event ID provided</div>;
 
     if (isFetching) {
         return <EventDetailsSkeleton />;

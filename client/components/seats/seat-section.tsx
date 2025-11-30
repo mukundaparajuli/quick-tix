@@ -1,9 +1,17 @@
 import { Seats } from "@/types/seat";
+import { SelectedSeat } from "@/hooks/use-seat-selection";
+
+interface SeatSelectionType {
+    selectedSeats: SelectedSeat[];
+    startSeatSelection: (seat: { id: string; label: string; sectionId: number; sectionName: string }) => void;
+    isSeatSelected: (seatId: string) => boolean;
+    isSeatProcessing: (seatId: string) => boolean;
+}
 
 interface SeatSectionProps {
     sectionName: string;
     seats: Seats[];
-    seatSelection: any;
+    seatSelection: SeatSelectionType;
 }
 
 const SeatButton = ({ seat, isSelected, isProcessing, onClick }: {

@@ -8,15 +8,17 @@ import { useParams } from "next/navigation";
 
 export default function CreateEventPage() {
     const { id } = useParams();
-    if (!id) return;
-    const { data: eventDetails, isFetching } = useGetEventDetails({ eventId: +id })
+    const eventId = id ? +id : 0;
+    const { data: eventDetails, isFetching } = useGetEventDetails({ eventId });
+
+    if (!id) return null;
 
     if (isFetching) {
         return <div>Loading event details...</div>;
     }
     console.log(eventDetails);
-    const { event, ticketTypes, facilities, venue, sections } = normalizeEvent(eventDetails.data);
-    console.log(eventDetails.data);
+    const { event, ticketTypes, facilities, venue, sections } = normalizeEvent(eventDetails?.data);
+    console.log(eventDetails?.data);
     const store = useEventStore.getState();
 
     store.setEvent(event);

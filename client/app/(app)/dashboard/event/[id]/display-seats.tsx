@@ -1,4 +1,5 @@
 import { useMemo, useCallback, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { Seats } from "@/types/seat";
 import { Section } from "@/types/section";
 import { TicketType } from "@/types/ticket-type";
@@ -12,7 +13,6 @@ import SeatMapLegend from "./components/seat-map-legend";
 import SeatMapHeader from "./components/seat-map-header";
 import SelectedSeatsWithPayment from "@/components/seats/selected-seats-with-payment";
 import PaymentModal from "@/components/payment/payment-modal";
-import { useParams } from "next/navigation";
 
 export type { SelectedSeat } from "@/hooks/use-seat-selection";
 
@@ -60,7 +60,8 @@ export default function DisplaySeats({
     maxSeatsPerBooking = 10,
     onSelectionChange
 }: DisplaySeatsProps) {
-    const { id } = useParams();
+    const params = useParams();
+    const eventId = params?.id ? Number(params.id) : null;
     const { open, close } = useTicketTypeModal();
     const seatSelection = useSeatSelection({ maxSeatsPerBooking, onSelectionChange });
     // local copy of seats so we can update real-time state (reserved/booked/available)
@@ -72,31 +73,32 @@ export default function DisplaySeats({
 
     // Subscribe to socket updates if running in browser and route param present
     useEffect(() => {
-        try {
-            const { useParams } = require('next/navigation');
-            const params = useParams();
-            const eventId = params?.id ? Number(params.id) : null;
-            if (!eventId) return;
-            const { getSocket } = require('@/lib/socket');
+        if (!eventId || typeof window === 'undefined') return;
+
+        let cleanup: (() => void) | undefined;
+
+        import('@/lib/socket').then(({ getSocket }) => {
             const socket = getSocket(eventId);
-            const handler = (payload: any) => {
+            const handler = (payload: { seatIds?: number[]; status?: string }) => {
                 const { seatIds, status } = payload || {};
                 if (!seatIds || !Array.isArray(seatIds)) return;
                 setLocalSeats((prev) => prev.map(s => {
                     if (seatIds.includes(Number(s.id))) {
-                        if (status === 'RESERVED') return { ...s, isProcessing: true } as any;
-                        if (status === 'BOOKED') return { ...s, isBooked: true, isProcessing: false } as any;
-                        if (status === 'AVAILABLE') return { ...s, isBooked: false, isProcessing: false } as any;
+                        if (status === 'RESERVED') return { ...s, isProcessing: true } as Seats;
+                        if (status === 'BOOKED') return { ...s, isBooked: true, isProcessing: false } as Seats;
+                        if (status === 'AVAILABLE') return { ...s, isBooked: false, isProcessing: false } as Seats;
                     }
                     return s;
                 }));
             };
             socket.on('seatStatusUpdate', handler);
-            return () => socket.off('seatStatusUpdate', handler);
-        } catch (err) {
-            // ignore in SSR / non-browser
-        }
-    }, []);
+            cleanup = () => socket.off('seatStatusUpdate', handler);
+        }).catch(() => {
+            // ignore socket import errors
+        });
+
+        return () => cleanup?.();
+    }, [eventId]);
 
     const { allSeats, sectionNameMap, groupedSeats } = useSeatData(localSeats, sections ?? null);
     const sectionKeys = useMemo(() => Object.keys(groupedSeats).sort(), [groupedSeats]);
@@ -215,7 +217,7 @@ export default function DisplaySeats({
                 onRemove={seatSelection.removeSeat}
                 onClear={seatSelection.clearAllSeats}
                 totalPrice={seatSelection.totalPrice}
-                eventId={Number(id)}
+                eventId={eventId ?? 0}
             />
 
             <PaymentModal />

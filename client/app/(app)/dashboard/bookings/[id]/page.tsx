@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from 'react';
+import { Suspense, use } from 'react';
 import { notFound } from 'next/navigation';
 import { useGetBookingById } from '@/hooks/booking/use-booking';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,9 +13,9 @@ import { generateBookingTicketPDF } from '@/utils/pdf-generator';
 import { toast } from 'sonner';
 
 interface BookingDetailsPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 function BookingDetailsContent({ bookingId }: { bookingId: number }) {
@@ -234,7 +234,8 @@ function BookingDetailsContent({ bookingId }: { bookingId: number }) {
 }
 
 export default function BookingDetailsPage({ params }: BookingDetailsPageProps) {
-    const bookingId = parseInt(params.id);
+    const resolvedParams = use(params);
+    const bookingId = parseInt(resolvedParams.id);
 
     if (isNaN(bookingId)) {
         notFound();
