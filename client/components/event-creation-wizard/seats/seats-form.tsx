@@ -31,6 +31,7 @@ export default function SeatsForm() {
     const createSeatsMutation = useCreateSeats();
 
     const form = useForm<SeatsFormType>({
+        mode: "onChange",
         resolver: zodResolver(seatsSchema),
         defaultValues: { row: 1, column: 1 },
     });
@@ -49,6 +50,7 @@ export default function SeatsForm() {
             <Select
                 value={selectedSectionId ?? undefined}
                 onValueChange={(value) => setSelectedSectionId(value)}
+                disabled={createSeatsMutation.isPending}
             >
                 <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select Section" />
@@ -74,6 +76,7 @@ export default function SeatsForm() {
                                         <Input
                                             type="number"
                                             placeholder="Row"
+                                            disabled={createSeatsMutation.isPending}
                                             {...field}
                                             onChange={(e) => field.onChange(Number(e.target.value))}
                                         />
@@ -91,6 +94,7 @@ export default function SeatsForm() {
                                         <Input
                                             type="number"
                                             placeholder="Column"
+                                            disabled={createSeatsMutation.isPending}
                                             {...field}
                                             onChange={(e) => field.onChange(Number(e.target.value))}
                                         />
@@ -98,7 +102,12 @@ export default function SeatsForm() {
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit">Add Seats</Button>
+                        <Button
+                            type="submit"
+                            disabled={createSeatsMutation.isPending || !form.formState.isValid || !selectedSectionId}
+                        >
+                            {createSeatsMutation.isPending ? "Adding Seats..." : "Add Seats"}
+                        </Button>
                     </form>
                 </Form>
             </div>
