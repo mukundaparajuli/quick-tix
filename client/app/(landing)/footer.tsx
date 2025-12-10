@@ -113,17 +113,6 @@ export default function Footer() {
 
                 <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm text-slate-400 space-y-2">
                     <p>&copy; {new Date().getFullYear()} Quick Tix. All rights reserved.</p>
-                    <p>
-                        Developed with ❤️ by{" "}
-                        <Link
-                            href="https://mukundaparajuli.com.np"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-white hover:underline"
-                        >
-                            Mukunda Parajuli
-                        </Link>
-                    </p>
                 </div>
             </div>
         </footer>
