@@ -4,16 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, Compass } from "lucide-react";
+import { Search, Compass } from "lucide-react";
 
 export default function ExploreCTA() {
     const router = useRouter();
     const [query, setQuery] = useState("");
 
     const goToExplore = () => {
-        query === "" ?
-            router.push("/dashboard/explore") :
+        if (query === "") {
+            router.push("/dashboard/explore");
+        } else {
             router.push(`/dashboard/explore?q=${encodeURIComponent(query)}`);
+        }
     };
 
     return (

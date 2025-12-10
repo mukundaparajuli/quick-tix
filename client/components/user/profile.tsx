@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Badge, LogOut, Shield, User } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Button } from "../ui/button";
 import useAuthStore from "@/stores/auth-store";
 import useGetUserDetails from "@/hooks/user/use-get-profile";
