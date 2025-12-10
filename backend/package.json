@@ -5,12 +5,12 @@
   "main": "dist/src/index.js",
   "scripts": {
     "build": "npx prisma generate && tsc",
-    "start": "node dist/src/index.js",
+    "start": "npx prisma generate && cp -R ./generated ./dist/generated || true && node dist/src/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "seed": "ts-node prisma/seed.ts",
     "db:migrate": "npx prisma migrate deploy",
     "db:generate": "npx prisma generate",
-    "postinstall": "npx prisma generate",
+    "azure:start": "npx prisma generate && cp -R ./generated ./dist/generated || true && node dist/src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
