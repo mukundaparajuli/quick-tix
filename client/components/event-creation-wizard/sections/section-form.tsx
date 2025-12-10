@@ -27,6 +27,7 @@ export function SectionForm({
     const createSectionMutation = useCreateSection(onSuccess);
     const form = useForm<SectionForm>({
         resolver: zodResolver(sectionSchema),
+        mode: "onChange",
         defaultValues: {
             name: "",
             capacity: 0,
@@ -56,7 +57,11 @@ export function SectionForm({
                             <FormItem>
                                 <FormLabel>Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Section Name" {...field} />
+                                    <Input
+                                        placeholder="Section Name"
+                                        disabled={createSectionMutation.isPending}
+                                        {...field}
+                                    />
                                 </FormControl>
                             </FormItem>
                         )}
@@ -69,13 +74,26 @@ export function SectionForm({
                             <FormItem>
                                 <FormLabel>Capacity</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="Section Capacity" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                                    <Input
+                                        type="number"
+                                        placeholder="Section Capacity"
+                                        disabled={createSectionMutation.isPending}
+                                        {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                    />
                                 </FormControl>
                             </FormItem>
                         )}
                     />
 
-                    <Button type="submit" variant="secondary" className="w-full">Create Section</Button>
+                    <Button
+                        type="submit"
+                        variant="secondary"
+                        className="w-full"
+                        disabled={createSectionMutation.isPending || !form.formState.isValid}
+                    >
+                        {createSectionMutation.isPending ? "Creating Section..." : "Create Section"}
+                    </Button>
                 </form>
             </Form>
         </div>

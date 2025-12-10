@@ -11,3 +11,8 @@ export const registerWithCredentials = async (data: RegisterForm) => {
     const response = await $axios.post("/auth/register", data)
     return response.data
 }
+
+export const verifyEmail = async (token: string) => {
+    const response = await $axios.get(`/auth/verify-email/${token}`)
+    return response.data
+}

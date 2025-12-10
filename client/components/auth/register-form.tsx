@@ -39,6 +39,7 @@ export function RegisterForm({
     const registerMutation = useRegister();
     const form = useForm<RegisterForm>({
         resolver: zodResolver(registerFormSchema),
+        mode: "onChange",
         defaultValues: {
             name: "",
             email: "",
@@ -75,7 +76,11 @@ export function RegisterForm({
                                     <FormItem>
                                         <FormLabel>Name</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="John Doe" {...field} />
+                                            <Input
+                                                placeholder="John Doe"
+                                                disabled={registerMutation.isPending}
+                                                {...field}
+                                            />
                                         </FormControl>
                                     </FormItem>
                                 )}
@@ -88,7 +93,11 @@ export function RegisterForm({
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="john@example.com" {...field} />
+                                            <Input
+                                                placeholder="john@example.com"
+                                                disabled={registerMutation.isPending}
+                                                {...field}
+                                            />
                                         </FormControl>
                                     </FormItem>
                                 )}
@@ -101,7 +110,12 @@ export function RegisterForm({
                                     <FormItem>
                                         <FormLabel>Password</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="••••••••" {...field} />
+                                            <Input
+                                                type="password"
+                                                placeholder="••••••••"
+                                                disabled={registerMutation.isPending}
+                                                {...field}
+                                            />
                                         </FormControl>
                                     </FormItem>
                                 )}
@@ -114,7 +128,11 @@ export function RegisterForm({
                                     <FormItem>
                                         <FormLabel>Role</FormLabel>
                                         <FormControl>
-                                            <Select onValueChange={field.onChange} value={field.value}>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                                disabled={registerMutation.isPending}
+                                            >
                                                 <SelectTrigger className="w-full">
                                                     <SelectValue placeholder="Role" />
                                                 </SelectTrigger>
@@ -137,7 +155,11 @@ export function RegisterForm({
                                             <FormItem>
                                                 <FormLabel>Bio</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Short bio about yourself" {...field} />
+                                                    <Input
+                                                        placeholder="Short bio about yourself"
+                                                        disabled={registerMutation.isPending}
+                                                        {...field}
+                                                    />
                                                 </FormControl>
                                             </FormItem>
                                         )}
@@ -150,7 +172,11 @@ export function RegisterForm({
                                             <FormItem>
                                                 <FormLabel>Phone</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="+977-98XXXXXXXX" {...field} />
+                                                    <Input
+                                                        placeholder="+977-98XXXXXXXX"
+                                                        disabled={registerMutation.isPending}
+                                                        {...field}
+                                                    />
                                                 </FormControl>
                                             </FormItem>
                                         )}
@@ -163,7 +189,11 @@ export function RegisterForm({
                                             <FormItem>
                                                 <FormLabel>Organization Name</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Your Organization" {...field} />
+                                                    <Input
+                                                        placeholder="Your Organization"
+                                                        disabled={registerMutation.isPending}
+                                                        {...field}
+                                                    />
                                                 </FormControl>
                                             </FormItem>
                                         )}
@@ -171,7 +201,14 @@ export function RegisterForm({
                                 </>
                             )}
 
-                            <Button type="submit" variant="secondary" className="w-full">Submit</Button>
+                            <Button
+                                type="submit"
+                                variant="secondary"
+                                className="w-full"
+                                disabled={registerMutation.isPending || !form.formState.isValid}
+                            >
+                                {registerMutation.isPending ? "Creating Account..." : "Submit"}
+                            </Button>
                         </form>
                     </Form>
                 </CardContent>

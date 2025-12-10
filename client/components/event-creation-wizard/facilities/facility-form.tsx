@@ -31,6 +31,7 @@ export function FacilityForm({ className, onSuccess, ...props }: FacilityFormPro
 
     const form = useForm<FacilityFormType>({
         resolver: zodResolver(facilitySchema),
+        mode: "onChange",
         defaultValues: { name: "", description: "" },
     })
 
@@ -54,6 +55,7 @@ export function FacilityForm({ className, onSuccess, ...props }: FacilityFormPro
             <Select
                 value={selectedTicketTypeId ?? undefined}
                 onValueChange={(value) => setSelectedTicketTypeId(value)}
+                disabled={createFacilityMutation.isPending}
             >
                 <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select Ticket Type" />
@@ -77,7 +79,11 @@ export function FacilityForm({ className, onSuccess, ...props }: FacilityFormPro
                             <FormItem>
                                 <FormLabel>Facility Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Facility Name" {...field} />
+                                    <Input 
+                                        placeholder="Facility Name" 
+                                        disabled={createFacilityMutation.isPending}
+                                        {...field} 
+                                    />
                                 </FormControl>
                             </FormItem>
                         )}
@@ -90,16 +96,31 @@ export function FacilityForm({ className, onSuccess, ...props }: FacilityFormPro
                             <FormItem>
                                 <FormLabel>Description</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Description" {...field} />
+                                    <Input 
+                                        placeholder="Description" 
+                                        disabled={createFacilityMutation.isPending}
+                                        {...field} 
+                                    />
                                 </FormControl>
                             </FormItem>
                         )}
                     />
 
-                    <Button type="submit" variant="secondary" className="w-full">
-                        Create Facility
+                    <Button 
+                        type="submit" 
+                        variant="secondary" 
+                        className="w-full"
+                        disabled={createFacilityMutation.isPending || !form.formState.isValid}
+                    >
+                        {createFacilityMutation.isPending ? "Creating Facility..." : "Create Facility"}
                     </Button>
-                    <Button type="button" variant="secondaryOutline" className="w-full" onClick={onSuccess}>
+                    <Button 
+                        type="button" 
+                        variant="secondaryOutline" 
+                        className="w-full" 
+                        onClick={onSuccess}
+                        disabled={createFacilityMutation.isPending}
+                    >
                         Skip
                     </Button>
                 </form>

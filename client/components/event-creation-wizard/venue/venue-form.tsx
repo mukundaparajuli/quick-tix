@@ -26,6 +26,7 @@ export function VenueForm({
 
     const form = useForm<VenueForm>({
         resolver: zodResolver(venueSchema),
+        mode: "onChange",
         defaultValues: {
             name: "",
             location: "",
@@ -49,7 +50,11 @@ export function VenueForm({
                             <FormItem>
                                 <FormLabel>Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Venue Name" {...field} />
+                                    <Input
+                                        placeholder="Venue Name"
+                                        disabled={createVenueMutation.isPending}
+                                        {...field}
+                                    />
                                 </FormControl>
                             </FormItem>
                         )}
@@ -62,7 +67,11 @@ export function VenueForm({
                             <FormItem>
                                 <FormLabel>Location</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Venue Location" {...field} />
+                                    <Input
+                                        placeholder="Venue Location"
+                                        disabled={createVenueMutation.isPending}
+                                        {...field}
+                                    />
                                 </FormControl>
                             </FormItem>
                         )}
@@ -79,6 +88,7 @@ export function VenueForm({
                                     <Input
                                         type="number"
                                         placeholder="Venue Capacity"
+                                        disabled={createVenueMutation.isPending}
                                         {...field}
                                         onChange={(e) => field.onChange(Number(e.target.value))}
                                     />
@@ -86,7 +96,14 @@ export function VenueForm({
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" variant="secondary" className="w-full">Create Venue</Button>
+                    <Button
+                        type="submit"
+                        variant="secondary"
+                        className="w-full"
+                        disabled={createVenueMutation.isPending || !form.formState.isValid}
+                    >
+                        {createVenueMutation.isPending ? "Creating Venue..." : "Create Venue"}
+                    </Button>
                 </form>
             </Form>
         </div>

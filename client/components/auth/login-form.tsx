@@ -25,6 +25,7 @@ export function LoginForm({
     const loginMutation = useLogin();
     const form = useForm<LoginForm>({
         resolver: zodResolver(loginFormSchema),
+        mode: "onChange",
         defaultValues: {
             email: "",
             password: "",
@@ -55,7 +56,11 @@ export function LoginForm({
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="john@example.com" {...field} />
+                                            <Input
+                                                placeholder="john@example.com"
+                                                disabled={loginMutation.isPending}
+                                                {...field}
+                                            />
                                         </FormControl>
                                     </FormItem>
                                 )}
@@ -69,13 +74,25 @@ export function LoginForm({
                                     <FormItem>
                                         <FormLabel>Password</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="••••••••" {...field} />
+                                            <Input
+                                                type="password"
+                                                placeholder="••••••••"
+                                                disabled={loginMutation.isPending}
+                                                {...field}
+                                            />
                                         </FormControl>
                                     </FormItem>
                                 )}
                             />
 
-                            <Button type="submit" variant="secondary" className="w-full">Login</Button>
+                            <Button
+                                type="submit"
+                                variant="secondary"
+                                className="w-full"
+                                disabled={loginMutation.isPending || !form.formState.isValid}
+                            >
+                                {loginMutation.isPending ? "Logging in..." : "Login"}
+                            </Button>
                         </form>
                     </Form>
                 </CardContent>

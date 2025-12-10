@@ -33,6 +33,7 @@ export function EventInfoForm({
 
     const form = useForm<EventInfoForm>({
         resolver: zodResolver(eventInfoSchema),
+        mode: "onChange",
         defaultValues: {
             title: "",
             description: "",
@@ -87,7 +88,11 @@ export function EventInfoForm({
                             <FormItem>
                                 <FormLabel>Title</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Event Title" {...field} />
+                                    <Input
+                                        placeholder="Event Title"
+                                        disabled={eventCreationMutation.isPending || uploading}
+                                        {...field}
+                                    />
                                 </FormControl>
                             </FormItem>
                         )}
@@ -100,7 +105,11 @@ export function EventInfoForm({
                             <FormItem>
                                 <FormLabel>Description</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Event Description" {...field} />
+                                    <Input
+                                        placeholder="Event Description"
+                                        disabled={eventCreationMutation.isPending || uploading}
+                                        {...field}
+                                    />
                                 </FormControl>
                             </FormItem>
                         )}
@@ -115,6 +124,7 @@ export function EventInfoForm({
                                 <FormControl>
                                     <Input
                                         type="date"
+                                        disabled={eventCreationMutation.isPending || uploading}
                                         value={field.value.toISOString().split("T")[0]} // YYYY-MM-DD
                                         onChange={(e) => field.onChange(new Date(e.target.value))}
                                     />
@@ -131,7 +141,11 @@ export function EventInfoForm({
                             <FormItem>
                                 <FormLabel>Location</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Event Location" {...field} />
+                                    <Input
+                                        placeholder="Event Location"
+                                        disabled={eventCreationMutation.isPending || uploading}
+                                        {...field}
+                                    />
                                 </FormControl>
                             </FormItem>
                         )}
@@ -144,7 +158,13 @@ export function EventInfoForm({
                             <FormItem>
                                 <FormLabel>Capacity</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="Event Capacity" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                                    <Input
+                                        type="number"
+                                        placeholder="Event Capacity"
+                                        disabled={eventCreationMutation.isPending || uploading}
+                                        {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                    />
                                 </FormControl>
                                 <FormMessage className="text-start" />
                             </FormItem>
@@ -195,7 +215,8 @@ export function EventInfoForm({
                                         <button
                                             type="button"
                                             onClick={() => removeImage(index)}
-                                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            disabled={eventCreationMutation.isPending || uploading}
+                                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
                                         >
                                             <X className="h-4 w-4" />
                                         </button>
@@ -205,7 +226,14 @@ export function EventInfoForm({
                         )}
                     </div>
 
-                    <Button type="submit" variant="secondary" className="w-full">Create Event</Button>
+                    <Button
+                        type="submit"
+                        variant="secondary"
+                        className="w-full"
+                        disabled={eventCreationMutation.isPending || uploading || !form.formState.isValid}
+                    >
+                        {eventCreationMutation.isPending ? "Creating Event..." : uploading ? "Uploading Images..." : "Create Event"}
+                    </Button>
                 </form>
             </Form>
         </div>
