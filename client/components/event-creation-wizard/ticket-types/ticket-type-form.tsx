@@ -74,10 +74,10 @@ export function TicketTypeForm({
                             <FormItem>
                                 <FormLabel>Name</FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        placeholder="Ticket Type Name" 
+                                    <Input
+                                        placeholder="Ticket Type Name"
                                         disabled={createTicketTypeMutation.isPending}
-                                        {...field} 
+                                        {...field}
                                     />
                                 </FormControl>
                             </FormItem>
@@ -91,10 +91,10 @@ export function TicketTypeForm({
                             <FormItem>
                                 <FormLabel>Description</FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        placeholder="Event Description" 
+                                    <Input
+                                        placeholder="Event Description"
                                         disabled={createTicketTypeMutation.isPending}
-                                        {...field} 
+                                        {...field}
                                     />
                                 </FormControl>
                             </FormItem>
@@ -128,12 +128,12 @@ export function TicketTypeForm({
                             <FormItem>
                                 <FormLabel>Capacity</FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        type="number" 
-                                        placeholder="Event Capacity" 
+                                    <Input
+                                        type="number"
+                                        placeholder="Event Capacity"
                                         disabled={createTicketTypeMutation.isPending}
-                                        {...field} 
-                                        onChange={(e) => field.onChange(Number(e.target.value))} 
+                                        {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
                                     />
                                 </FormControl>
                             </FormItem>
@@ -147,21 +147,21 @@ export function TicketTypeForm({
                             <FormItem>
                                 <FormLabel>Sold</FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        type="number" 
-                                        placeholder="Tickets Sold" 
+                                    <Input
+                                        type="number"
+                                        placeholder="Tickets Sold"
                                         disabled={createTicketTypeMutation.isPending}
-                                        {...field} 
-                                        onChange={(e) => field.onChange(Number(e.target.value))} 
+                                        {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
                                     />
                                 </FormControl>
                             </FormItem>
                         )}
                     />
 
-                    <Button 
-                        type="submit" 
-                        variant="secondary" 
+                    <Button
+                        type="submit"
+                        variant="secondary"
                         className="w-full"
                         disabled={createTicketTypeMutation.isPending || !form.formState.isValid}
                     >

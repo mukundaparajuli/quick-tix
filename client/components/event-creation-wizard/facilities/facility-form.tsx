@@ -79,10 +79,10 @@ export function FacilityForm({ className, onSuccess, ...props }: FacilityFormPro
                             <FormItem>
                                 <FormLabel>Facility Name</FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        placeholder="Facility Name" 
+                                    <Input
+                                        placeholder="Facility Name"
                                         disabled={createFacilityMutation.isPending}
-                                        {...field} 
+                                        {...field}
                                     />
                                 </FormControl>
                             </FormItem>
@@ -96,28 +96,28 @@ export function FacilityForm({ className, onSuccess, ...props }: FacilityFormPro
                             <FormItem>
                                 <FormLabel>Description</FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        placeholder="Description" 
+                                    <Input
+                                        placeholder="Description"
                                         disabled={createFacilityMutation.isPending}
-                                        {...field} 
+                                        {...field}
                                     />
                                 </FormControl>
                             </FormItem>
                         )}
                     />
 
-                    <Button 
-                        type="submit" 
-                        variant="secondary" 
+                    <Button
+                        type="submit"
+                        variant="secondary"
                         className="w-full"
                         disabled={createFacilityMutation.isPending || !form.formState.isValid}
                     >
                         {createFacilityMutation.isPending ? "Creating Facility..." : "Create Facility"}
                     </Button>
-                    <Button 
-                        type="button" 
-                        variant="secondaryOutline" 
-                        className="w-full" 
+                    <Button
+                        type="button"
+                        variant="secondaryOutline"
+                        className="w-full"
                         onClick={onSuccess}
                         disabled={createFacilityMutation.isPending}
                     >
